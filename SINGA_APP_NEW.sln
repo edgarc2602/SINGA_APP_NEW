@@ -1,0 +1,47 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.32929.386
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "SINGA_NEW", ".", "{9D8E1753-710E-40A6-9499-3202FE8D702B}"
+	ProjectSection(WebsiteProperties) = preProject
+		TargetFrameworkMoniker = ".NETFramework,Version%3Dv4.7.2"
+		Debug.AspNetCompiler.VirtualPath = "/localhost_51102"
+		Debug.AspNetCompiler.PhysicalPath = "..\SINGA_NEW\"
+		Debug.AspNetCompiler.TargetPath = "PrecompiledWeb\localhost_51102\"
+		Debug.AspNetCompiler.Updateable = "true"
+		Debug.AspNetCompiler.ForceOverwrite = "true"
+		Debug.AspNetCompiler.FixedNames = "false"
+		Debug.AspNetCompiler.Debug = "True"
+		Release.AspNetCompiler.VirtualPath = "/localhost_51102"
+		Release.AspNetCompiler.PhysicalPath = "..\SINGA_NEW\"
+		Release.AspNetCompiler.TargetPath = "PrecompiledWeb\localhost_51102\"
+		Release.AspNetCompiler.Updateable = "true"
+		Release.AspNetCompiler.ForceOverwrite = "true"
+		Release.AspNetCompiler.FixedNames = "false"
+		Release.AspNetCompiler.Debug = "False"
+		VWDPort = "51102"
+		SlnRelativePath = "..\SINGA_NEW\"
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Debug|x32 = Debug|x32
+		Debug|x64 = Debug|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{9D8E1753-710E-40A6-9499-3202FE8D702B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9D8E1753-710E-40A6-9499-3202FE8D702B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9D8E1753-710E-40A6-9499-3202FE8D702B}.Debug|x32.ActiveCfg = Debug|Any CPU
+		{9D8E1753-710E-40A6-9499-3202FE8D702B}.Debug|x32.Build.0 = Debug|Any CPU
+		{9D8E1753-710E-40A6-9499-3202FE8D702B}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{9D8E1753-710E-40A6-9499-3202FE8D702B}.Debug|x64.Build.0 = Debug|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {93D2FA12-3AF1-4A2B-9690-93DB0FB35865}
+	EndGlobalSection
+EndGlobal
