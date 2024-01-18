@@ -429,7 +429,7 @@ Partial Class App_Mantenimiento_OP_Pro_Preventivos
         'sql += "{ini: " & ds.Tables(1).Rows(0)("ini") & ", fin: " & ds.Tables(2).Rows(0)("ultimo") & "}"
         Return sql
     End Function
-
+    'este metodo genera las ordenes'
     <Web.Services.WebMethod()>
     Public Shared Function svOrdenes(ByVal prm As String) As String
         Dim myConnection As New SqlConnection((New Conexion).StrConexion)

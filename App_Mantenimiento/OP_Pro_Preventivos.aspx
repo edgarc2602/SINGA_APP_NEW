@@ -275,7 +275,9 @@
                 PageMethods.svPrograma(prm, function (res) {
                     $('#txid').val(res)
                     alert('Programa ' + res + ' generado.');
+                    //$('#hdprograma').val(res)
                     bloquea();
+                    //muestra();
                     //bots();
                     /*alert(nw.prg);
                     if (nw.prg == 0) {
@@ -471,19 +473,27 @@
                     algo += '<th class="bg-light-blue-gradient" rowspan="2"><span>Proyecto</span></th><th class="bg-light-blue-gradient" rowspan="2"><span>Inmueble</span></th>';
                     if (nw.estr == false) {
                         for (var x = 0; x < nw.dias.length; x++) {
-                            algo += '<th class="bg-light-blue-gradient text-center"><span>' + nw.dias[x].dia + '</span></th>';
+                            algo += '<th class="bg-light-blue-gradient"><span>' + nw.dias[x].dia + '</span></th>';
                         }
                         algo += '</tr><tr>';
                         for (var x = 0; x < nw.dias.length; x++) {
-                            algo += '<th class="bg-light-blue-gradient text-center"><span>' + nw.dias[x].nmdia + '</span></th>';
+                            algo += '<th class="bg-light-blue-gradient"><span>' + nw.dias[x].nmdia + '</span></th>';
                         }
                         algo += '</tr>';
                     }
                     else {
                         var AuxCol = 0;
+
                         for (var x = 0; x < nw.dias.length; x++) {
                             if (AuxCol != nw.dias[x].NumSem) {
-                                algo += '<th class="bg-light-blue-gradient text-center"><span> Semana ' + nw.dias[x].NumSem + '</span></th>';
+                                algo += '<th class="bg-light-blue-gradient"><span> Semana ' + nw.dias[x].NumSem + '</span></th>';
+                            }
+                            AuxCol = nw.dias[x].NumSem;
+                        }
+                        algo += '</tr><tr>';
+                        for (var x = 0; x < nw.dias.length; x++) {
+                            if (AuxCol != nw.dias[x].NumSem) {
+                                algo += '<th class="bg-light-blue-gradient"><span>' + nw.dias[x].nmdia + ' / ' + (nw.dias[x].dia < 10 ? '0' + nw.dias[x].dia : nw.dias[x].dia) + '</span></th>';
                             }
                             AuxCol = nw.dias[x].NumSem;
                         }
@@ -494,7 +504,7 @@
                     $('#othead').append(algo);
                     algo = '';
                     for (var y = 0; y < nw.sucs.length; y++) {
-                        algo += '<tr><td class="text-center" estr_Value="' + nw.estr + '" ><input type="hidden" value="' + nw.sucs[y].id + '" />' + nw.sucs[y].pro + '</td><td>' + nw.sucs[y].inm + '</td>';
+                        algo += '<tr><td estr_Value="' + nw.estr + '" ><input type="hidden" value="' + nw.sucs[y].id + '" />' + nw.sucs[y].pro + '</td><td>' + nw.sucs[y].inm + '</td>';
 
                         if (nw.estr == false) {
                             for (var x = 0; x < nw.dias.length; x++) {
@@ -575,6 +585,7 @@
             }, iferror);
         }
 
+
         function elimina(id) {
             //alert(id);
             var resp = confirm('Deseas cancelar la Orden de Trabajo ' + id + ' ');
@@ -590,7 +601,7 @@
             prm += ' idserv="' + $('#dltipo').val() + '"';
             prm += ' idsuper="' + $('#dltecnico').val() + '" programa="' + $('#hdprograma').val() + '" proyecto="' + $('#dlcliente').val() + '" >';
             for (var x = 0; x < objots.length; x++) {
-                prm += '<ot inmueble="' + objots[x].inm + '" piso="0" equipo="0" estr="' + objots[x].estr + '"  fecha="' + objots[x].fec + '" />';
+                prm += '<ot inmueble="' + objots[x].inm + '" piso="0" equipo="0" estr="' + objots[x].estr + '"  fecha="' + objots[x].fec.replace(' Semana ',0) + '" />';
             }
             prm += '</prm>';
             //alert(prm);
