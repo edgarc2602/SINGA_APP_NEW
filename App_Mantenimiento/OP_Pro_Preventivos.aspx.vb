@@ -307,7 +307,7 @@ Partial Class App_Mantenimiento_OP_Pro_Preventivos
         sql += "inner join @dta.nodes('Param') t(c) on  a.id_programa = c.value('@prg', 'int');" & vbCrLf
         sql += "select dateadd(dd, (a.id_mes + (b.mul * 12)), c.fec) As fec, datepart(dd, dateadd(dd, (a.id_mes + (b.mul * 12)), c.fec)) As dia" & vbCrLf
         sql += ", left(DATENAME(w, dateadd(dd, (a.id_mes + (b.mul * 12)), c.fec)), 2) as nmdia" & vbCrLf
-        sql += ", DATEPART(WEEK, dateadd(dd, (a.id_mes + (b.mul * 12)), c.fec))  -    DATEPART(WEEK, DATEADD(MM, DATEDIFF(MM,0,dateadd(dd, (a.id_mes + (b.mul * 12)), c.fec)), 0))+ 1 AS NumSem" & vbCrLf
+        sql += ", DATEDIFF(WEEK, DATEADD(MONTH, DATEDIFF(MONTH, 0, dateadd(dd, (a.id_mes + (b.mul * 12)), c.fec)), 0), dateadd(dd, (a.id_mes + (b.mul * 12)), c.fec)) + 1 AS NumSem" & vbCrLf
         sql += ", row_number() over(order by b.mul, a.id_mes) As ordo" & vbCrLf
         sql += "from tb_Mes a" & vbCrLf
         sql += "cross join (" & vbCrLf
