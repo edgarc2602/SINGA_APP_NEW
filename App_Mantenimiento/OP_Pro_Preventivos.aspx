@@ -485,18 +485,18 @@
                         var AuxCol = 0;
 
                         for (var x = 0; x < nw.dias.length; x++) {
-                            if (AuxCol != nw.dias[x].NumSem) {
+                            if (AuxCol != nw.dias[x].NumSem && nw.dias[x].NumSem <= 4) {
                                 algo += '<th class="bg-light-blue-gradient"><span> Semana ' + nw.dias[x].NumSem + '</span></th>';
                             }
                             AuxCol = nw.dias[x].NumSem;
                         }
-                        algo += '</tr><tr>';
-                        for (var x = 0; x < nw.dias.length; x++) {
-                            if (AuxCol != nw.dias[x].NumSem) {
-                                algo += '<th class="bg-light-blue-gradient"><span>' + nw.dias[x].nmdia + ' / ' + (nw.dias[x].dia < 10 ? '0' + nw.dias[x].dia : nw.dias[x].dia) + '</span></th>';
-                            }
-                            AuxCol = nw.dias[x].NumSem;
-                        }
+                        //algo += '</tr><tr>';
+                        //for (var x = 0; x < nw.dias.length; x++) {
+                        //    if (AuxCol != nw.dias[x].NumSem &&  nw.dias[x].NumSem <= 4) {
+                        //        algo += '<th class="bg-light-blue-gradient"><span>' + nw.dias[x].nmdia + ' / ' + (nw.dias[x].dia < 10 ? '0' + nw.dias[x].dia : nw.dias[x].dia) + '</span></th>';
+                        //    }
+                        //    AuxCol = nw.dias[x].NumSem;
+                        //}
                         algo += '</tr>';
 
                     }
@@ -515,7 +515,7 @@
                         else {
                             AuxCol = 0;
                             for (var x = 0; x < nw.dias.length; x++) {
-                                if (AuxCol != nw.dias[x].NumSem) algo += '<td></td>';
+                                if (AuxCol != nw.dias[x].NumSem && nw.dias[x].NumSem <= 4) algo += '<td></td>';
                                 AuxCol = nw.dias[x].NumSem;
                             }
                         }
