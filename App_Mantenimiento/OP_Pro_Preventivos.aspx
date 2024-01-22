@@ -352,7 +352,7 @@
                     //$('#hdsupervisorp').val(nw.ser);
                     $('#hdsupervisorp').val(nw.sup);
 
-                    
+
                     muestra();
                 }
             }, iferror);
@@ -408,7 +408,7 @@
             $('#dltipo').append(inicial);
             $('#dltecnico').empty();
             $('#dltecnico').append(inicial);
-            
+
             $('#dlestructura').val('');
             $('#hdprograma').val(0);
             $('#hdproyectop').val(0);
@@ -458,7 +458,7 @@
             $('#otbody tr').remove();
             $('#divpagot ul').remove();
             var prm = '<Param prg="' + $('#hdprograma').val() + '" pro="' + $('#dlcliente').val() + '" ser="' + $('#dltipo').val() + '"';
-            prm += ' pgn="' + $('#hdpagina').val() + '" user="' + $('#idusuario').val() + '"';
+            prm += ' pgn="' + $('#hdpagina').val() + '" user="' + $('#idusuario').val() + '" estr="' + $('#dlestructura').val() + '" anyo="' + $('#dlanyo').val() + '"';
             prm += ' per="0" fec="' + $('#hdfec').val() + '" sup="' + $('#dltecnico').val() + '" />';
             //alert("hola1");
             PageMethods.gtPreventivo(prm, function (res) {
@@ -485,10 +485,10 @@
                         var AuxCol = 0;
 
                         for (var x = 0; x < nw.dias.length; x++) {
-                            if (AuxCol != nw.dias[x].NumSem && nw.dias[x].NumSem <= 4) {
-                                algo += '<th class="bg-light-blue-gradient"><span> Semana ' + nw.dias[x].NumSem + '</span></th>';
+                            if (AuxCol != nw.dias[x].Ordo && nw.dias[x].Ordo) {
+                                algo += '<th class="bg-light-blue-gradient"><span> Semana ' + nw.dias[x].Ordo + '</span></th>';
                             }
-                            AuxCol = nw.dias[x].NumSem;
+                            AuxCol = nw.dias[x].Ordo;
                         }
                         //algo += '</tr><tr>';
                         //for (var x = 0; x < nw.dias.length; x++) {
@@ -515,8 +515,8 @@
                         else {
                             AuxCol = 0;
                             for (var x = 0; x < nw.dias.length; x++) {
-                                if (AuxCol != nw.dias[x].NumSem && nw.dias[x].NumSem <= 4) algo += '<td></td>';
-                                AuxCol = nw.dias[x].NumSem;
+                                if (AuxCol != nw.dias[x].Ordo) algo += '<td></td>';
+                                AuxCol = nw.dias[x].Ordo;
                             }
                         }
 
@@ -538,6 +538,8 @@
                     $('#otbody td').click(function () {
                         var inm = $(this).parent().children('td').eq(0).children('input').val();
                         var estr_Value = $(this).parent().children('td').attr('estr_Value');
+                        var fec_Value = $(this).parent().children('td').attr('fec_Value');
+                        var Ordo_Value = $(this).parent().children('td').attr('Ordo_Value');
 
                         //  console.log(estr_Value);
 
@@ -561,7 +563,8 @@
                                     }
                                 }
                             } else {
-                                objots.push({ inm: inm, fec: dia, estr: estr_Value });
+                                objots.push({ inm: inm, fec: dia, estr: estr_Value});
+                                //, fec: fec_Value, ordo: ordo_Value
                                 //console.log(objots);
                                 $(this).html('<i class="fa fa-flag"></i>');
                                 //alert("Continua2");
@@ -599,9 +602,9 @@
         function graba() {
             var prm = '<prm  nor="NOR" user="' + $('#idusuario').val() + '"';
             prm += ' idserv="' + $('#dltipo').val() + '"';
-            prm += ' idsuper="' + $('#dltecnico').val() + '" programa="' + $('#hdprograma').val() + '" proyecto="' + $('#dlcliente').val() + '" >';
+            prm += ' idsuper="' + $('#dltecnico').val() + '" programa="' + $('#hdprograma').val() + '" proyecto="' + $('#dlcliente').val() + '" estr="' + $('#dlestructura').val() + '" >';
             for (var x = 0; x < objots.length; x++) {
-                prm += '<ot inmueble="' + objots[x].inm + '" piso="0" equipo="0" estr="' + objots[x].estr + '"  fecha="' + objots[x].fec.replace(' Semana ',0) + '" />';
+                prm += '<ot inmueble="' + objots[x].inm + '" piso="0" equipo="0" estr="' + objots[x].estr + '"  fecha="' + objots[x].fec.replace(' Semana ', 0) + '" ordo="' + objots[x].Ordo + '" />';
             }
             prm += '</prm>';
             //alert(prm);
@@ -874,20 +877,31 @@
                                         <input type="hidden" id="hdsupervisorp" value="0" />
 
 
-                                        <div class="navbar-form navbar-center">
+                                        <%--<div class="navbar-form navbar-center">
                                             <span id="idreg" class="fa fa-arrow-left btn btn-warning"></span>
                                             <label id="lbfec" text=""></label>
                                             <span id="idava" class="fa fa-arrow-right btn btn-warning"></span>
-                                        </div>
+                                        </div>--%>
+                                        <div class="col-lg-2">
+                                    <select class="form-control" id="dlanyo">
+                                        <option value="2023">Seleccione...</option>
+                                        <option value="2023">2023</option>
+                                        <option value="2024">2024</option>
+                                    </select>
+                                </div>
 
                                     </div>
-                                    <div class="col-md-18 tbheader">
-                                        <table id="ottable" class="table table-condensed table-hover table-sm">
-                                            <thead id="othead">
-                                            </thead>
-                                            <tbody id="otbody">
-                                            </tbody>
-                                        </table>
+                                    <div class="row" style="border-radius: 10px; overflow-x: hidden; padding-left: 10px">
+                                        <div style="max-height: 500px; overflow-y: auto;">
+                                            <div class="col-md-18 tbheader">
+                                                <table id="ottable" class="table table-condensed table-hover table-sm">
+                                                    <thead id="othead">
+                                                    </thead>
+                                                    <tbody id="otbody">
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
                                     </div>
                                     <%--<div id="divpagot" class="dvpaginas">
                                 </div>--%>

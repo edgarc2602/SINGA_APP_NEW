@@ -297,17 +297,35 @@ Partial Class App_Mantenimiento_OP_Pro_Preventivos
         Dim sql As String = ""
 
         sql = "Set language 'Spanish';" & vbCrLf
-        sql += "declare @dta xml;" & vbCrLf
-        sql += "declare @fec date, @pgn int, @pla int, @ser int, @sup int, @pro int;" & vbCrLf
+        sql += "DECLARE @dta xml;" & vbCrLf
+        sql += "DECLARE @fec date, @pgn int, @pla int, @ser int, @sup int, @pro int, @estr int, @anyo int;" & vbCrLf
         sql += "set @dta = '" & prm & "';" & vbCrLf & vbCrLf
         sql += "select @fec = convert(date, c.value('@fec', 'char(10)'), 103), @pgn = c.value('@pgn', 'int') "
-        sql += ", @pro = c.value('@pro', 'int'), @ser = c.value('@ser', 'int') from @dta.nodes('Param') t(c);" & vbCrLf
+        sql += ", @pro = c.value('@pro', 'int'), @ser = c.value('@ser', 'int'), @estr = c.value('@estr', 'int'), @anyo = c.value('@anyo','int') from @dta.nodes('Param') t(c);" & vbCrLf
+
         sql += "select @ser = a.id_Servicio, @sup = a.id_coordinador, @pro = a.id_Cliente " & vbCrLf
         sql += "From tb_programaestructura a " & vbCrLf
         sql += "inner join @dta.nodes('Param') t(c) on  a.id_programa = c.value('@prg', 'int');" & vbCrLf
+
+        sql += "IF @estr = 1" & vbCrLf
+        sql += "BEGIN" & vbCrLf
+        sql += "CREATE TABLE #FechasTMP (Fec Date);" & vbCrLf
+        sql += "INSERT INTO #FechasTMP (Fec)" & vbCrLf
+        sql += "SELECT cast(DATEADD(DAY, number, CAST(@Anyo AS VARCHAR) + '-01-01') as date) AS Fec FROM master.dbo.spt_values" & vbCrLf
+        sql += "WHERE type = 'P' AND number BETWEEN 0 AND DATEDIFF(DAY, CAST(@Anyo AS VARCHAR) + '-01-01', CAST(@Anyo AS VARCHAR) + '-12-31')" & vbCrLf
+        sql += "SELECT cast(Fec as date)as Fec, cast(DATEADD(day,6,Fec) as date)as FecFin, DATEPART(dd,Fec) As dia, left(DATENAME(w, Fec), 2) as nmdia," & vbCrLf
+        sql += "case  when  (DATEPART(MONTH, Fec)) = (DATEPART(MONTH, DATEADD(day,6,Fec)))" & vbCrLf
+        sql += "then left(DATENAME(MONTH, Fec),3) else left(DATENAME(MONTH, Fec),3)+ '/' + left(DATENAME(MONTH, DATEADD(day,6,Fec)),3) end as Mes," & vbCrLf
+        sql += "DATEPART(WEEK, Fec) AS numSem, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) Ordo " & vbCrLf
+        sql += "FROM #FechasTMP where DATENAME(w, Fec)='Lunes'" & vbCrLf
+        sql += "DROP TABLE #FechasTMP;" & vbCrLf
+        sql += "END" & vbCrLf
+
+        sql += "ELSE" & vbCrLf
+        sql += "BEGIN" & vbCrLf
         sql += "select dateadd(dd, (a.id_mes + (b.mul * 12)), c.fec) As fec, datepart(dd, dateadd(dd, (a.id_mes + (b.mul * 12)), c.fec)) As dia" & vbCrLf
         sql += ", left(DATENAME(w, dateadd(dd, (a.id_mes + (b.mul * 12)), c.fec)), 2) as nmdia" & vbCrLf
-        sql += ", DATEDIFF(WEEK, DATEADD(MONTH, DATEDIFF(MONTH, 0, dateadd(dd, (a.id_mes + (b.mul * 12)), c.fec)), 0), dateadd(dd, (a.id_mes + (b.mul * 12)), c.fec)) + 1 AS NumSem" & vbCrLf
+        sql += ", DATEDIFF(WEEK, DATEADD(MONTH, DATEDIFF(MONTH, 0, dateadd(dd, (a.id_mes + (b.mul * 12)), c.fec)), 0), dateadd(dd, (a.id_mes + (b.mul * 12)), c.fec)) + 1 AS numSem" & vbCrLf
         sql += ", row_number() over(order by b.mul, a.id_mes) As ordo" & vbCrLf
         sql += "from tb_Mes a" & vbCrLf
         sql += "cross join (" & vbCrLf
@@ -319,6 +337,8 @@ Partial Class App_Mantenimiento_OP_Pro_Preventivos
         sql += "where month(dateadd(dd, (a.id_mes + (b.mul * 12)), c.fec)) = month(@fec)" & vbCrLf
         sql += "and datename(dw, dateadd(dd, (a.id_mes + (b.mul * 12)), c.fec)) != 'Domingo'" & vbCrLf
         sql += "order by b.mul, a.Id_Mes;" & vbCrLf & vbCrLf
+        sql += "END" & vbCrLf
+
         sql += "select *, row_number() over(order by c.inm) as ordo" & vbCrLf
         sql += "from (" & vbCrLf
         sql += "	select a.Id_Inmueble as id, rtrim(b.nombre) as pro, rtrim(a.Nombre) as inm" & vbCrLf
@@ -329,6 +349,46 @@ Partial Class App_Mantenimiento_OP_Pro_Preventivos
         sql += "	and a.id_cliente = @pro" & vbCrLf
         sql += ") c" & vbCrLf
         sql += "where pgn = @pgn;" & vbCrLf & vbCrLf
+
+        sql += "IF @estr = 1" & vbCrLf
+        sql += "BEGIN" & vbCrLf
+        sql += "select b.id, b.inm, b.ordo as ren, a.numSem as col, count(a.Id_Orden) as num, max(a.Id_Orden) as numot" & vbCrLf
+        sql += "from tb_OrdenTrabajo a" & vbCrLf
+        sql += "inner join (" & vbCrLf
+        sql += "	Select c.id, c.pro, c.inm, c.pgn, row_number() over(order by c.inm) As ordo" & vbCrLf
+        sql += "	from (" & vbCrLf
+        sql += "		Select a.Id_Inmueble As id, rtrim(b.nombre) As pro, rtrim(a.Nombre) As inm" & vbCrLf
+        sql += "		, (row_number() over(order by a.nombre) - 1) / 100 as pgn" & vbCrLf
+        sql += "		from tb_cliente_inmueble a" & vbCrLf
+        sql += "		inner join tb_cliente b on a.id_cliente = b.id_cliente" & vbCrLf
+        sql += "		where a.Id_Status = 1 And b.Id_Status = 1" & vbCrLf
+        sql += "	    and a.id_cliente = @pro" & vbCrLf
+        sql += "	) c" & vbCrLf
+        sql += "	where pgn = @pgn" & vbCrLf
+        sql += ") b On a.Id_Inmueble = b.id" & vbCrLf
+        sql += "inner join (" & vbCrLf
+        sql += "	select dateadd(dd, (a.id_mes + (b.mul * 12)), c.fec) As fec, datepart(dd, dateadd(dd, (a.id_mes + (b.mul * 12)), c.fec)) As dia" & vbCrLf
+        sql += "	, DATENAME(dw, dateadd(dd, (a.id_mes + (b.mul * 12)), c.fec)) as nmdia" & vbCrLf
+        sql += "	, row_number() over(order by b.mul, a.id_mes) As ordo" & vbCrLf
+        sql += "	from tb_mes a" & vbCrLf
+        sql += "	cross join (" & vbCrLf
+        sql += "		select 0 as mul union all select 1 union all select 2" & vbCrLf
+        sql += "	) b" & vbCrLf
+        sql += "	cross join (" & vbCrLf
+        sql += "		Select dateadd(dd, datepart(dd, @fec) * -1, @fec) As fec" & vbCrLf
+        sql += "	) c" & vbCrLf
+        sql += "	where month(dateadd(dd, (a.id_mes + (b.mul * 12)), c.fec)) = month(@fec)" & vbCrLf
+        sql += "	and datename(dw, dateadd(dd, (a.id_mes + (b.mul * 12)), c.fec)) != 'Domingo'" & vbCrLf
+        sql += ") c On a.fregistro = c.fec" & vbCrLf
+        sql += "where 1 = 1" & vbCrLf
+        sql += "and a.Id_Servicio = @ser" & vbCrLf
+        sql += "and a.id_coordinador = @sup" & vbCrLf
+        sql += "and a.id_status in (1,2,3)" & vbCrLf
+        sql += "group by b.id, b.inm, b.ordo, c.ordo, a.numSem;" & vbCrLf
+        sql += "END" & vbCrLf
+
+        sql += "ELSE" & vbCrLf
+        sql += "BEGIN" & vbCrLf
         sql += "select b.id, b.inm, b.ordo as ren, c.ordo as col, count(a.Id_Orden) as num, max(a.Id_Orden) as numot" & vbCrLf
         sql += "from tb_OrdenTrabajo a" & vbCrLf
         sql += "inner join (" & vbCrLf
@@ -361,7 +421,8 @@ Partial Class App_Mantenimiento_OP_Pro_Preventivos
         sql += "and a.Id_Servicio = @ser" & vbCrLf
         sql += "and a.id_coordinador = @sup" & vbCrLf
         sql += "and a.id_status in (1,2,3)" & vbCrLf
-        sql += "group by b.id, b.inm, b.ordo, c.ordo;" & vbCrLf & vbCrLf
+        sql += "group by b.id, b.inm, b.ordo, c.ordo;" & vbCrLf
+        sql += "END" & vbCrLf
 
         sql += "select pgn, count(id) as cnt" & vbCrLf
         sql += "from (" & vbCrLf
@@ -373,9 +434,9 @@ Partial Class App_Mantenimiento_OP_Pro_Preventivos
         sql += "	and a.id_cliente = @pro" & vbCrLf
         sql += ") b" & vbCrLf
         sql += "group by pgn" & vbCrLf
-        sql += "order by pgn;"
-        sql += "SELECT a.estructura FROM tb_programaestructura a WHERE a.id_programa IN"
-        sql += "( SELECT c.value('@prg', 'int') AS id_programa FROM @dta.nodes('Param') t(c));"
+        sql += "order by pgn;" & vbCrLf
+        sql += "SELECT a.estructura FROM tb_programaestructura a WHERE a.id_programa IN" & vbCrLf
+        sql += "( SELECT c.value('@prg', 'int') AS id_programa FROM @dta.nodes('Param') t(c));" & vbCrLf
 
         ds = New DataSet()
         da = New SqlDataAdapter(sql, myConnection)
