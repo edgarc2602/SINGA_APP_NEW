@@ -462,6 +462,7 @@
             prm += ' per="0" fec="' + $('#hdfec').val() + '" sup="' + $('#dltecnico').val() + '" />';
             //alert("hola1");
             PageMethods.gtPreventivo(prm, function (res) {
+
                 var nw = eval('(' + res + ')');
                 //$('#lbfec').text($('#fecha').val());
                 //alert(res);
@@ -485,10 +486,9 @@
                         var AuxCol = 0;
 
                         for (var x = 0; x < nw.dias.length; x++) {
-                            if (AuxCol != nw.dias[x].Ordo && nw.dias[x].Ordo) {
-                                algo += '<th class="bg-light-blue-gradient"><span> Semana ' + nw.dias[x].Ordo + '</span></th>';
-                            }
-                            AuxCol = nw.dias[x].Ordo;
+
+                            algo += '<th class="bg-light-blue-gradient"><span> Semana ' + nw.dias[x].Ordo + '</span></th>';
+
                         }
                         //algo += '</tr><tr>';
                         //for (var x = 0; x < nw.dias.length; x++) {
@@ -513,10 +513,9 @@
 
                         }
                         else {
-                            AuxCol = 0;
+                            //For para el listado de semanas
                             for (var x = 0; x < nw.dias.length; x++) {
-                                if (AuxCol != nw.dias[x].Ordo) algo += '<td></td>';
-                                AuxCol = nw.dias[x].Ordo;
+                                algo += '<td Ordo_Value="' + nw.dias[x].Ordo + '" fec_Value="' + nw.dias[x].Fec + '" ></td>';
                             }
                         }
 
@@ -536,40 +535,56 @@
                         $('#otbody').children('tr').eq(nw.ots[x].ren - 1).children('td').eq(nw.ots[x].col + 1).attr('title', 'OT ' + nw.ots[x].numot);
                     }
                     $('#otbody td').click(function () {
-                        var inm = $(this).parent().children('td').eq(0).children('input').val();
-                        var estr_Value = $(this).parent().children('td').attr('estr_Value');
-                        var fec_Value = $(this).parent().children('td').attr('fec_Value');
-                        var Ordo_Value = $(this).parent().children('td').attr('Ordo_Value');
+                        try {
 
-                        //  console.log(estr_Value);
+                            var inm = $(this).parent().children('td').eq(0).children('input').val();
+                            var estr_Value = $(this).parent().children('td').attr('estr_Value');
+                            var Ordo_Value = $(this).attr('Ordo_Value');
+                            var fec_Value = $(this).attr('fec_Value');
 
-                        var ind = $(this).index();
-                        if (ind > 1) {
-                            var dia = $('#othead').children('tr').eq(0).children('th').eq(ind).text();
-                            var prm = { inmid: inm, fec: dia };
-                            //alert(prm);
-                            if (dia < 10) {
-                                dia = '0' + dia;
-                            }
-                            dia = String($('#hdfec').val()).substr(0, 6) + dia;
+                            //  console.log(estr_Value);
 
-                            if ($(this).html() != '') {
-                                for (var x = 0; x < objots.length; x++) {
-                                    if (objots[x].inm == inm && objots[x].fec == dia) {
-                                        objots.splice(x, 1);
-                                        $(this).text('');
-                                        break;
-                                        //alert("Continua1");
+                            var ind = $(this).index();
+                            if (ind > 1) {
+                                var dia = '';
+                                if (nw.estr == false) {//cuando no es semana, se toma el th(encabezado osea el numero de dia)
+                                    dia = $('#othead').children('tr').eq(0).children('th').eq(ind).text();// EJEMPLO: 1 ,2 ,3 ,4 ,5
+                                }
+                                else {//toma la fecha inicial, en realidad lo que importa es el num de semana
+                                    dia = fec_Value.substr(0, 10);//EJEMPLO : 2024-05-17
+                                }
+
+                                var prm = { inmid: inm, fec: dia };
+                                //alert(prm);
+                                if (nw.estr == false) {//cuando no es semana, se le da formato al numero de dia para q se convierta en fecha
+                                    if (dia < 10) { dia = '0' + dia; }
+                                    dia = String($('#hdfec').val()).substr(0, 6) + dia;
+                                }
+
+                                //alert($(this).html());
+                                if ($(this).html() != '') {
+                                    for (var x = 0; x < objots.length; x++) {
+                                        if (objots[x].inm == inm && objots[x].fec == dia) {
+                                            objots.splice(x, 1);
+                                            $(this).text('');
+                                            break;
+                                            //alert("Continua1");
+                                        }
                                     }
                                 }
-                            } else {
-                                objots.push({ inm: inm, fec: dia, estr: estr_Value});
-                                //, fec: fec_Value, ordo: ordo_Value
-                                //console.log(objots);
-                                $(this).html('<i class="fa fa-flag"></i>');
-                                //alert("Continua2");
+                                else {
+                                    if (nw.estr == false) objots.push({ inm: inm, fec: dia, estr: estr_Value });//inserta los parametros por mes-dia
+                                    else objots.push({ inm: inm, fec: dia, estr: estr_Value, Ordo_Value: Ordo_Value, fec_Value: fec_Value.substr(0, 10) });//inserta los parametros por semana
+                                    //console.log(objots);
+                                    $(this).html('<i class="fa fa-flag"></i>');
+                                    //alert("Continua2");
+                                }
                             }
-
+                        }
+                        catch (error) {
+                            // Bloque de código que se ejecuta si se produce un error
+                            //console.error('Se produjo un error:', error.message);
+                            alert('Se produjo un error:', error.message);
                         }
                     });
                     $('#dvdetalle').show();
@@ -603,8 +618,18 @@
             var prm = '<prm  nor="NOR" user="' + $('#idusuario').val() + '"';
             prm += ' idserv="' + $('#dltipo').val() + '"';
             prm += ' idsuper="' + $('#dltecnico').val() + '" programa="' + $('#hdprograma').val() + '" proyecto="' + $('#dlcliente').val() + '" estr="' + $('#dlestructura').val() + '" >';
+            var aux = '';
+            var aux2 = 0;
+
             for (var x = 0; x < objots.length; x++) {
-                prm += '<ot inmueble="' + objots[x].inm + '" piso="0" equipo="0" estr="' + objots[x].estr + '"  fecha="' + objots[x].fec.replace(' Semana ', 0) + '" ordo="' + objots[x].Ordo + '" />';
+                if (objots[x].estr === 'false') {
+                    aux = objots[x].fec;
+                    aux2 = 0;
+                } else {
+                    aux = objots[x].fec_Value;
+                    aux2 = objots[x].Ordo_Value;
+                }
+                prm += '<ot inmueble="' + objots[x].inm + '" piso="0" equipo="0" estr="' + objots[x].estr + '"  fecha="' + aux  + '" ordo="' + aux2 + '" />';
             }
             prm += '</prm>';
             //alert(prm);
@@ -740,7 +765,7 @@
                     </div>
                 </div>
             </div>
-            <div class="main-sidebar">
+           <div class="main-sidebar">
                 <!-- sidebar: style can be found in sidebar.less -->
                 <div class="sidebar" id="var1">
                     <!-- sidebar menu: : style can be found in sidebar.less -->

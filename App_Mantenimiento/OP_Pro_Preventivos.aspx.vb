@@ -366,25 +366,26 @@ Partial Class App_Mantenimiento_OP_Pro_Preventivos
         sql += "	) c" & vbCrLf
         sql += "	where pgn = @pgn" & vbCrLf
         sql += ") b On a.Id_Inmueble = b.id" & vbCrLf
-        sql += "inner join (" & vbCrLf
-        sql += "	select dateadd(dd, (a.id_mes + (b.mul * 12)), c.fec) As fec, datepart(dd, dateadd(dd, (a.id_mes + (b.mul * 12)), c.fec)) As dia" & vbCrLf
-        sql += "	, DATENAME(dw, dateadd(dd, (a.id_mes + (b.mul * 12)), c.fec)) as nmdia" & vbCrLf
-        sql += "	, row_number() over(order by b.mul, a.id_mes) As ordo" & vbCrLf
-        sql += "	from tb_mes a" & vbCrLf
-        sql += "	cross join (" & vbCrLf
-        sql += "		select 0 as mul union all select 1 union all select 2" & vbCrLf
-        sql += "	) b" & vbCrLf
-        sql += "	cross join (" & vbCrLf
-        sql += "		Select dateadd(dd, datepart(dd, @fec) * -1, @fec) As fec" & vbCrLf
-        sql += "	) c" & vbCrLf
-        sql += "	where month(dateadd(dd, (a.id_mes + (b.mul * 12)), c.fec)) = month(@fec)" & vbCrLf
-        sql += "	and datename(dw, dateadd(dd, (a.id_mes + (b.mul * 12)), c.fec)) != 'Domingo'" & vbCrLf
-        sql += ") c On a.fregistro = c.fec" & vbCrLf
+        'sql += "inner join (" & vbCrLf
+        'sql += "	select dateadd(dd, (a.id_mes + (b.mul * 12)), c.fec) As fec, datepart(dd, dateadd(dd, (a.id_mes + (b.mul * 12)), c.fec)) As dia" & vbCrLf
+        'sql += "	, DATENAME(dw, dateadd(dd, (a.id_mes + (b.mul * 12)), c.fec)) as nmdia" & vbCrLf
+        'sql += "	, row_number() over(order by b.mul, a.id_mes) As ordo" & vbCrLf
+        'sql += "	from tb_mes a" & vbCrLf
+        'sql += "	cross join (" & vbCrLf
+        'sql += "		select 0 as mul union all select 1 union all select 2" & vbCrLf
+        'sql += "	) b" & vbCrLf
+        'sql += "	cross join (" & vbCrLf
+        'sql += "		Select dateadd(dd, datepart(dd, @fec) * -1, @fec) As fec" & vbCrLf
+        'sql += "	) c" & vbCrLf
+        'sql += "	where month(dateadd(dd, (a.id_mes + (b.mul * 12)), c.fec)) = month(@fec)" & vbCrLf
+        'sql += "	and datename(dw, dateadd(dd, (a.id_mes + (b.mul * 12)), c.fec)) != 'Domingo'" & vbCrLf
+        'sql += ") c On a.fregistro = c.fec" & vbCrLf
         sql += "where 1 = 1" & vbCrLf
         sql += "and a.Id_Servicio = @ser" & vbCrLf
         sql += "and a.id_coordinador = @sup" & vbCrLf
         sql += "and a.id_status in (1,2,3)" & vbCrLf
-        sql += "group by b.id, b.inm, b.ordo, c.ordo, a.numSem;" & vbCrLf
+        sql += "and YEAR(a.fregistro) = @anyo" & vbCrLf
+        sql += "group by b.id, b.inm, b.ordo, a.numSem;" & vbCrLf
         sql += "END" & vbCrLf
 
         sql += "ELSE" & vbCrLf
