@@ -422,6 +422,7 @@
             cargacliente();
             cargaservicios();
             cargatecnico();
+            /*llenarSelect();*/
 
         }
         function cambio(ind) {
@@ -452,6 +453,23 @@
             $('#tbbusca tr').remove();
             //alert('Remove');
         }
+        //function llenarSelect() {
+        //    var select = document.getElementById("dlanyo");
+        //    var anioActual = new Date().getFullYear();
+
+        //    var defaultOption = document.createElement("option");
+        //    defaultOption.value = "";
+        //    defaultOption.text = "Seleccione...";
+        //    select.appendChild(defaultOption);
+
+        //    for (var i = 0; i < 2; i++) {
+        //        var anio = anioActual + i;
+        //        var option = document.createElement("option");
+        //        option.value = anio;
+        //        option.text = anio;
+        //        select.appendChild(option);
+        //    }
+        //}
 
         function muestra() {
             $('#othead tr').remove();
@@ -629,7 +647,7 @@
                     aux = objots[x].fec_Value;
                     aux2 = objots[x].Ordo_Value;
                 }
-                prm += '<ot inmueble="' + objots[x].inm + '" piso="0" equipo="0" estr="' + objots[x].estr + '"  fecha="' + aux  + '" ordo="' + aux2 + '" />';
+                prm += '<ot inmueble="' + objots[x].inm + '" piso="0" equipo="0" estr="' + objots[x].estr + '"  fecha="' + aux + '" ordo="' + aux2 + '" />';
             }
             prm += '</prm>';
             //alert(prm);
@@ -765,7 +783,7 @@
                     </div>
                 </div>
             </div>
-           <div class="main-sidebar">
+            <div class="main-sidebar">
                 <!-- sidebar: style can be found in sidebar.less -->
                 <div class="sidebar" id="var1">
                     <!-- sidebar menu: : style can be found in sidebar.less -->
