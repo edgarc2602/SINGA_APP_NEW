@@ -21,7 +21,7 @@ table {
 }
 
 /* Remarcado de renglones de la tabla*/
- td {
+ td {   
     border: 1px solid #dddddd;
     text-align: left;
 }

@@ -277,9 +277,9 @@
                 PageMethods.svPrograma(prm, function (res) {
                     $('#txid').val(res)
                     alert('Programa ' + res + ' generado.');
-                    //$('#hdprograma').val(res)
+                    $('#hdprograma').val(res)
                     bloquea();
-                    //muestra();
+                    muestra();
                     //bots();
                     /*alert(nw.prg);
                     if (nw.prg == 0) {
@@ -410,7 +410,7 @@
             $('#dltipo').append(inicial);
             $('#dltecnico').empty();
             $('#dltecnico').append(inicial);
-
+            $("#btgenera").show();
             $('#dlestructura').val('');
             $('#hdprograma').val(0);
             $('#hdproyectop').val(0);
@@ -421,6 +421,10 @@
             $('#txproyectob').val('');
             $('#othead tr').remove();
             $('#otbody tr').remove();
+            $("#btnmeslbl").hide();
+            $("#btnmes").hide();
+            $("#dvanyo").hide();
+            $("#anyolbl").hide();
             cargacliente();
             cargaservicios();
             cargatecnico();
@@ -506,6 +510,7 @@
 
                 if (nw.cmd) {
                     var algo = '';
+                    $("#btgenera").hide();
                     if (nw.estr == false) {
                         $("#btnmeslbl").show();
                         $("#btnmes").show();
