@@ -63,20 +63,14 @@
             cargatecnico();
             llenarSelect();
 
-
-
             $('#btguarda').click(function () {
-
                 if ($('#hdprograma').val() == '0') {
 
                     alert("Debes generar el Programa");
                 }
                 if ($('#hdprograma').val() != '0') {
-
                     graba();
-
                 }
-
             });
             $('#btgenera').click(function () {
                 if ($('#hdprograma').val() == '0') {
@@ -200,7 +194,6 @@
                 window.open('../RptForAll.aspx?v_nomRpt=preventivos.rpt&v_formula=' + formula, '', 'width=850, height=600, left=80, top=120, resizable=no, scrollbars=no');
             });
         });
-
         function cargacliente() {
             PageMethods.cliente(function (opcion) {
                 var opt = eval('(' + opcion + ')');
@@ -272,7 +265,6 @@
                 var prm = `<Param cliente="${$('#dlcliente').val()}" ser="${$('#dltipo').val()}"`;
                 prm += ` id="${$('#hdprograma').val()}" user="${$('#idusuario').val()}"`;
                 prm += ` sup="${$('#dltecnico').val()}" estr="${$('#dlestructura').val()}" />`;
-
                 //alert(prm);
                 PageMethods.svPrograma(prm, function (res) {
                     $('#txid').val(res)
@@ -287,11 +279,8 @@
                     }
                     else {
                         $('#hdprograma').val(nw.prg);
-                        
                         $('#lbfec').text($('#fecha').val());
-                        
                     }*/
-
                 }, iferror);
             }
         }
@@ -325,7 +314,6 @@
             $('#dlcliente').prop("disabled", true);
             $('#dltipo').prop("disabled", true);
             $('#dltecnico').prop("disabled", true);
-
             $('#btgenera').prop("disabled", true);
             $('#dlestructura').prop("disabled", true);
         }
@@ -333,7 +321,6 @@
             $('#dlcliente').prop("disabled", false);
             $('#dltipo').prop("disabled", false);
             $('#dltecnico').prop("disabled", false);
-
             $('#btgenera').prop("disabled", false);
             $('#dlestructura').prop("disabled", false);
         }
@@ -353,8 +340,6 @@
                     $('#hdtipop').val(nw.ser);
                     //$('#hdsupervisorp').val(nw.ser);
                     $('#hdsupervisorp').val(nw.sup);
-
-
                     muestra();
                 }
             }, iferror);
@@ -452,7 +437,6 @@
                 $('#hdperiodop').val(0);
             }
         }
-
         function buscalim() {
             $('#txbusca').val('');
             $('#tbbusca tr').remove();
@@ -477,21 +461,31 @@
             var select = document.getElementById("dlanyo");
             if (select) {
                 select.addEventListener("change", function () {
-                    muestra();
+                    if (objots.length > 0) {
+                        var resp = confirm('Tienes ' + objots.length + ' OTs sin guardar, deseas guardarlas?');
+                        if (resp) {
+                            graba();
+                        } else {
+                            objots = [];
+                            muestra();
+                        }
+                    }
+                    else {
+                        muestra();
+                    }
                 });
             }
         });
         $(document).ready(function () {
             $('td').hover(function () {
-                var colIndex = $(this).index(); // Obtener el índice de la columna
-                var rowIndex = $(this).parent().index(); // Obtener el índice de la fila
+                var colIndex = $(this).index();
+                var rowIndex = $(this).parent().index();
                 $('td').filter(':nth-child(' + (colIndex + 1) + ')').addClass('highlight-column');
                 $('tr').eq(rowIndex).find('td').addClass('highlight-row');
             }, function () {
                 $('td, tr').removeClass('highlight-column highlight-row');
             });
         });
-
         function muestra() {
             $('#othead tr').remove();
             $('#otbody tr').remove();
@@ -501,13 +495,10 @@
             prm += ' per="0" fec="' + $('#hdfec').val() + '" sup="' + $('#dltecnico').val() + '" />';
             //alert("hola1");
             PageMethods.gtPreventivo(prm, function (res) {
-
                 var nw = eval('(' + res + ')');
                 //$('#lbfec').text($('#fecha').val());
                 //alert(res);
-
                 // console.log(res);
-
                 if (nw.cmd) {
                     var algo = '';
                     $("#btgenera").hide();
@@ -517,15 +508,15 @@
                         $("#dvanyo").hide();
                         $("#anyolbl").hide();
                         algo = '<tr>';
-                        algo += '<th class="bg-light-blue-gradient sticky-col" rowspan="2"><span>Proyecto</span></th>';
-                        algo += '<th class="bg-light-blue-gradient sticky-col" rowspan="2"><span>Inmueble</span></th>';
-
+                        algo += '<th class="bg-light-blue-gradient" rowspan="2" style="min-width: 150px;"><span>Proyecto</span></th>';
+                        algo += '<th class="bg-light-blue-gradient" rowspan="2"><span>Inmueble</span></th>';
                         for (var x = 0; x < nw.dias.length; x++) {
                             algo += '<th class="bg-light-blue-gradient"><span>' + nw.dias[x].dia + '</span></th>';
                         }
-                        algo += '</tr><tr>';
+                        algo += '</tr>';
+                        algo += '<tr>';
                         for (var x = 0; x < nw.dias.length; x++) {
-                            algo += '<th class="bg-light-blue-gradient"><span>' + nw.dias[x].nmdia + '</span></th>';
+                            algo += '<th class="bg-light-blue"><span>' + nw.dias[x].nmdia + '</span></th>';
                         }
                         algo += '</tr>';
                     }
@@ -535,41 +526,40 @@
                         $("#dvanyo").show();
                         $("#anyolbl").show();
                         algo = '<tr> ';
-                        algo += '<th class="bg-light-blue-gradient sticky-col"><span>Proyecto</span></th>';
-                        algo += '<th class="bg-light-blue-gradient sticky-col" style="text-align:center; min-width: 200px;" ><span>Inmueble</span></th>';
-
+                        algo += '<th class="bg-light-blue-gradient sticky-col"rowspan="2"style="min-width: 150px;"><span>Proyecto</span></th>';
+                        algo += '<th class="bg-light-blue-gradient sticky-col"rowspan="2" style=" min-width: 200px;" ><span>Inmueble</span></th>';
                         for (var x = 0; x < nw.dias.length; x++) {
                             algo += '<th class="bg-light-blue-gradient" style="text-align:center; min-width: 60px;" title=" Del ' + nw.dias[x].Fec.slice(0, 10) + ' al ' + nw.dias[x].FecFin.slice(0, 10) + '" ><span>' + nw.dias[x].Mes + '</span></th>';
                         }
                         algo += '</tr>';
                         algo += '<tr>';
-                        algo += '<th class="bg-light-blue-gradient sticky-col" colspan="2" style="text-align: right; min-width: 60px;"><span>Semana</span></th>';
+                        //algo += '<th class="bg-light-blue sticky-col" colspan="2" style="text-align: right; min-width: 60px;"><span>Semana</span></th>';
                         for (var x = 0; x < nw.dias.length; x++) {
-                            algo += '<th class="bg-light-blue-gradient" style="text-align:center; min-width: 60px;"><span>' + nw.dias[x].Ordo + '</span></th>';
+                            algo += '<th class="bg-light-blue" style="text-align:center; min-width: 60px;"><span>' + nw.dias[x].Ordo + '</span></th>';
                         }
                         algo += '</tr>';
-
-
                     }
 
                     $('#othead').append(algo);
                     algo = '';
                     for (var y = 0; y < nw.sucs.length; y++) {
-                        algo += '<tr><td td class="sticky-col"  estr_Value="' + nw.estr + '" ><input type="hidden" value="' + nw.sucs[y].id + '" />' + nw.sucs[y].pro + '</td><td class="sticky" >' + nw.sucs[y].inm + '</td>';
-
+                        if (nw.estr == false) {
+                            algo += '<tr><td class="sticky-col td2" estr_Value="' + nw.estr + '" ><input type="hidden" value="' + nw.sucs[y].id + '" />' + nw.sucs[y].pro + '</td><td class="sticky-col td2">' + nw.sucs[y].inm + '</td>';
+                        }
+                        else {
+                            algo += '<tr><td class="sticky-col td2" estr_Value="' + nw.estr + '" ><input type="hidden" value="' + nw.sucs[y].id + '" />' + nw.sucs[y].pro + '</td><td class="sticky-col td2" >' + nw.sucs[y].inm + '</td>';
+                        }
                         if (nw.estr == false) {
                             for (var x = 0; x < nw.dias.length; x++) {
-                                algo += '<td style="text-align:center" class="seleccion"></td>';
+                                algo += '<td style="text-align:center" class="seleccion td"></td>';
                             }
-
                         }
                         else {
                             //For para el listado de semanas
                             for (var x = 0; x < nw.dias.length; x++) {
-                                algo += '<td style="text-align:center" class="seleccion" Ordo_Value="' + nw.dias[x].Ordo + '" fec_Value="' + nw.dias[x].Fec + '" ></td>';
+                                algo += '<td style="text-align:center" class="seleccion td" Ordo_Value="' + nw.dias[x].Ordo + '" fec_Value="' + nw.dias[x].Fec + '" ></td>';
                             }
                         }
-
                         algo += '</tr>';
                     }
                     $('#otbody').append(algo);
@@ -592,14 +582,10 @@
                     });
                     $('#otbody td').click(function () {
                         try {
-
                             var inm = $(this).parent().children('td').eq(0).children('input').val();
                             var estr_Value = $(this).parent().children('td').attr('estr_Value');
                             var Ordo_Value = $(this).attr('Ordo_Value');
                             var fec_Value = $(this).attr('fec_Value');
-
-                            //  console.log(estr_Value);
-
                             var ind = $(this).index();
                             if (ind > 1) {
                                 var dia = '';
@@ -609,14 +595,12 @@
                                 else {//toma la fecha inicial, en realidad lo que importa es el num de semana
                                     dia = fec_Value.substr(0, 10);//EJEMPLO : 2024-05-17
                                 }
-
                                 var prm = { inmid: inm, fec: dia };
                                 //alert(prm);
                                 if (nw.estr == false) {//cuando no es semana, se le da formato al numero de dia para q se convierta en fecha
                                     if (dia < 10) { dia = '0' + dia; }
                                     dia = String($('#hdfec').val()).substr(0, 6) + dia;
                                 }
-
                                 //alert($(this).html());
                                 if ($(this).html() != '') {
                                     for (var x = 0; x < objots.length; x++) {
@@ -658,7 +642,6 @@
                 }
             }, iferror);
         }
-
         $(document).ready(function () {
             $('td').hover(function () {
                 var colIndex = $(this).index(); // Obtener el índice de la columna
@@ -669,7 +652,6 @@
                 $('td, tr').removeClass('highlight-column highlight-row');
             });
         });
-
         function elimina(id) {
             //alert(id);
             var resp = confirm('Deseas cancelar la Orden de Trabajo ' + id + ' ');
@@ -686,7 +668,6 @@
             prm += ' idsuper="' + $('#dltecnico').val() + '" programa="' + $('#hdprograma').val() + '" proyecto="' + $('#dlcliente').val() + '" estr="' + $('#dlestructura').val() + '" >';
             var aux = '';
             var aux2 = 0;
-
             for (var x = 0; x < objots.length; x++) {
                 if (objots[x].estr === 'false') {
                     aux = objots[x].fec;
@@ -708,7 +689,6 @@
                 }
             }, iferror);
         }
-
         function muestrapreventivos() {
             PageMethods.muestrapreventivos($('#hdpagpro').val(), $('#dlbusca').val(), $('#txbusca').val(), function (res) {
                 var ren = $.parseHTML(res);
@@ -776,25 +756,6 @@
         function closeWaitingDialog() {
             $("#loadingScreen").dialog('close');
         }
-
-        $(document).ready(function () {
-            // Agregar clase de resaltado a toda la columna cuando pasa el mouse sobre la celda
-            $('.seleccion').hover(function () {
-                $('.seleccion').removeClass('highlight-column'); // Eliminar la clase de resaltado al salir del hover
-                var index = $(this).index(); // Obtener el índice de la celda
-                $('td').filter(':nth-child(' + (index + 1) + ')').addClass('highlight-column');
-            });
-        });
-
-        $(document).ready(function () {
-            // Agregar clase de resaltado a toda la columna cuando pasa el mouse sobre la celda
-            $('td').hover(function () {
-                var index = $(this).index(); // Obtener el índice de la celda
-                $('td').filter(':nth-child(' + (index + 1) + ')').addClass('highlight-column');
-            }, function () {
-                $('td').removeClass('highlight-column'); // Eliminar la clase de resaltado al salir del hover
-            });
-        });
     </script>
 </head>
 <body class="skin-blue sidebar-mini">
@@ -922,7 +883,6 @@
                             <li id="btnuevo" class="puntero"><a><i class="fa fa-edit"></i>Nuevo</a></li>
                         </ol>
                     </div>
-                    <%--campos al seleccionar un programa--%>
                     <div class="row" id="dvgeneral">
                         <div class="box box-info">
                             <div class="box-header">
@@ -984,7 +944,6 @@
                                 <input type="hidden" id="hdserviciop" value="0" />
                                 <input type="hidden" id="hdtipop" value="0" />
                                 <input type="hidden" id="hdsupervisorp" value="0" />
-
                                 <div class="col-lg-2 text-right" id="btnmeslbl">
                                     <label for="lbfec">Mes:</label>
                                 </div>
@@ -993,33 +952,25 @@
                                     <label id="lbfec" text=""></label>
                                     <span id="idava" class="fa fa-arrow-right btn btn-warning"></span>
                                 </div>
-
                                 <div class="col-lg-2 text-right" id="anyolbl">
                                     <label for="dlanyo">Año:</label>
                                 </div>
                                 <div class="col-md-2" id="dvanyo">
                                     <select class="form-control" id="dlanyo"></select>
                                 </div>
-
                             </div>
                             <br />
                             <div class="row">
                                 <div id="dvdetalle" class="col-md-12">
 
-<%--                                    <div class="row col-md-12 tbheader" style="border-radius: 10px; overflow-x: auto; padding-left: 10px">--%>
-                                        <div class="tbheader" style="max-height: 400px; overflow-y: auto; width: 98%">
-<%--                                            <div class="col-md-12 tbheader">--%>
-                                                <table id="ottable" class=" table-condensed table-sm" >
-                                                    <thead id="othead" class="sticky-top">
-                                                    </thead>
-                                                    <tbody id="otbody">
-                                                    </tbody>
-                                                </table>
-<%--                                            </div>--%>
-                                        </div>
-<%--                                    </div>--%>
-                                    <%--<div id="divpagot" class="dvpaginas">
-                                </div>--%>
+                                    <div class="tbheader" style="max-height: 400px; overflow-y: auto; width: 98%">
+                                        <table id="ottable" class=" table-condensed table-sm">
+                                            <thead id="othead" class="sticky-top">
+                                            </thead>
+                                            <tbody id="otbody">
+                                            </tbody>
+                                        </table>
+                                    </div>
                                 </div>
                             </div>
                             <ol class="breadcrumb">
@@ -1029,7 +980,6 @@
                                 <li id="btimprime" class="puntero"><a><i class="fa fa-print"></i>Imprimir preventivo</a></li>
                             </ol>
                         </div>
-
                         <!--<ol class="breadcrumb">
                         <li id="btnuevo" class="puntero"><a><i class="fa fa-edit"></i>Nuevo</a></li>
                         <li id="btguarda" class="puntero"><a><i class="fa fa-save"></i>Guardar</a></li>
