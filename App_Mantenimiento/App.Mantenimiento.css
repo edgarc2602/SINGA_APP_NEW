@@ -10,7 +10,7 @@
 
 /* Color de resaltado de la columna */
 .highlight-column {
-    background-color: #e0ccf4; 
+    background-color: #e0ccf4;
 }
 
 
@@ -21,7 +21,7 @@ table {
 }
 
 /* Remarcado de renglones de la tabla*/
- .td {   
+.td {
     border: 1px solid #dddddd;
     text-align: left;
 }
