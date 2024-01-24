@@ -8,6 +8,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta charset="utf-8" />
     <link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css" />
+    <link href="App.Mantenimiento.css" rel="stylesheet" />
     <link href="../Content/form/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
     <link href="../Content/form/css/AdminLTE.min.css" rel="stylesheet" type="text/css" />
     <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet" type="text/css" />
@@ -60,6 +61,7 @@
             muestrapreventivos();
             cuentapreventivos();
             cargatecnico();
+            llenarSelect();
 
 
 
@@ -422,8 +424,7 @@
             cargacliente();
             cargaservicios();
             cargatecnico();
-            /*llenarSelect();*/
-
+            llenarSelect();
         }
         function cambio(ind) {
             if (ind == 1) {
@@ -453,23 +454,39 @@
             $('#tbbusca tr').remove();
             //alert('Remove');
         }
-        //function llenarSelect() {
-        //    var select = document.getElementById("dlanyo");
-        //    var anioActual = new Date().getFullYear();
-
-        //    var defaultOption = document.createElement("option");
-        //    defaultOption.value = "";
-        //    defaultOption.text = "Seleccione...";
-        //    select.appendChild(defaultOption);
-
-        //    for (var i = 0; i < 2; i++) {
-        //        var anio = anioActual + i;
-        //        var option = document.createElement("option");
-        //        option.value = anio;
-        //        option.text = anio;
-        //        select.appendChild(option);
-        //    }
-        //}
+        function llenarSelect() {
+            var select = document.getElementById("dlanyo");
+            select.innerHTML = '';
+            var anioActual = new Date().getFullYear();
+            for (var i = 0; i < 2; i++) {
+                var anio = anioActual + i;
+                var option = document.createElement("option");
+                option.value = anio;
+                option.text = anio;
+                if (i === 0) {
+                    option.setAttribute("selected", "selected");
+                }
+                select.appendChild(option);
+            }
+        }
+        document.addEventListener("DOMContentLoaded", function () {
+            var select = document.getElementById("dlanyo");
+            if (select) {
+                select.addEventListener("change", function () {
+                    muestra();
+                });
+            }
+        });
+        $(document).ready(function () {
+            $('td').hover(function () {
+                var colIndex = $(this).index(); // Obtener el índice de la columna
+                var rowIndex = $(this).parent().index(); // Obtener el índice de la fila
+                $('td').filter(':nth-child(' + (colIndex + 1) + ')').addClass('highlight-column');
+                $('tr').eq(rowIndex).find('td').addClass('highlight-row');
+            }, function () {
+                $('td, tr').removeClass('highlight-column highlight-row');
+            });
+        });
 
         function muestra() {
             $('#othead tr').remove();
@@ -488,9 +505,16 @@
                 // console.log(res);
 
                 if (nw.cmd) {
-                    var algo = '<tr>';
-                    algo += '<th class="bg-light-blue-gradient" rowspan="2"><span>Proyecto</span></th><th class="bg-light-blue-gradient" rowspan="2"><span>Inmueble</span></th>';
+                    var algo = '';
                     if (nw.estr == false) {
+                        $("#btnmeslbl").show();
+                        $("#btnmes").show();
+                        $("#dvanyo").hide();
+                        $("#anyolbl").hide();
+                        algo = '<tr>';
+                        algo += '<th class="bg-light-blue-gradient sticky-col" rowspan="2"><span>Proyecto</span></th>';
+                        algo += '<th class="bg-light-blue-gradient sticky-col" rowspan="2"><span>Inmueble</span></th>';
+
                         for (var x = 0; x < nw.dias.length; x++) {
                             algo += '<th class="bg-light-blue-gradient"><span>' + nw.dias[x].dia + '</span></th>';
                         }
@@ -501,39 +525,43 @@
                         algo += '</tr>';
                     }
                     else {
-                        var AuxCol = 0;
+                        $("#btnmeslbl").hide();
+                        $("#btnmes").hide();
+                        $("#dvanyo").show();
+                        $("#anyolbl").show();
+                        algo = '<tr> ';
+                        algo += '<th class="bg-light-blue-gradient sticky-col"><span>Proyecto</span></th>';
+                        algo += '<th class="bg-light-blue-gradient sticky-col" style="text-align:center; min-width: 200px;" ><span>Inmueble</span></th>';
 
                         for (var x = 0; x < nw.dias.length; x++) {
-
-                            algo += '<th class="bg-light-blue-gradient"><span> Semana ' + nw.dias[x].Ordo + '</span></th>';
-
+                            algo += '<th class="bg-light-blue-gradient" style="text-align:center; min-width: 60px;" title=" Del ' + nw.dias[x].Fec.slice(0, 10) + ' al ' + nw.dias[x].FecFin.slice(0, 10) + '" ><span>' + nw.dias[x].Mes + '</span></th>';
                         }
-                        //algo += '</tr><tr>';
-                        //for (var x = 0; x < nw.dias.length; x++) {
-                        //    if (AuxCol != nw.dias[x].NumSem &&  nw.dias[x].NumSem <= 4) {
-                        //        algo += '<th class="bg-light-blue-gradient"><span>' + nw.dias[x].nmdia + ' / ' + (nw.dias[x].dia < 10 ? '0' + nw.dias[x].dia : nw.dias[x].dia) + '</span></th>';
-                        //    }
-                        //    AuxCol = nw.dias[x].NumSem;
-                        //}
                         algo += '</tr>';
+                        algo += '<tr>';
+                        algo += '<th class="bg-light-blue-gradient sticky-col" colspan="2" style="text-align: right; min-width: 60px;"><span>Semana</span></th>';
+                        for (var x = 0; x < nw.dias.length; x++) {
+                            algo += '<th class="bg-light-blue-gradient" style="text-align:center; min-width: 60px;"><span>' + nw.dias[x].Ordo + '</span></th>';
+                        }
+                        algo += '</tr>';
+
 
                     }
 
                     $('#othead').append(algo);
                     algo = '';
                     for (var y = 0; y < nw.sucs.length; y++) {
-                        algo += '<tr><td estr_Value="' + nw.estr + '" ><input type="hidden" value="' + nw.sucs[y].id + '" />' + nw.sucs[y].pro + '</td><td>' + nw.sucs[y].inm + '</td>';
+                        algo += '<tr><td td class="sticky-col"  estr_Value="' + nw.estr + '" ><input type="hidden" value="' + nw.sucs[y].id + '" />' + nw.sucs[y].pro + '</td><td class="sticky" >' + nw.sucs[y].inm + '</td>';
 
                         if (nw.estr == false) {
                             for (var x = 0; x < nw.dias.length; x++) {
-                                algo += '<td></td>';
+                                algo += '<td style="text-align:center" class="seleccion"></td>';
                             }
 
                         }
                         else {
                             //For para el listado de semanas
                             for (var x = 0; x < nw.dias.length; x++) {
-                                algo += '<td Ordo_Value="' + nw.dias[x].Ordo + '" fec_Value="' + nw.dias[x].Fec + '" ></td>';
+                                algo += '<td style="text-align:center" class="seleccion" Ordo_Value="' + nw.dias[x].Ordo + '" fec_Value="' + nw.dias[x].Fec + '" ></td>';
                             }
                         }
 
@@ -552,6 +580,11 @@
                         $('#otbody').children('tr').eq(nw.ots[x].ren - 1).children('td').eq(nw.ots[x].col + 1).html('<i class="fa fa-flag" onclick="elimina(' + nw.ots[x].numot + ')" ></i>');
                         $('#otbody').children('tr').eq(nw.ots[x].ren - 1).children('td').eq(nw.ots[x].col + 1).attr('title', 'OT ' + nw.ots[x].numot);
                     }
+                    $('.seleccion').hover(function () {
+                        $('.seleccion').removeClass('highlight-column');
+                        var index = $(this).index(); //
+                        $('td').filter(':nth-child(' + (index + 1) + ')').addClass('highlight-column');
+                    });
                     $('#otbody td').click(function () {
                         try {
 
@@ -621,6 +654,16 @@
             }, iferror);
         }
 
+        $(document).ready(function () {
+            $('td').hover(function () {
+                var colIndex = $(this).index(); // Obtener el índice de la columna
+                var rowIndex = $(this).parent().index(); // Obtener el índice de la fila
+                $('td').filter(':nth-child(' + (colIndex + 1) + ')').addClass('highlight-column');
+                $('tr').eq(rowIndex).find('td').addClass('highlight-row');
+            }, function () {
+                $('td, tr').removeClass('highlight-column highlight-row');
+            });
+        });
 
         function elimina(id) {
             //alert(id);
@@ -728,6 +771,25 @@
         function closeWaitingDialog() {
             $("#loadingScreen").dialog('close');
         }
+
+        $(document).ready(function () {
+            // Agregar clase de resaltado a toda la columna cuando pasa el mouse sobre la celda
+            $('.seleccion').hover(function () {
+                $('.seleccion').removeClass('highlight-column'); // Eliminar la clase de resaltado al salir del hover
+                var index = $(this).index(); // Obtener el índice de la celda
+                $('td').filter(':nth-child(' + (index + 1) + ')').addClass('highlight-column');
+            });
+        });
+
+        $(document).ready(function () {
+            // Agregar clase de resaltado a toda la columna cuando pasa el mouse sobre la celda
+            $('td').hover(function () {
+                var index = $(this).index(); // Obtener el índice de la celda
+                $('td').filter(':nth-child(' + (index + 1) + ')').addClass('highlight-column');
+            }, function () {
+                $('td').removeClass('highlight-column'); // Eliminar la clase de resaltado al salir del hover
+            });
+        });
     </script>
 </head>
 <body class="skin-blue sidebar-mini">
@@ -864,16 +926,8 @@
                                 <div class="col-lg-2 text-right">
                                     <label for="hdprograma">No. Programa</label>
                                 </div>
-                                <div class="col-lg-1">
-                                    <input id="hdprograma" class="form-control" value="0" disabled="disabled" />
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-lg-2 text-right">
-                                    <label for="dlcliente">Cliente:</label>
-                                </div>
                                 <div class="col-lg-2">
-                                    <select id="dlcliente" class="form-control"></select>
+                                    <input id="hdprograma" class="form-control" value="0" disabled="disabled" />
                                 </div>
                                 <div class="col-lg-2 text-right">
                                     <label for="dltipo">Tipo de Orden:</label>
@@ -884,11 +938,19 @@
                             </div>
                             <div class="row">
                                 <div class="col-lg-2 text-right">
+                                    <label for="dlcliente">Cliente:</label>
+                                </div>
+                                <div class="col-lg-2">
+                                    <select id="dlcliente" class="form-control"></select>
+                                </div>
+                                <div class="col-lg-2 text-right">
                                     <label for="dltecnico">Coordinador:</label>
                                 </div>
                                 <div class="col-lg-2">
                                     <select id="dltecnico" class="form-control"></select>
                                 </div>
+                            </div>
+                            <div class="row">
                                 <div class="col-lg-2 text-right">
                                     <label for="txfuente">Estructura:</label>
                                 </div>
@@ -905,47 +967,52 @@
                                 <div class="col-lg-2">
                                     <select id="dlregion" class="form-control"></select>
                                 </div>--%>
+                                <div class="col-lg-2 text-right">
+                                    <label for="btgenera"></label>
+                                </div>
                                 <div class="col-lg-2">
                                     <span id="btgenera" class="btn btn-warning">Guardar</span>
                                 </div>
                             </div>
-
                             <div class="row">
-                                <div id="dvdetalle" class="col-md-10">
-                                    <div class="row">
+                                <input type="hidden" id="hdproyectop" value="0" />
+                                <input type="hidden" id="hdserviciop" value="0" />
+                                <input type="hidden" id="hdtipop" value="0" />
+                                <input type="hidden" id="hdsupervisorp" value="0" />
 
-                                        <input type="hidden" id="hdproyectop" value="0" />
-                                        <input type="hidden" id="hdserviciop" value="0" />
-                                        <input type="hidden" id="hdtipop" value="0" />
-                                        <input type="hidden" id="hdsupervisorp" value="0" />
-
-
-                                        <%--<div class="navbar-form navbar-center">
-                                            <span id="idreg" class="fa fa-arrow-left btn btn-warning"></span>
-                                            <label id="lbfec" text=""></label>
-                                            <span id="idava" class="fa fa-arrow-right btn btn-warning"></span>
-                                        </div>--%>
-                                        <div class="col-lg-2">
-                                    <select class="form-control" id="dlanyo">
-                                        <option value="2023">Seleccione...</option>
-                                        <option value="2023">2023</option>
-                                        <option value="2024">2024</option>
-                                    </select>
+                                <div class="col-lg-2 text-right" id="btnmeslbl">
+                                    <label for="lbfec">Mes:</label>
+                                </div>
+                                <div class="col-lg-3 text-left" id="btnmes">
+                                    <span id="idreg" class="fa fa-arrow-left btn btn-warning"></span>
+                                    <label id="lbfec" text=""></label>
+                                    <span id="idava" class="fa fa-arrow-right btn btn-warning"></span>
                                 </div>
 
-                                    </div>
-                                    <div class="row" style="border-radius: 10px; overflow-x: hidden; padding-left: 10px">
-                                        <div style="max-height: 500px; overflow-y: auto;">
-                                            <div class="col-md-18 tbheader">
-                                                <table id="ottable" class="table table-condensed table-hover table-sm">
-                                                    <thead id="othead">
+                                <div class="col-lg-2 text-right" id="anyolbl">
+                                    <label for="dlanyo">Año:</label>
+                                </div>
+                                <div class="col-md-2" id="dvanyo">
+                                    <select class="form-control" id="dlanyo"></select>
+                                </div>
+
+                            </div>
+                            <br />
+                            <div class="row">
+                                <div id="dvdetalle" class="col-md-12">
+
+<%--                                    <div class="row col-md-12 tbheader" style="border-radius: 10px; overflow-x: auto; padding-left: 10px">--%>
+                                        <div class="tbheader" style="max-height: 400px; overflow-y: auto; width: 98%">
+<%--                                            <div class="col-md-12 tbheader">--%>
+                                                <table id="ottable" class=" table-condensed table-sm" >
+                                                    <thead id="othead" class="sticky-top">
                                                     </thead>
                                                     <tbody id="otbody">
                                                     </tbody>
                                                 </table>
-                                            </div>
+<%--                                            </div>--%>
                                         </div>
-                                    </div>
+<%--                                    </div>--%>
                                     <%--<div id="divpagot" class="dvpaginas">
                                 </div>--%>
                                 </div>

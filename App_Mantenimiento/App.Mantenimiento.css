@@ -1,4 +1,5 @@
-﻿.sticky-top {
+﻿/*thead pegajoso para encabezados*/
+.sticky-top {
     position: -webkit-sticky;
     position: sticky;
     top: 0;
@@ -6,32 +7,26 @@
     background-color: #f8f9fa;
     border-bottom: 1px solid #e9ecef;
 }
-@media (min-width: 576px) {
-    .sticky-top {
-        position: -webkit-sticky;
-        position: sticky;
-        top: 0;
-        z-index: 100;
-        background-color: #f8f9fa;
-        border-bottom: 1px solid #e9ecef;
-    }
-}
-.table  thead td  {
-    vertical-align: middle;
-    text-align: center;
+
+/* Color de resaltado de la columna */
+.highlight-column {
+    background-color: #e0ccf4; 
 }
 
-/* Estilos para una tabla con bordes ligeros */
-.table-bordered-light {
-    border: 1px solid #e9ecef; /* Color del borde principal */
+
+/* ajustar columna al 100% */
+table {
+    width: 100%;
+    border-collapse: collapse;
 }
 
-    .table-bordered-light th,
-    .table-bordered-light td {
-        border: 1px solid #e9ecef; /* Color del borde de las celdas */
-    }
-
-    /* Estilos adicionales para resaltar las celdas en hover */
-    .table-bordered-light tbody tr:hover td {
-        background-color: #f8f9fa; /* Color de fondo al pasar el ratón sobre la fila */
-    }
+/* Remarcado de renglones de la tabla*/
+ td {
+    border: 1px solid #dddddd;
+    text-align: left;
+}
+/*thead pegajoso para columnas*/
+.sticky-col {
+    position: sticky;
+    left: 0;
+}
