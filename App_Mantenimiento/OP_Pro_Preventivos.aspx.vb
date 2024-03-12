@@ -55,6 +55,74 @@ Partial Class App_Mantenimiento_OP_Pro_Preventivos
     End Function
 
     <Web.Services.WebMethod()>
+    Public Shared Function Buscatecnico(ByVal nombre As String, ByVal tipoTecnico As String) As String
+        Dim myConnection As New SqlConnection((New Conexion).StrConexion)
+        Dim sqlbr As New StringBuilder
+        Dim Aux_where As String = ""
+
+        sqlbr.Append("SELECT " & vbCrLf)
+
+        If nombre = "" Then
+            sqlbr.Append("TOP 50 " & vbCrLf)
+        Else
+            If (tipoTecnico = "I") Then
+                Aux_where = "And nombre + paterno + materno  Like '%" & nombre & "%' " & vbCrLf
+            Else Aux_where = "And nombre Like '%" & nombre & "%' " & vbCrLf
+            End If
+        End If
+
+        If tipoTecnico = "I" Then
+            sqlbr.Append("id_empleado as 'td','', paterno + ' ' + rtrim(materno) + ' ' + nombre as 'td','', c.descripcion as 'td' " & vbCrLf)
+            sqlbr.Append("from tb_empleado a inner join tb_puesto c on a.id_puesto = c.id_puesto " & vbCrLf)
+            sqlbr.Append("where a.id_puesto in(1,16,21,22,23,24,25,92) and a.id_status = 2 " & vbCrLf)
+            sqlbr.Append(Aux_where)
+            sqlbr.Append("order by paterno, materno, nombre for xml path('tr'), root('tbody')")
+        Else
+            sqlbr.Append("id_proveedor as 'td','', nombre as 'td','', '' as 'td' " & vbCrLf)
+            sqlbr.Append("from tb_proveedor " & vbCrLf)
+            sqlbr.Append("where id_status=1 and id_lineanegocio=1 and idarea=11 " & vbCrLf)
+            sqlbr.Append(Aux_where)
+            sqlbr.Append("order by nombre for xml path('tr'), root('tbody')")
+        End If
+
+        Dim mycommand As New SqlCommand(sqlbr.ToString(), myConnection)
+        myConnection.Open()
+        Dim xdoc1 As New XmlDocument()
+        Dim xrdr1 As XmlReader
+        xrdr1 = mycommand.ExecuteXmlReader()
+        If xrdr1.Read() Then
+            xdoc1.Load(xrdr1)
+        End If
+        myConnection.Close()
+        Return xdoc1.OuterXml()
+    End Function
+
+    <Web.Services.WebMethod()>
+    Public Shared Function Tecnico2() As String
+        Dim myConnection As New SqlConnection((New Conexion).StrConexion)
+        Dim sqlbr As New StringBuilder
+        Dim sql As String = ""
+
+        sqlbr.Append("select id_empleado, nombre + ' ' + paterno + ' ' + rtrim(materno) as empleado  from tb_empleado " & vbCrLf)
+        sqlbr.Append("where id_status = 2 and id_area = 11 and id_puesto in (5,107) ")
+        sqlbr.Append("order by empleado")
+
+        Dim da As New SqlDataAdapter(sqlbr.ToString, myConnection)
+        Dim dt As New DataTable
+        da.Fill(dt)
+        sql = "["
+        If dt.Rows.Count > 0 Then
+            For x As Integer = 0 To dt.Rows.Count - 1
+                If x > 0 Then sql += ","
+                sql += "{id:'" & dt.Rows(x)("id_empleado") & "'," & vbCrLf
+                sql += "desc:'" & dt.Rows(x)("empleado") & "'}" & vbCrLf
+            Next
+        End If
+        sql += "]"
+        Return sql
+    End Function
+
+    <Web.Services.WebMethod()>
     Public Shared Function region(ByVal cte As Integer) As String
         Dim myConnection As New SqlConnection((New Conexion).StrConexion)
         Dim sqlbr As New StringBuilder
@@ -99,29 +167,6 @@ Partial Class App_Mantenimiento_OP_Pro_Preventivos
         Return sql
     End Function
 
-    <Web.Services.WebMethod()>
-    Public Shared Function tecnico() As String
-        Dim myConnection As New SqlConnection((New Conexion).StrConexion)
-        Dim sqlbr As New StringBuilder
-        Dim sql As String = ""
-
-        sqlbr.Append("select id_empleado, nombre + ' ' + paterno + ' ' + rtrim(materno) as empleado  from tb_empleado " & vbCrLf)
-        sqlbr.Append("where id_status = 2 and id_area = 11 and id_puesto in (5,107) ")
-        sqlbr.Append("order by empleado")
-        Dim da As New SqlDataAdapter(sqlbr.ToString, myConnection)
-        Dim dt As New DataTable
-        da.Fill(dt)
-        sql = "["
-        If dt.Rows.Count > 0 Then
-            For x As Integer = 0 To dt.Rows.Count - 1
-                If x > 0 Then sql += ","
-                sql += "{id:'" & dt.Rows(x)("id_empleado") & "'," & vbCrLf
-                sql += "desc:'" & dt.Rows(x)("empleado") & "'}" & vbCrLf
-            Next
-        End If
-        sql += "]"
-        Return sql
-    End Function
 
     <Web.Services.WebMethod()>
     Public Shared Function gtTipo() As String
@@ -352,7 +397,7 @@ Partial Class App_Mantenimiento_OP_Pro_Preventivos
 
         sql += "IF @estr = 1" & vbCrLf
         sql += "BEGIN" & vbCrLf
-        sql += "select b.id, b.inm, b.ordo as ren, a.numSem as col, count(a.Id_Orden) as num, max(a.Id_Orden) as numot" & vbCrLf
+        sql += "select b.id, b.inm, b.ordo as ren, a.numSem as col, count(a.Id_Orden) as num, max(a.Id_Orden) as numot, a.id_status" & vbCrLf
         sql += "from tb_OrdenTrabajo a" & vbCrLf
         sql += "inner join (" & vbCrLf
         sql += "	Select c.id, c.pro, c.inm, c.pgn, row_number() over(order by c.inm) As ordo" & vbCrLf
@@ -366,31 +411,17 @@ Partial Class App_Mantenimiento_OP_Pro_Preventivos
         sql += "	) c" & vbCrLf
         sql += "	where pgn = @pgn" & vbCrLf
         sql += ") b On a.Id_Inmueble = b.id" & vbCrLf
-        'sql += "inner join (" & vbCrLf
-        'sql += "	select dateadd(dd, (a.id_mes + (b.mul * 12)), c.fec) As fec, datepart(dd, dateadd(dd, (a.id_mes + (b.mul * 12)), c.fec)) As dia" & vbCrLf
-        'sql += "	, DATENAME(dw, dateadd(dd, (a.id_mes + (b.mul * 12)), c.fec)) as nmdia" & vbCrLf
-        'sql += "	, row_number() over(order by b.mul, a.id_mes) As ordo" & vbCrLf
-        'sql += "	from tb_mes a" & vbCrLf
-        'sql += "	cross join (" & vbCrLf
-        'sql += "		select 0 as mul union all select 1 union all select 2" & vbCrLf
-        'sql += "	) b" & vbCrLf
-        'sql += "	cross join (" & vbCrLf
-        'sql += "		Select dateadd(dd, datepart(dd, @fec) * -1, @fec) As fec" & vbCrLf
-        'sql += "	) c" & vbCrLf
-        'sql += "	where month(dateadd(dd, (a.id_mes + (b.mul * 12)), c.fec)) = month(@fec)" & vbCrLf
-        'sql += "	and datename(dw, dateadd(dd, (a.id_mes + (b.mul * 12)), c.fec)) != 'Domingo'" & vbCrLf
-        'sql += ") c On a.fregistro = c.fec" & vbCrLf
         sql += "where 1 = 1" & vbCrLf
         sql += "and a.Id_Servicio = @ser" & vbCrLf
         sql += "and a.id_coordinador = @sup" & vbCrLf
         sql += "and a.id_status in (1,2,3)" & vbCrLf
         sql += "and YEAR(a.fregistro) = @anyo" & vbCrLf
-        sql += "group by b.id, b.inm, b.ordo, a.numSem;" & vbCrLf
+        sql += "group by b.id, b.inm, b.ordo, a.numSem, a.id_status;" & vbCrLf
         sql += "END" & vbCrLf
 
         sql += "ELSE" & vbCrLf
         sql += "BEGIN" & vbCrLf
-        sql += "select b.id, b.inm, b.ordo as ren, c.ordo as col, count(a.Id_Orden) as num, max(a.Id_Orden) as numot" & vbCrLf
+        sql += "select b.id, b.inm, b.ordo as ren, c.ordo as col, count(a.Id_Orden) as num, max(a.Id_Orden) as numot, a.id_status" & vbCrLf
         sql += "from tb_OrdenTrabajo a" & vbCrLf
         sql += "inner join (" & vbCrLf
         sql += "	Select c.id, c.pro, c.inm, c.pgn, row_number() over(order by c.inm) As ordo" & vbCrLf
@@ -422,7 +453,7 @@ Partial Class App_Mantenimiento_OP_Pro_Preventivos
         sql += "and a.Id_Servicio = @ser" & vbCrLf
         sql += "and a.id_coordinador = @sup" & vbCrLf
         sql += "and a.id_status in (1,2,3)" & vbCrLf
-        sql += "group by b.id, b.inm, b.ordo, c.ordo;" & vbCrLf
+        sql += "group by b.id, b.inm, b.ordo, c.ordo, a.id_status;" & vbCrLf
         sql += "END" & vbCrLf
 
         sql += "select pgn, count(id) as cnt" & vbCrLf
@@ -503,6 +534,49 @@ Partial Class App_Mantenimiento_OP_Pro_Preventivos
         myConnection.Close()
         Return "{ cmd: true }"
     End Function
+    <Web.Services.WebMethod()>
+    Public Shared Function tecnico(ByVal nombre As String) As String
+        Dim myConnection As New SqlConnection((New Conexion).StrConexion)
+        Dim sqlbr As New StringBuilder
+        Dim sql As String = ""
+
+        sqlbr.Append("select id_empleado, nombre + ' ' + paterno + ' ' + rtrim(materno) as empleado  from tb_empleado " & vbCrLf)
+        sqlbr.Append("where id_status = 2 and id_area = 11 and id_puesto in (5,107) ")
+        sqlbr.Append("order by empleado")
+
+        Dim da As New SqlDataAdapter(sqlbr.ToString, myConnection)
+        Dim dt As New DataTable
+        da.Fill(dt)
+        sql = "["
+        If dt.Rows.Count > 0 Then
+            For x As Integer = 0 To dt.Rows.Count - 1
+                If x > 0 Then sql += ","
+                sql += "{id:'" & dt.Rows(x)("id_empleado") & "'," & vbCrLf
+                sql += "desc:'" & dt.Rows(x)("empleado") & "'}" & vbCrLf
+            Next
+        End If
+        sql += "]"
+        Return sql
+    End Function
+    <Web.Services.WebMethod()>
+    Public Shared Function asignatecnico(ByVal idtecnico As Integer, ByVal idorden As Integer, ByVal tipoTecnico As String) As String
+        Dim myConnection As New SqlConnection((New Conexion).StrConexion)
+
+        Dim sql As String = "update tb_ordentrabajo set id_tecnico = " + idtecnico.ToString() + " where id_orden = " + idorden.ToString()
+
+        If tipoTecnico = "P" Then sql = "update tb_ordentrabajo set id_Proveedor = " + idtecnico.ToString() + " where id_orden = " + idorden.ToString()
+
+
+
+        Dim mycommand As New SqlCommand(sql, myConnection)
+        myConnection.Open()
+        mycommand.ExecuteNonQuery()
+
+        myConnection.Close()
+        Return "Ok"
+    End Function
+
+
     'este metodo carga los programas
     <Web.Services.WebMethod()>
     Public Shared Function muestrapreventivos(ByVal pagina As Integer, ByVal campo As String, ByVal dato As String) As String
@@ -512,9 +586,9 @@ Partial Class App_Mantenimiento_OP_Pro_Preventivos
         sqlbr.Append("from (  ")
         sqlbr.Append("select ROW_NUMBER() over (order by id_programa) as rownum,  id_programa, b.nombre, c.descripcion, d.nombre + ' ' + d.paterno + ' ' + rtrim(d.materno) as coordinador ")
         sqlbr.Append("  from tb_programaestructura a  inner join tb_cliente b on a.id_cliente=b.id_cliente ")
-        sqlbr.Append("inner join tb_tipomantenimiento c on a.id_servicio=c.id_servicio inner join tb_empleado d on a.id_coordinador= d.id_empleado  ")
+        sqlbr.Append("inner join tb_tipomantenimiento c on a.id_servicio=c.id_servicio inner join tb_empleado d on a.id_coordinador= d.id_empleado  where a.id_status =1 ")
         If campo <> "0" Then
-            sqlbr.Append("where " & campo & " like '%" & dato & "%'" & vbCrLf)
+            sqlbr.Append("and " & campo & " like '%" & dato & "%'" & vbCrLf)
         End If
         sqlbr.Append(") as result" & vbCrLf)
         sqlbr.Append(" where RowNum BETWEEN (" & pagina & "  - 1) * 20 And " & pagina & " * 20 order by id_programa for xml path('tr'), root('tbody')")

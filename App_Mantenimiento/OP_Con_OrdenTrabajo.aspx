@@ -9,6 +9,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
     <meta charset="utf-8" />
     <link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css" />
+       <link href="App.Mantenimiento.css" rel="stylesheet" />
     <link href="../Content/form/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
     <link href="../Content/form/css/AdminLTE.min.css" rel="stylesheet" type="text/css" />
     <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet" type="text/css" />
@@ -17,6 +18,23 @@
     <link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css" />
     <link href="../Content/form/css/_all-skins.min.css" rel="stylesheet" type="text/css" />
     <script src="https://code.jquery.com/ui/1.11.4/jquery-ui.min.js" type="text/javascript"></script>
+
+     <style type="text/css">
+        .deshabilita {
+            pointer-events: none;
+            opacity: 0.4; /* Cambia la opacidad para dar una apariencia de deshabilitado */
+        }
+                  /* Estilo para filas pares */
+        tr:nth-child(even) {
+          background-color: #f2f2f2;
+        }
+
+        /* Estilo para filas impares */
+        tr:nth-child(odd) {
+          background-color: #ffffff;
+        }
+    </style>
+
     <script type="text/javascript">
         var inicial = '<option value=0>Seleccione...</option>'
         $(function () {
@@ -67,14 +85,20 @@
                 $('#hdstatus').val($('#dlestatus').val());
             });
 
-            $('#btbusca').click(function () {
-                if ($('#txbusca').val() != '') {
-                    cargatecnico($('#txbusca').val());
-                } else {
-                    alert('Debe capturar un valor de búsqueda');
-                }
-            });
+            //$('#btbusca').click(function () {
+            //    if ($('#txbusca').val() != '') {
+            //        cargatecnico();
+            //    } else {
+            //        alert('Debe capturar un valor de búsqueda');
+            //    }
+            //});
+
+            $('#txbusca').keypress(function (event) { if (event.which === 13) cargatecnico(); });
+            $('#btbusca').click(function () { cargatecnico(); });
+
         });
+
+
         function asignapagina(np) {
             //alert(np);
             $('#paginacion li').removeClass("active");
@@ -128,7 +152,7 @@
         
         function cuentaticket() {
             //alert("cuentaticket");
-            PageMethods.contartickets($('#txid').val(), $('#dlcliente').val(), $('#dlsucursal').val(), $('#hdstatus').val(), function (cont) {
+            PageMethods.contartickets($('#txid').val(), $('#dlcliente').val(), $('#dlsucursal').val(), $('#hdstatus').val(),$('#txfecini').val(), $('#txfecfin').val(), function (cont) {
                 //alert("paso contar");
                 $('#paginacion li').remove();
                 var opt = eval('(' + cont + ')');
@@ -156,11 +180,11 @@
                     $('#tblista tbody tr').delegate(".btedita", "click", function () {
                         //alert($(this).closest('tr').find('td').eq(3).text());
                         //alert($(this).closest('tr').find('td').eq(2).text());
-                        if ($(this).closest('tr').find('td').eq(2).text() != 'Cancelado' && $(this).closest('tr').find('td').eq(2).text() != 'Cerrado') { // && $(this).closest('tr').find('td').eq(9).text() != 'Pagado'
+                        //if ($(this).closest('tr').find('td').eq(2).text() != 'Cancelado' && $(this).closest('tr').find('td').eq(2).text() != 'Cerrado') { // && $(this).closest('tr').find('td').eq(9).text() != 'Pagado'
                             window.open('OP_PR_OrdenTrabajo.aspx?folio=' + $(this).closest('tr').find('td').eq(0).text(), '_blank');
-                        } else {
-                            alert('El estatus actual de la Orden de Trabajo no permite realizar cambios');
-                        }
+                        //} else {
+                        //    alert('El estatus actual de la Orden de Trabajo no permite realizar cambios');
+                        //}
                     });
                     $('#tblista tbody tr').delegate(".btcancela", "click", function () {
                         var folio = $(this).closest('tr').find('td').eq(0).text();
@@ -202,12 +226,12 @@
         }        
 
         function cargatecnico() {
-            PageMethods.tecnico($('#txbusca').val(), function (res) {
+            PageMethods.tecnico($('#txbusca').val(), $('input[name="optTecnico"]:checked').val(),function (res) {
                 var ren = $.parseHTML(res);
                 $('#tbbusca tbody').remove();
                 $('#tbbusca').append(ren);
                 $('#tbbusca tbody tr').click(function () {
-                    PageMethods.asignatecnico($(this).find("td").first().text(), $("#hdordenseleccionada").val(), function (res) {
+                    PageMethods.asignatecnico($(this).find("td").first().text(), $("#hdordenseleccionada").val(), $('input[name="optTecnico"]:checked').val(), function (res) {
                         dialog.dialog('close');
                         if (res == 'Ok') {
                             cargalista();
@@ -234,7 +258,7 @@
         <asp:HiddenField ID="hdpagina" runat="server" />
         <asp:HiddenField ID="idusuario" runat="server" />
         <asp:HiddenField ID="idcliente1" runat="server" />
-        <asp:HiddenField ID="hdstatus" runat="server" Value="1" />
+        <asp:HiddenField ID="hdstatus" runat="server" Value="0" />
         <div class="wrapper">
             <div class="main-header">
                 <!-- Logo -->
@@ -347,9 +371,36 @@
                                 </ol>
                             </div>
                             
-                            <div class="col-md-18 tbheader">
-                                <table class="table table-responsive h6" id="tblista">
-                                    <thead>
+                     <%--<div class="row col-md-11"> --Fide Paginación
+                     <nav aria-label="Page navigation " class="navbar-right">
+                        <div style="width:auto; float:left;">
+                                <table><tr>
+                                <td style="cursor: pointer" title="Filtrar"><span class="ui-icon ui-icon-refresh" id="cmdRefresh" style="cursor: pointer" title="Refresh"></span></td>
+                                <td style="cursor: pointer"><span class="ui-icon ui-icon-seek-first" id="cmdInicio" style="cursor: pointer" title="Ir a inicio"></span></td>
+                                <td style="cursor: pointer"><span class="ui-icon ui-icon-seek-prev" id="cmdAtras" style="cursor: pointer" title="Regresar"></span></td>
+                            </tr></table>
+                        </div>
+
+                        <div style="width:auto; float:left;  ">
+                                <table style="font-size: 11px;"><tr>
+                                    <td><input id="txtPagina" type="text" style="font-size: xx-small; width: 20px" /></td>
+                                    <td>&nbsp;<strong> de </strong>&nbsp; </td>
+                                    <td><input id="txtTotPag" type="text" class="disabled" style="font-size: xx-small; width: 20px"/></td>
+                                </tr>
+                            </table >
+                        </div>
+                        <div style="width:auto; float:left;  ">
+                            <table><tr>
+                                <td style="cursor: pointer"><span class="ui-icon ui-icon-seek-next" id="cmdSiguiente" style="cursor: pointer" title="Avanzar"></span></td> 
+                                <td style="cursor: pointer"><span class="ui-icon ui-icon-seek-end" id="cmdUltimo" style="cursor: pointer" title="Ir al Último"></span></td>
+                            </tr></table>
+                        </div>
+                    </nav>
+                    </div>--%>
+
+                            <div class="col-md-12 tbheader" style="max-height: 400px; overflow-y: auto; width: 99%">
+                                <table class="table table-responsive h6" id="tblista" >
+                                    <thead class="sticky-top">
                                         <tr>
                                             <!--<th class="bg-light-blue-gradient"></th>
                                             <th class="bg-light-blue-gradient"></th>
@@ -385,7 +436,6 @@
                                 </li>
                             </ul>
                         </nav>
-                   
                 </div>
             </div>
         </div>
@@ -395,25 +445,36 @@
 
     <div id="divmodal">
         <input type="hidden" id="hdordenseleccionada" />
-        <div class="col-md-12">
-            <div class="row">
-                <div class="col-lg-2 text-right"><label for="txbusca">Buscar</label></div>
-                <div class="col-lg-5"><input type="text" class=" form-control" id="txbusca" placeholder="Ingresa texto de busqueda" />    </div>                                    
-                <div class="col-lg-1"><input type="button" class="btn btn-primary" value="Mostrar" id="btbusca"/>  </div>
-            </div>
-            <div class="tbheader">
-                <table class="table table-condensed" id="tbbusca">
-                    <thead>
-                        <tr>
-                            <th class="bg-navy"><span>Id</span></th>
-                            <th class="bg-navy"><span>Nombre</span></th>                            
-                            <th class="bg-navy"><span>Puesto</span></th>                           
+        <table><tr style="height:40px;">
+            <td>
+                <table style="width:100%"><tr ><td>
+                    <label class="form-check-label">
+                        <input type="radio" class="form-check-input" name="optTecnico" checked="checked" value="I"/> Interno
+                    </label>
+                </td><td>
+                    <label class="form-check-label">
+                        <input type="radio" class="form-check-input" name="optTecnico" value="P"/> Proveedor
+                    </label>
+                </td></tr></table>
+            </td>
+            <td><input type="text" class=" form-control" id="txbusca" placeholder="Ingresa texto de busqueda" style="width:98%"/> </td>
+            <td><input type="button" class="btn btn-primary" value="Mostrar" id="btbusca"/></td>
+               </tr></table>
 
-                        </tr>
-                    </thead>
-                </table>
-            </div>
-        </div>
+                    <div class="tbheader">
+                        <table class="table table-condensed" id="tbbusca">
+                            <thead>
+                                <tr>
+                                    <th class="bg-navy"><span>Id</span></th>
+                                    <th class="bg-navy"><span>Nombre</span></th>                            
+                                    <th class="bg-navy"><span>Puesto</span></th>                           
+
+                                </tr>
+                            </thead>
+                        </table>
+                    </div>
+                
+
     </div>
 </body>
 </html>

@@ -84,10 +84,13 @@ Partial Class App_Almacen_Alm_Con_Solicitudmaterial
         sqlbr.Append("(select 'btn btn-primary btauto' as '@class', 'Autorizar/Rechazar' as '@value', 'button' as '@type' for xml path('input'),type)" & vbCrLf)
         sqlbr.Append(" when id_status = 2 then" & vbCrLf)
         sqlbr.Append("(select 'btn btn-primary btauto' as '@class', 'Autorizar' as '@value', 'button' as '@type' for xml path('input'),type)" & vbCrLf)
-        sqlbr.Append("end as 'td','', id_cliente as 'td','', id_almacenent as 'td'" & vbCrLf)
+        sqlbr.Append("end as 'td','', id_cliente as 'td','', id_almacenent as 'td',''," & vbCrLf)
+
+        sqlbr.Append("(select id_almacensal as '@text','display: none;' AS '@style' for xml path('td'),type) " & vbCrLf) 'Cambio Fide 13-02-2024, agregar el almacen de salida
+
         sqlbr.Append("from ( Select  ROW_NUMBER() over (order by a.id_solicitud ) as rownum, id_solicitud, d.nombre as cliente, b.nombre as almacen, " & vbCrLf)
         sqlbr.Append("e.descripcion as estatus, convert(varchar(12), falta,103) as falta , a.id_status, a.id_almacenent, a.id_cliente, " & vbCrLf)
-        sqlbr.Append("(select sum(cantidad * precio) from tb_solicitudmaterialdmantto where id_solicitud = a.id_solicitud) as total, f.nombre as inmueble" & vbCrLf)
+        sqlbr.Append("(select sum(cantidad * precio) from tb_solicitudmaterialdmantto where id_solicitud = a.id_solicitud) as total, f.nombre as inmueble, a.id_almacensal" & vbCrLf)
         sqlbr.Append("from tb_solicitudmaterialmantto a inner join tb_almacen b on a.id_almacenent = b.id_almacen" & vbCrLf)
         sqlbr.Append("inner join tb_cliente d on a.id_cliente = d.id_cliente inner join tb_statusc e on a.id_status = e.id_status " & vbCrLf)
         sqlbr.Append("inner join tb_cliente_inmueble f on a.id_inmueble = f.id_inmueble" & vbCrLf)
@@ -112,18 +115,26 @@ Partial Class App_Almacen_Alm_Con_Solicitudmaterial
     End Function
 
     <Web.Services.WebMethod()>
-    Public Shared Function detalles(ByVal folio As Integer) As String
+    Public Shared Function detalles(ByVal folio As Integer, ByVal AlmacenSalida As Integer) As String
         Dim myConnection As New SqlConnection((New Conexion).StrConexion)
         Dim sqlbr As New StringBuilder
 
 
-        sqlbr.Append("select a.clave as 'td','', d.descripcion as 'td','', e.descripcion as 'td','', cast(a.cantidad as numeric(12,2)) as 'td','', " & vbCrLf)
-        sqlbr.Append("cast(c.costopromedio as numeric(12,2)) as 'td','', cast(c.existencia as numeric(12,2)) as 'td',''," & vbCrLf)
-        sqlbr.Append("(select 'form-control text-right txcant' as '@class', cast(a.cantidad as numeric(12,2)) as '@value' for xml path('input'),root('td'),type)" & vbCrLf)
+        sqlbr.Append("select a.clave as 'td','', d.descripcion as 'td','', e.descripcion as 'td','', cast(a.cantidad as numeric(12,2))-cast(a.entregado as numeric(12,2)) as 'td','', " & vbCrLf)
+        sqlbr.Append("cast(isnull(c.costopromedio,0) as numeric(12,2)) as 'td','', cast(isnull(c.existencia,0) as numeric(12,2)) as 'td',''," & vbCrLf)
+
+        sqlbr.Append("case when isnull(c.existencia,0)>0 and cast(a.cantidad as numeric(12,2))!=cast(a.entregado as numeric(12,2))  then " & vbCrLf)
+        sqlbr.Append("(select cast(a.cantidad as numeric(12,2))-cast(a.entregado as numeric(12,2)) as '@cantidad','form-control text-right txcant' as '@class', case when isnull(c.existencia,0) < a.cantidad then 'border-width: thin; border-color: #CC3300' else '' end   as '@style', cast(case when isnull(c.existencia,0) > a.cantidad then isnull(a.cantidad,0) else isnull(c.existencia,0) end as numeric(12,2))  as '@value','Entregado: ' + cast(cast(a.entregado as numeric(12,2))as varchar(100)) +' de ' + cast(cast(a.cantidad as numeric(12,2))as varchar(100))  as '@title' for xml path('input'),root('td'),type)" & vbCrLf)
+        sqlbr.Append(" else " & vbCrLf)
+        sqlbr.Append("(select 'disabled' as '@disabled','form-control text-right' as '@class', cast(case when isnull(c.existencia,0) > a.cantidad then isnull(a.cantidad,0) else isnull(c.existencia,0) end as numeric(12,2))  as '@value','Entregado: ' + cast(cast(a.entregado as numeric(12,2))as varchar(100)) + ' de '  + cast(cast(a.cantidad as numeric(12,2))as varchar(100))  as '@title' for xml path('input'),root('td'),type)" & vbCrLf)
+        sqlbr.Append("end " & vbCrLf)
+
+
+        sqlbr.Append(", (select cast(a.cantidad as numeric(12,2)) as '@CantOrig', cast(a.entregado as numeric(12,2)) as '@entregado','display: none;' AS '@style' for xml path('td'),type) " & vbCrLf) 'Cambio Fide 13-02-2024, agregar el almacen de salida
         sqlbr.Append("from tb_solicitudmaterialdmantto a inner join tb_solicitudmaterialmantto b on a.id_solicitud = b.id_solicitud" & vbCrLf)
-        sqlbr.Append("inner join tb_inventario c on a.clave = c.clave " & vbCrLf)
+        sqlbr.Append("left join tb_inventario c on a.clave = c.clave " & vbCrLf) 'Cambio Fide left x inner, para que traiga todo aun que NO este en inventario, se usa  isnull,0  
         sqlbr.Append("inner join tb_producto d on a.clave = d.clave inner join tb_unidadmedida e on d.id_unidad = e.id_unidad " & vbCrLf)
-        sqlbr.Append("where a.id_solicitud = " & folio & " for xml path('tr'), root('tbody')")
+        sqlbr.Append("where a.id_solicitud = " & folio & " and (c.id_almacen=" & AlmacenSalida & " or isnull(c.id_almacen,0)=0) for xml path('tr'), root('tbody')")
         Dim mycommand As New SqlCommand(sqlbr.ToString(), myConnection)
         myConnection.Open()
         Dim xdoc1 As New XmlDocument()
@@ -152,7 +163,7 @@ Partial Class App_Almacen_Alm_Con_Solicitudmaterial
     End Function
 
     <Web.Services.WebMethod()>
-    Public Shared Function guarda(ByVal registro As String) As String
+    Public Shared Function guarda(ByVal registro As String, ByVal incompleto As Integer) As String
         Dim aa As String = ""
         Dim folio As Integer = 0
         Dim myConnection As New SqlConnection((New Conexion).StrConexion)
@@ -164,7 +175,7 @@ Partial Class App_Almacen_Alm_Con_Solicitudmaterial
             Dim mycommand As New SqlCommand("sp_salidaalmacen", myConnection, trans)
             mycommand.CommandType = CommandType.StoredProcedure
             mycommand.Parameters.AddWithValue("@Cabecero", registro)
-            mycommand.Parameters.AddWithValue("@docto", 2)
+            mycommand.Parameters.AddWithValue("@docto", 19) '   19 -> Salida por Despacho -> E -> 0
             Dim prmR As New SqlParameter("@Id", "0")
             prmR.Size = 10
             prmR.Direction = ParameterDirection.Output
@@ -176,9 +187,25 @@ Partial Class App_Almacen_Alm_Con_Solicitudmaterial
             mycommand.CommandType = CommandType.StoredProcedure
             mycommand.Parameters.AddWithValue("@Material", registro)
             mycommand.Parameters.AddWithValue("@Kdval", prmR.Value)
+            mycommand.Parameters.AddWithValue("@incompleto", incompleto) 'Cambio Fide 14-02-2024, se envia si esta completa o no la salida de material
             mycommand.ExecuteNonQuery()
 
-            folio = prmR.Value
+            folio = prmR.Value 'Folio de la salida
+
+            'Cambio Fide 13-02-2024, se agrega SP de entrada a Almacen
+
+            mycommand = New SqlCommand("sp_entradaalmacen", myConnection, trans)
+            mycommand.CommandType = CommandType.StoredProcedure
+            mycommand.Parameters.AddWithValue("@Cabecero", registro)
+            mycommand.Parameters.AddWithValue("@docto", 1)  '   1 -> Entrada por Despacho -> E -> 0
+            Dim prmREntrada As New SqlParameter("@Id", "0") 'Folio de la entrada
+            prmR.Size = 10
+            prmR.Direction = ParameterDirection.Output
+            mycommand.Parameters.Add(prmREntrada)
+
+            mycommand.ExecuteNonQuery()
+
+
 
             trans.Commit()
         Catch ex As Exception

@@ -102,21 +102,33 @@ Partial Class App_Mantenimiento_OP_CON_OrdenTrabajo
         sqlbr.Append("select id_orden as 'td', '', tipomant as 'td', '', estatus as 'td', '', falta as 'td', '',  " & vbCrLf)
         sqlbr.Append(" cliente as 'td', '', sucursal as 'td', '', isnull(desctrabajos,'') as 'td', '',isnull(tecnico,'') as 'td', '', " & vbCrLf)
         sqlbr.Append(" (select 'Asignar técnico' as '@title', 'font-size:36px; color:#3c8dbc;' as '@style', 'fa fa-user btasigna' as '@class' for xml path('icon'),root('td'),type),'', " & vbCrLf)
-        sqlbr.Append(" (select 'btn btn-primary btedita' as '@class', 'Editar' as '@value', 'button' as '@type' for xml path('input'),root('td'),type),'', " & vbCrLf)
-        sqlbr.Append(" (select tipoorden as '@tipo', 'btn btn-primary btimprime' as '@class', 'Reporte Mto' as '@value', 'button' as '@type' for xml path('input'),root('td'),type),'', " & vbCrLf)
-        sqlbr.Append(" case tipoorden when 2 then (select tipoorden as '@tipo', 'btn btn-primary btcheck' as '@class', 'CheckList' as '@value', 'button' as '@type' for xml path('input'),root('td'),type) when 1 then '' end as chk,'', " & vbCrLf)
-        sqlbr.Append("(select 'btn btn-primary btcancela' as '@class', 'Cancelar' as '@value', 'button' as '@type' for xml path('input'),root('td'),type),'' " & vbCrLf)
+        sqlbr.Append(" (select 'btn btn-primary btn-sm btedita' as '@class', 'Ver Detalle' as '@value', 'button' as '@type' for xml path('input'),root('td'),type),'', " & vbCrLf)
+        sqlbr.Append(" (select tipoorden as '@tipo', 'btn btn-primary btn-sm btimprime' as '@class', 'Reporte Mto' as '@value', 'button' as '@type' for xml path('input'),root('td'),type),'', " & vbCrLf)
+        sqlbr.Append(" case tipoorden when 2 then (select tipoorden as '@tipo', 'btn btn-primary btn-sm btcheck' as '@class', 'CheckList' as '@value', 'button' as '@type' for xml path('input'),root('td'),type) when 1 then '' end as chk,'', " & vbCrLf)
+
+        sqlbr.Append(" case a.id_status when 1 then  " & vbCrLf)
+        sqlbr.Append("(select 'btn btn-primary btn-sm btcancela' as '@class', 'Cancelar' as '@value', 'button' as '@type' for xml path('input'),root('td'),type) " & vbCrLf)
+        sqlbr.Append(" else " & vbCrLf)
+        sqlbr.Append("(select 'btn btn-primary btn-sm deshabilita' as '@class', 'Cancelar' as '@value', 'button' as '@type' for xml path('input'),root('td'),type) " & vbCrLf)
+        sqlbr.Append(" end ,'' " & vbCrLf)
+
+        'sqlbr.Append("(select 'btn btn-primary btn-sm btcancela' as '@class', 'Cancelar' as '@value', 'button' as '@type' for xml path('input'),root('td'),type),'' " & vbCrLf)
         sqlbr.Append(" from  ( ")
         sqlbr.Append(" Select ROW_NUMBER() over (order by a.id_orden) as rownum, a.id_orden, c.descripcion as tipomant, b.descripcion as estatus, ")
         sqlbr.Append(" Convert(varchar(10), a.fregistro, 103) falta , a.fbaja, d.nombre as cliente, e.nombre as sucursal, a.tipo as tipoorden,")
-        sqlbr.Append(" f.nombre + ' ' + f.paterno + ' ' + rtrim(f.materno) as tecnico, a.desctrabajos ")
+
+        sqlbr.Append(" case when isnull(z.id_proveedor,0) =0 then f.nombre + ' ' + f.paterno + ' ' + rtrim(f.materno) else isnull(z.nombre,'') end as tecnico,")
+
+        sqlbr.Append(" a.desctrabajos, a.id_status ")
         sqlbr.Append(" From tb_ordentrabajo a ")
         sqlbr.Append(" inner join tb_statusot b on a.id_status=b.id_status ")
         sqlbr.Append(" inner join tb_tipomantenimiento c on a.id_servicio=c.id_servicio ")
         sqlbr.Append(" inner join tb_cliente d on a.id_cliente=d.id_cliente ")
         sqlbr.Append(" inner join tb_cliente_inmueble e on a.id_inmueble=e.id_inmueble ")
         sqlbr.Append(" left join tb_empleado f on a.id_tecnico=f.id_empleado ")
-        If estatus <> 0 Then sqlbr.Append("where b.id_status = " & estatus & " ") Else sqlbr.Append(" where b.id_status in (1,2,3,4)")
+        sqlbr.Append(" left join tb_proveedor z on a.id_Proveedor = z.id_proveedor ")
+        sqlbr.Append(" where 1=1 ")
+        If estatus <> 0 Then sqlbr.Append("and a.id_status = " & estatus & " ")
         If folio <> 0 Then sqlbr.Append("and a.id_orden =" & folio & " ")
         If cliente <> 0 Then sqlbr.Append("and d.id_cliente =" & cliente & " ")
         If sucursal <> 0 Then sqlbr.Append("and e.id_inmueble =" & sucursal & " ")
@@ -135,11 +147,17 @@ Partial Class App_Mantenimiento_OP_CON_OrdenTrabajo
     End Function
 
     <Web.Services.WebMethod()>
-    Public Shared Function contartickets(ByVal folio As Integer, ByVal cliente As Integer, ByVal sucursal As Integer, ByVal estatus As Integer) As String
+    Public Shared Function contartickets(ByVal folio As Integer, ByVal cliente As Integer, ByVal sucursal As Integer, ByVal estatus As Integer, ByVal fini As String, ByVal ffin As String) As String
         Dim sqlbr As New StringBuilder
         Dim sql As String = ""
 
+        Dim vfecini As Date
+        If fini <> "" Then vfecini = fini
+        Dim vfecfin As Date
+        If ffin <> "" Then vfecfin = ffin
+
         sqlbr.Append("SELECT COUNT(*)/50 + 1 as Filas, COUNT(*) % 50 as Residuos FROM tb_ordentrabajo where id_status = " & estatus & " " & vbCrLf)
+        sqlbr.Append(" and CAST(fregistro As Date) between '" & Format(vfecini, "yyyyMMdd") & "' and '" & Format(vfecfin, "yyyyMMdd") & "'" & vbCrLf)
         If folio <> 0 Then sqlbr.Append("and id_orden =" & folio & " ")
         If cliente <> 0 Then sqlbr.Append("and id_cliente =" & cliente & " ")
         If sucursal <> 0 Then sqlbr.Append("and id_inmueble =" & sucursal & " ")
@@ -173,15 +191,36 @@ Partial Class App_Mantenimiento_OP_CON_OrdenTrabajo
     End Function
 
     <Web.Services.WebMethod()>
-    Public Shared Function tecnico(ByVal nombre As String) As String
+    Public Shared Function tecnico(ByVal nombre As String, ByVal tipoTecnico As String) As String
         Dim myConnection As New SqlConnection((New Conexion).StrConexion)
         Dim sqlbr As New StringBuilder
-        Dim sql As String = ""
+        Dim Aux_where As String = ""
 
-        sqlbr.Append("select id_empleado as 'td','', paterno + ' ' + rtrim(materno) + ' ' + nombre as 'td','', c.descripcion as 'td' " & vbCrLf)
-        sqlbr.Append("from tb_empleado a inner join tb_puesto c on a.id_puesto = c.id_puesto" & vbCrLf)
-        sqlbr.Append("where a.id_puesto in(1,16,21,22,23,24,25,92) and a.id_status = 2 and nombre + paterno + materno  like '%" & nombre & "%' ")
-        sqlbr.Append("order by paterno, materno, nombre for xml path('tr'), root('tbody')")
+        sqlbr.Append("SELECT " & vbCrLf)
+
+        If nombre = "" Then
+            sqlbr.Append("TOP 50 " & vbCrLf)
+        Else
+            If (tipoTecnico = "I") Then
+                Aux_where = "And nombre + paterno + materno  Like '%" & nombre & "%' " & vbCrLf
+            Else Aux_where = "And nombre Like '%" & nombre & "%' " & vbCrLf
+            End If
+        End If
+
+        If tipoTecnico = "I" Then
+            sqlbr.Append("id_empleado as 'td','', paterno + ' ' + rtrim(materno) + ' ' + nombre as 'td','', c.descripcion as 'td' " & vbCrLf)
+            sqlbr.Append("from tb_empleado a inner join tb_puesto c on a.id_puesto = c.id_puesto " & vbCrLf)
+            sqlbr.Append("where a.id_puesto in(1,16,21,22,23,24,25,92) and a.id_status = 2 " & vbCrLf)
+            sqlbr.Append(Aux_where)
+            sqlbr.Append("order by paterno, materno, nombre for xml path('tr'), root('tbody')")
+        Else
+            sqlbr.Append("id_proveedor as 'td','', nombre as 'td','', '' as 'td' " & vbCrLf)
+            sqlbr.Append("from tb_proveedor " & vbCrLf)
+            sqlbr.Append("where id_status=1 and id_lineanegocio=1 and idarea=11 " & vbCrLf)
+            sqlbr.Append(Aux_where)
+            sqlbr.Append("order by nombre for xml path('tr'), root('tbody')")
+        End If
+
         Dim mycommand As New SqlCommand(sqlbr.ToString(), myConnection)
         myConnection.Open()
         Dim xdoc1 As New XmlDocument()
@@ -195,9 +234,14 @@ Partial Class App_Mantenimiento_OP_CON_OrdenTrabajo
     End Function
 
     <Web.Services.WebMethod()>
-    Public Shared Function asignatecnico(ByVal idtecnico As Integer, ByVal idorden As Integer) As String
+    Public Shared Function asignatecnico(ByVal idtecnico As Integer, ByVal idorden As Integer, ByVal tipoTecnico As String) As String
         Dim myConnection As New SqlConnection((New Conexion).StrConexion)
+
         Dim sql As String = "update tb_ordentrabajo set id_tecnico = " + idtecnico.ToString() + " where id_orden = " + idorden.ToString()
+
+        If tipoTecnico = "P" Then sql = "update tb_ordentrabajo set id_Proveedor = " + idtecnico.ToString() + " where id_orden = " + idorden.ToString()
+
+
 
         Dim mycommand As New SqlCommand(sql, myConnection)
         myConnection.Open()
