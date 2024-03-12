@@ -10,7 +10,7 @@ Public Class correocompras
 
         Dim myConnection As New SqlConnection((New Conexion).StrConexion)
         'Dim destinos = "vosornog@gmail.com"
-        Dim destinos = "vicenteo@grupobatia.com.mx;"
+        Dim destinos = "karena@grupobatia.com.mx;"
 
         Dim sql As String = ""
 
@@ -333,53 +333,13 @@ Public Class correocompras
         sqlbr.Append("</body>" & vbCrLf)
         sqlbr.Append("</html>" & vbCrLf)
 
-        'enviaEvaluacioProv(sqlbr.ToString, destinos, folio)
-        'envia(sqlbr.ToString, destinos, folio)
         Dim enviartodo As New enviacorreo()
-        Dim notificacion As String = "NOTIFICACION DE SINGA, Solicitud de recursos No: " + folio.ToString
+        Dim notificacion As String = "NOTIFICACION DE SINGA, Evaluación de Proveedor No: " + folio.ToString
         enviartodo.envia(sqlbr.ToString, destinos, notificacion)
 
         Return ""
     End Function
-    Protected Function enviaEvaluacioProv(ByVal cuerpo As String, ByVal destino As String, ByVal folio As Integer) As String
 
-        Dim mail As New MailMessage
-        mail.From = New MailAddress("adminsinga@grupobatia.com.mx")
-
-        Dim v_par As Array
-        v_par = (destino).Split(";")
-        For i As Integer = 0 To v_par.Length - 1
-            If v_par(i) <> "" Then mail.To.Add("" & v_par(i) & "")
-        Next
-
-        Dim asunto As String = "NOTIFICACION DE SINGA"
-        'mail.To.Add()
-        If folio <> 0 Then
-            asunto += ",  Evaluación de proveedor No: " + folio.ToString
-        End If
-        mail.Subject = asunto
-        mail.IsBodyHtml = True
-        mail.Body = cuerpo
-
-        Dim pass As String = "Ad*Gb1001"
-        Dim mailClient As New SmtpClient()
-        Dim basicAuthenticationInfo As New NetworkCredential("adminsinga@grupobatia.com.mx", "" & pass & "")
-        mailClient.Host = "smtp.office365.com"
-        mailClient.UseDefaultCredentials = True
-        mailClient.Credentials = basicAuthenticationInfo
-        mailClient.Port = 587
-        mailClient.EnableSsl = True
-
-        Try
-            mailClient.Send(mail)
-
-        Catch ex As Exception
-
-        End Try
-
-        Return ""
-
-    End Function
     Public Function requisicion(ByVal folio As Integer) As String
         Dim sqlbr As New StringBuilder
 
@@ -605,24 +565,10 @@ Public Class correocompras
         sqlbr.Append("<table width=""100%"" cellspacing=""0"" cellpadding=""0"" style=""mso-table-lspace:0pt;mso-table-rspace:0pt;border-collapse:collapse;border-spacing:0px;"">" & vbCrLf)
         sqlbr.Append("<tr style=""border-collapse:collapse;"">" & vbCrLf)
         sqlbr.Append("<td align=""left"" style=""padding:0;Margin:0;""><p style=""Margin:0;-webkit-text-size-adjust:none;-ms-text-size-adjust:none;mso-line-height-rule:exactly;font-size:14px;font-family:arial, 'helvetica neue', helvetica, sans-serif;line-height:21px;color:#333333;"">Fecha de registro: " & dt.Tables(0).Rows(0)("falta") & ".</p></td>" & vbCrLf)
-
         sqlbr.Append("</tr>" & vbCrLf)
         sqlbr.Append("</table>" & vbCrLf)
         sqlbr.Append("</td>" & vbCrLf)
         sqlbr.Append("</tr>" & vbCrLf)
-
-        'sqlbr.Append("<tr style=""border-collapse:collapse;"">" & vbCrLf)
-        'sqlbr.Append("<td valign=""top"" align=""left"" style=""padding:0;Margin:0;padding-top:10px;padding-bottom:10px;padding-right:10px;""><img src=""http://grupobatia.com.mx/images/Check_Mark_Black5.png"" alt=alt width=""16"" style=""display:block;border:0;outline:none;text-decoration:none;-ms-interpolation-mode:bicubic;"" /></td>" & vbCrLf)
-        'sqlbr.Append("<td align=""left"" style=""padding:0;Margin:0;"">" & vbCrLf)
-        'sqlbr.Append("<table width=""100%"" cellspacing=""0"" cellpadding=""0"" style=""mso-table-lspace:0pt;mso-table-rspace:0pt;border-collapse:collapse;border-spacing:0px;"">" & vbCrLf)
-        'sqlbr.Append("<tr style=""border-collapse:collapse;"">" & vbCrLf)
-        'sqlbr.Append("<td align=""left"" style=""padding:0;Margin:0;""><p style=""Margin:0;-webkit-text-size-adjust:none;-ms-text-size-adjust:none;mso-line-height-rule:exactly;font-size:14px;font-family:arial, 'helvetica neue', helvetica, sans-serif;line-height:21px;color:#333333;"">Incidencia/Especialidad: " & dt.Tables(0).Rows(0)("Tk_Inc_Descripcion") & ".</p></td>" & vbCrLf)
-        'sqlbr.Append("</tr>" & vbCrLf)
-        'sqlbr.Append("</table>" & vbCrLf)
-        'sqlbr.Append("</td>" & vbCrLf)
-        'sqlbr.Append("</tr>" & vbCrLf)
-
-
 
         sqlbr.Append("</table></td>" & vbCrLf)
         sqlbr.Append("</tr>" & vbCrLf)
@@ -715,7 +661,9 @@ Public Class correocompras
         sqlbr.Append("</body>" & vbCrLf)
         sqlbr.Append("</html>" & vbCrLf)
 
-        envia(sqlbr.ToString, destinos, folio)
+        Dim enviartodo As New enviacorreo()
+        Dim notificacion As String = "NOTIFICACION DE SINGA, Requisición de compra No: " + folio.ToString
+        enviartodo.envia(sqlbr.ToString, destinos, notificacion)
 
         Return ""
     End Function
@@ -952,19 +900,6 @@ Public Class correocompras
         sqlbr.Append("</td>" & vbCrLf)
         sqlbr.Append("</tr>" & vbCrLf)
 
-        'sqlbr.Append("<tr style=""border-collapse:collapse;"">" & vbCrLf)
-        'sqlbr.Append("<td valign=""top"" align=""left"" style=""padding:0;Margin:0;padding-top:10px;padding-bottom:10px;padding-right:10px;""><img src=""http://grupobatia.com.mx/images/Check_Mark_Black5.png"" alt=alt width=""16"" style=""display:block;border:0;outline:none;text-decoration:none;-ms-interpolation-mode:bicubic;"" /></td>" & vbCrLf)
-        'sqlbr.Append("<td align=""left"" style=""padding:0;Margin:0;"">" & vbCrLf)
-        'sqlbr.Append("<table width=""100%"" cellspacing=""0"" cellpadding=""0"" style=""mso-table-lspace:0pt;mso-table-rspace:0pt;border-collapse:collapse;border-spacing:0px;"">" & vbCrLf)
-        'sqlbr.Append("<tr style=""border-collapse:collapse;"">" & vbCrLf)
-        'sqlbr.Append("<td align=""left"" style=""padding:0;Margin:0;""><p style=""Margin:0;-webkit-text-size-adjust:none;-ms-text-size-adjust:none;mso-line-height-rule:exactly;font-size:14px;font-family:arial, 'helvetica neue', helvetica, sans-serif;line-height:21px;color:#333333;"">Incidencia/Especialidad: " & dt.Tables(0).Rows(0)("Tk_Inc_Descripcion") & ".</p></td>" & vbCrLf)
-        'sqlbr.Append("</tr>" & vbCrLf)
-        'sqlbr.Append("</table>" & vbCrLf)
-        'sqlbr.Append("</td>" & vbCrLf)
-        'sqlbr.Append("</tr>" & vbCrLf)
-
-
-
         sqlbr.Append("</table></td>" & vbCrLf)
         sqlbr.Append("</tr>" & vbCrLf)
         sqlbr.Append("</table></td>" & vbCrLf)
@@ -1056,47 +991,11 @@ Public Class correocompras
         sqlbr.Append("</body>" & vbCrLf)
         sqlbr.Append("</html>" & vbCrLf)
 
-        envia(sqlbr.ToString, destinos, folio)
+        Dim enviartodo As New enviacorreo()
+        Dim notificacion As String = "NOTIFICACION DE SINGA, Requisición de compra No: " + folio.ToString
+        enviartodo.envia(sqlbr.ToString, destinos, notificacion)
 
         Return ""
     End Function
-    'Protected Function envia(ByVal cuerpo As String, ByVal destino As String, ByVal folio As Integer) As String
-    Protected Function envia(ByVal cuerpo As String, ByVal destino As String, ByVal folio As String) As String
-        Dim mail As New MailMessage
-        mail.From = New MailAddress("adminsinga@grupobatia.com.mx")
 
-        Dim v_par As Array
-        v_par = (destino).Split(";")
-        For i As Integer = 0 To v_par.Length - 1
-            If v_par(i) <> "" Then mail.To.Add("" & v_par(i) & "")
-        Next
-
-        Dim asunto As String = "NOTIFICACION DE SINGA"
-        'mail.To.Add()
-        If folio <> 0 Then
-            asunto += ",  Requisición de compra No: " + folio.ToString
-        End If
-        mail.Subject = asunto
-        mail.IsBodyHtml = True
-        mail.Body = cuerpo
-
-        Dim pass As String = "Ad*Gb1001"
-        Dim mailClient As New SmtpClient()
-        Dim basicAuthenticationInfo As New NetworkCredential("adminsinga@grupobatia.com.mx", "" & pass & "")
-        mailClient.Host = "smtp.office365.com"
-        mailClient.UseDefaultCredentials = True
-        mailClient.Credentials = basicAuthenticationInfo
-        mailClient.Port = 587
-        mailClient.EnableSsl = True
-
-        Try
-            mailClient.Send(mail)
-
-        Catch ex As Exception
-
-        End Try
-
-        Return ""
-
-    End Function
 End Class

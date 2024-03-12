@@ -17,14 +17,38 @@
     <link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css" />
     <link href="../Content/form/css/_all-skins.min.css" rel="stylesheet" type="text/css" />
     <script src="https://code.jquery.com/ui/1.11.4/jquery-ui.min.js" type="text/javascript"></script>
+    <style>
+        #tblistaa tbody td:nth-child(5){
+            width:0px;
+            display:none;
+        }
+    </style>
     <script type="text/javascript">
         var inicial = '<option value=0>Seleccione...</option>'
         $(function () {
             $('#hdpagina').val(1); // ASIGNACION DEL INICIO DE PAGINA
             $('#var1').html('<%=listamenu%>');
             $('#dvdatos').hide();
+            $('#txfecha').datepicker({ dateFormat: 'dd/mm/yy' });
             cargaestado();
             cargalista();
+            cargadocumento();
+            dialog = $('#dvcarga').dialog({
+                autoOpen: false,
+                height: 500,
+                width: 1020,
+                modal: true,
+                close: function () {
+                }
+            });
+            dialog1 = $('#dvregistro').dialog({
+                autoOpen: false,
+                height: 400,
+                width: 800,
+                modal: true,
+                close: function () {
+                }
+            });
             $('#btguarda').click(function () {
                 if (valida()) {
                     var xmlgraba = '<empresa id= "' + $('#txid').val() + '" nombre = "' + $('#txnombre').val() + '" tipo = "' + $('#dltipo').val() + '"  registro= "' + $('#txregistro').val() + '" razon ="' + $('#txrazon').val() + '" rfc = "' + $('#txrfc').val() + '" calle = "' + $('#txcalle').val() + '" ';
@@ -61,7 +85,42 @@
                     }, iferror);
                 } else { alert('Antes de eliminar debe elegir una Empresa');}
             })
+            $('#btdocumento').click(function () {
+                $("#dvcarga").dialog('option', 'title', 'Documentos de empresa');
+                $('#dltipodocto').val(0);
+                $('#txarchivo').val('');
+                cargaexistentes();
+                dialog.dialog('open');
+            })
+            $('#btregistro').click(function () {
+                $("#dvcarga").dialog('option', 'title', 'Registros patronales');
+                $('#dlestado1').val(0);
+                $('#txregistro1').val('');
+                cargaregistros();
+                dialog1.dialog('open');
+            })
+            $('#btregistro1').click(function(){
+                var xmlgraba = '<empresa id= "' + $('#txid').val() + '" idestado= "' + $('#dlestado1').val() + '" registro= "' + $('#txregistro1').val() + '" />'
+                PageMethods.guardaregistro(xmlgraba, function () {
+                    $('#dlestado1').val(0);
+                    $('#txregistro1').val('');
+                    cargaregistros();
+                }, iferror);
+            })
         });
+        function cargadocumento() {
+            PageMethods.documento(function (opcion) {
+                var opt = eval('(' + opcion + ')');
+                var lista = '';
+                for (var list = 0; list < opt.length; list++) {
+                    lista += '<option value="' + opt[list].id + '">' + opt[list].desc + '</option>';
+                };
+                $('#dltipodocto').empty();
+                $('#dltipodocto').append(inicial);
+                $('#dltipodocto').append(lista);
+
+            }, iferror);
+        }
         function datosempresa() {
             PageMethods.detalle($('#txid').val(), function (detalle) {
                 var datos = eval('(' + detalle + ')');
@@ -138,7 +197,76 @@
                 if ($('#idestado').val() != '') {
                     $('#dlestado').val($('#idestado').val());
                 };
+                $('#dlestado1').append(inicial);
+                $('#dlestado1').append(lista);
+                $('#dlestado1').val(0);
             }, iferror);
+        }
+        function xmlUpFile(res) {
+            if (validadocto()) {
+                var fileup = $('#txarchivo').get(0);
+                var files = fileup.files;
+                var fini = $('#txfecha').val().split('/');
+                var falta = fini[2] + fini[1] + fini[0];
+                var ndt = new FormData();
+                for (var i = 0; i < files.length; i++) {
+                    ndt.append(files[i].name, files[i]);
+                }
+                ndt.append('fec', falta);
+                ndt.append('emp', $('#txid').val());
+                $.ajax({
+                    url: '../GH_Uppdfemp.ashx',
+                    type: 'POST',
+                    data: ndt,
+                    contentType: false,
+                    processData: false,
+                    success: function () {
+                        var xmlgraba = '<Movimiento> />'
+                        for (var i = 0; i < files.length; i++) {
+                            xmlgraba += '<archivo nombre="' + files[i].name + '" tipo="' + $('#dltipo').val() + '" fecha="' + falta + '" empresa="' + $('#txid').val()  +'" />';
+                        }
+                        xmlgraba += '</Movimiento>';
+                        PageMethods.guardadocto(xmlgraba, function (res) {
+                            cargaexistentes();
+                        }, iferror);
+                    },
+                    error: function (err) {
+                        alert(err.statusText);
+                    }
+                });
+            }
+        }
+        function cargaexistentes() {
+            PageMethods.listadocto($('#txid').val(), function (res) {
+                var ren1 = $.parseHTML(res);
+                $('#tblistaa tbody').remove();
+                $('#tblistaa').append(ren1);
+                $('#tblistaa tbody tr').on('click', '.btver', function () {
+                    var carpeta = $('#txid').val() + '/' + $(this).closest('tr').find('td').eq(4).text();
+                    var arc = $(this).closest('tr').find('td').eq(3).text();
+                    window.open('../Doctos/empresa/' + carpeta + '/' + arc, '_blank', 'width=650, height=600, left=80, top=120, resizable=no, scrollbars=no ');
+                });
+                $('#tblistaa tbody tr').on('click', '.btquita', function () {
+                    PageMethods.eliminaa($(this).closest('tr').find('td').eq(0).text(), function () {
+                        cargaexistentes();
+                    })
+                });
+            })
+        }
+        function cargaregistros() {
+            PageMethods.listaregistro($('#txid').val(), function (res) {
+                var ren1 = $.parseHTML(res);
+                $('#tbregistro tbody').remove();
+                $('#tbregistro').append(ren1);                
+                $('#tbregistro tbody tr').on('click', '.btquitareg', function () {
+                    PageMethods.eliminareg($(this).closest('tr').find('td').eq(0).text(), function () {
+                        cargaregistros();
+                    })
+                });
+            })
+        }
+        function validadocto() {
+            return true;
         }
         function iferror(err) {
             alert('ERROR ' + err._message);
@@ -237,12 +365,13 @@
                                             <option value="2">Operativa</option>
                                         </select>
                                     </div>
+                                    <!--
                                     <div  class="col-lg-3 text-right">
                                         <label for="txregistro">Registro Patronal</label>
                                     </div>
                                     <div class="col-lg-2">
                                         <input type="text" id="txregistro" class="form-control"/>
-                                    </div>
+                                    </div>-->
                                 </div>
                                 <div class="row">
                                     <div class="col-lg-2 text-right">
@@ -292,6 +421,15 @@
                                         <select id="dlestado" class="form-control"></select>
                                     </div>
                                 </div>
+                                <br />  
+                                <div class="row">
+                                    <div class="col-lg-3 text-right">
+                                        <input type="button" class="btn btn-info"  value="Documentos" id="btdocumento" />
+                                    </div>
+                                     <div class="col-lg-2">
+                                        <input type="button" class="btn btn-info"  value="Registro Patronal" id="btregistro" />
+                                    </div>
+                                </div>
                                 <ol class="breadcrumb">
                                     <li id="btnuevo" class="puntero"><a><i class="fa fa-edit"></i>Nuevo</a></li>
                                     <li id="btguarda" class="puntero"><a><i class="fa fa-save"></i>Guardar</a></li>
@@ -336,6 +474,89 @@
                                     </li>
                                 </ul>
                             </nav>
+                        </div>
+                    </div>
+                    <div class="row" id="dvcarga">
+                        <div class="row">
+                            <div class="col-lg-3">
+                                <label for="dltipodocto">Tipo de archivo:</label>
+                            </div>
+                            <div class="col-lg-6">
+                                <select id="dltipodocto" class="form-control"></select>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-lg-3">
+                                <label for="txfecha">Fecha:</label>
+                            </div>
+                            <div class="col-lg-3">
+                                 <input type="text" id="txfecha" class="form-control"/>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-lg-3">
+                                <label for="txarchivo">Cargar Archivos:</label>
+                            </div>
+                            <div class="col-lg-6">
+                                <input type="file" class="form-control" id="txarchivo" multiple="multiple"/>
+                            </div>
+                            <div class="col-lg-3">
+                                <input type="button" class="btn btn-info" onclick="xmlUpFile()" value="Agregar" id="btacuse" />
+                            </div>
+                        </div>
+                        <hr />
+                        <div class="row">
+                            <div class="col-lg-3">
+                                <label for="dlbanco">Archivos Cargados:</label>
+                            </div>
+                            <div id="dvarchivos" class="tbheader col-lg-8" style="height: 200px; overflow-y: scroll;">
+                                <table class=" table table-condensed h6" id="tblistaa">
+                                    <thead>
+                                        <tr>
+                                            <th class="bg-light-blue-active">Id</th>
+                                            <th class="bg-light-blue-active">Fecha</th>
+                                            <th class="bg-light-blue-active">Tipo</th>
+                                            <th class="bg-light-blue-active">Documento</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row" id="dvregistro">
+                        <div class="row">
+                            <div class="col-lg-3">
+                                <label for="dlestado1">Estado:</label>
+                            </div>
+                            <div class="col-lg-6">
+                                <select id="dlestado1" class="form-control"></select>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-lg-3">
+                                <label for="txregistro1">Registro patronal:</label>
+                            </div>
+                            <div class="col-lg-3">
+                                 <input type="text" id="txregistro1" class="form-control"/>
+                            </div>
+                             <div class="col-lg-3">
+                                <input type="button" class="btn btn-info" value="Agregar" id="btregistro1" />
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div id="dvregistros" class="tbheader col-lg-8" style="height: 200px; overflow-y: scroll;">
+                                <table class=" table table-condensed h6" id="tbregistro">
+                                    <thead>
+                                        <tr>
+                                            <th class="bg-light-blue-active">Registro</th>
+                                            <th class="bg-light-blue-active">Estado</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
                 </div>

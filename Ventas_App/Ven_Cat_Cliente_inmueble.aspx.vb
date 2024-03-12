@@ -12,7 +12,7 @@ Partial Class Ventas_App_Ven_Cat_Cliente_inmueble
         Dim sqlbr As New StringBuilder
         Dim sql As String = ""
 
-        sqlbr.Append("SELECT COUNT(*)/40 + 1 as Filas, COUNT(*) % 40 as Residuos FROM tb_cliente_inmueble where id_status = 1 and id_cliente=" & cliente & "" & vbCrLf)
+        sqlbr.Append("SELECT COUNT(*)/50 + 1 as Filas, COUNT(*) % 50 as Residuos FROM tb_cliente_inmueble where id_status = 1 and id_cliente=" & cliente & "" & vbCrLf)
 
         Dim ds As New DataTable
         Dim myconnection As String = (New Conexion).StrConexion
@@ -36,7 +36,7 @@ Partial Class Ventas_App_Ven_Cat_Cliente_inmueble
         Dim sqlbr As New StringBuilder
 
         sqlbr.Append("select id_inmueble as 'td','', nombre as 'td','', ceco as 'td','', descripcion as 'td','', oficina as 'td',''," & vbCrLf)
-        sqlbr.Append("nombrecontacto as 'td','', tel1 as 'td' from" & vbCrLf)
+        sqlbr.Append("nombrecontacto as 'td','', isnull(tel1,'') as 'td' from" & vbCrLf)
         sqlbr.Append("(select ROW_NUMBER()Over(Order by a.nombre) As RowNum, id_inmueble, a.nombre, isnull(ceco,0) as ceco, b.descripcion, isnull(c.nombre,'') as oficina, nombrecontacto, tel1" & vbCrLf)
         sqlbr.Append("from tb_cliente_inmueble a inner join tb_tipoinmueble b on a.id_tipoinmueble = b.id_tipoinmueble" & vbCrLf)
         sqlbr.Append("Left outer join tb_oficina c on a.id_oficina = c.id_oficina where a.id_status = 1 and id_cliente = " & cliente & ") as resu" & vbCrLf)
@@ -148,7 +148,8 @@ Partial Class Ventas_App_Ven_Cat_Cliente_inmueble
         Dim sql As String = ""
 
         sqlbr.Append("select direccion, entrecalles, cp, colonia, delegacionmunicipio, ciudad, id_estado,tel2, emailcontacto, " & vbCrLf)
-        sqlbr.Append("cargocontacto, id_tipoinmueble, id_oficina, presupuestol, presupuestoh, presupuestom,centrocosto, prefijo " & vbCrLf)
+        sqlbr.Append("cargocontacto, id_tipoinmueble, id_oficina, presupuestol, presupuestoh, presupuestom,centrocosto, prefijo, " & vbCrLf)
+        sqlbr.Append("latitud, longitud, materiales, banio" & vbCrLf)
         sqlbr.Append("from tb_cliente_inmueble where id_inmueble = " & cliente & "")
         Dim da As New SqlDataAdapter(sqlbr.ToString, myConnection)
         Dim dt As New DataTable
@@ -171,6 +172,10 @@ Partial Class Ventas_App_Ven_Cat_Cliente_inmueble
             sql += "ptto3:'" & dt.Rows(0)("presupuestom") & "'," & vbCrLf
             sql += "cc:'" & dt.Rows(0)("centrocosto") & "'," & vbCrLf
             sql += "prefijo:'" & dt.Rows(0)("prefijo") & "'," & vbCrLf
+            sql += "latitud:'" & dt.Rows(0)("latitud") & "'," & vbCrLf
+            sql += "longitud:'" & dt.Rows(0)("longitud") & "'," & vbCrLf
+            sql += "materiales:'" & dt.Rows(0)("materiales") & "'," & vbCrLf
+            sql += "banio:'" & dt.Rows(0)("banio") & "'," & vbCrLf
             sql += "}" & vbCrLf
         End If
         Return sql

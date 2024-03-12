@@ -345,7 +345,7 @@
         </asp:ScriptManager>
         <asp:HiddenField ID="idcte" runat="server" Value="0" />
         <asp:HiddenField ID="nombre" runat="server" />
-        <asp:HiddenField ID="idpla" runat="server" Value="0" />
+        <asp:HiddenField ID="idpla" runat="server" Value="0"/>
         <asp:HiddenField ID="idusuario" runat="server" />
         <div class="content">
             <div class="content-header">

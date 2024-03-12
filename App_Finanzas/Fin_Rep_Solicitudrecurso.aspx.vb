@@ -27,6 +27,29 @@ Partial Class App_Finanzas_Fin_Rep_Solicitudrecurso
         sql += "]"
         Return sql
     End Function
+
+    <Web.Services.WebMethod()>
+    Public Shared Function linea() As String
+        Dim myConnection As New SqlConnection((New Conexion).StrConexion)
+        Dim sqlbr As New StringBuilder
+        Dim sql As String = ""
+
+        sqlbr.Append("select id_lineanegocio, descripcion from tb_lineanegocio where id_lineanegocio != 3 order by descripcion")
+        Dim da As New SqlDataAdapter(sqlbr.ToString, myConnection)
+        Dim dt As New DataTable
+        da.Fill(dt)
+        sql = "["
+        If dt.Rows.Count > 0 Then
+            For x As Integer = 0 To dt.Rows.Count - 1
+                If x > 0 Then sql += ","
+                sql += "{id:'" & dt.Rows(x)("id_lineanegocio") & "'," & vbCrLf
+                sql += "desc:'" & dt.Rows(x)("descripcion") & "'}" & vbCrLf
+            Next
+        End If
+        sql += "]"
+        Return sql
+    End Function
+
     Protected Sub Page_Load(sender As Object, e As EventArgs) Handles Me.Load
         Dim usuario As HttpCookie
         usuario = Request.Cookies("Usuario")

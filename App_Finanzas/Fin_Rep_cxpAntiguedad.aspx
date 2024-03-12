@@ -22,25 +22,32 @@
         $(function () {            
             $('#var1').html('<%=listamenu%>');
             $('#nomusr').text('<%=minombre%>');
-            $('#txfecini').datepicker({ dateFormat: 'dd/mm/yy' });
+            //$('#txfecini').datepicker({ dateFormat: 'dd/mm/yy' });
             $('#txfecfin').datepicker({ dateFormat: 'dd/mm/yy' });
-            cargaproveedor();
+            cargaproveedor(0);
+            cargaarea();
+            cargalinea();
             $('#btimprime').click(function () {
                 var formula = '{tb_provision.total} - {tb_provision.Pago} > 0'
                 if ($('#txfecini').val() != '') {
-                    var fini = $('#txfecini').val().split('/');
                     var ffin = $('#txfecfin').val().split('/');
-                    formula = formula + ' and {tb_provision.ffactura} in Date (' + fini[2] + ' , ' + fini[1] + ' , ' + fini[0] + ') to Date (' + ffin[2] + ' , ' + ffin[1] + ' , ' + ffin[0] + ')'
-                }//alert(formula);
+                    formula = formula + ' and {tb_provision.ffactura} < Date (' + ffin[2] + ' , ' + ffin[1] + ' , ' + ffin[0] + ') ';
+                }
+                if ($('#dlarea').val() != 0) {
+                    formula = formula + ' and {tb_proveedor.idarea} = ' + $('#dlarea').val();
+                }
+                if ($('#dllinea').val() != 0) {
+                    formula = formula + ' and {tb_proveedor.id_lineanegocio} = ' + $('#dllinea').val();
+                }
                 if ($('#dlproveedor').val() != 0) {
                     formula = formula + ' and {tb_provision.id_proveedor} = ' + $('#dlproveedor').val();
                 }
-                //alert(formula);
+                alert(formula);
                 window.open('../RptForAll.aspx?v_nomRpt=cxpantiguedad.rpt&v_formula=' + formula, '', 'width=850, height=600, left=80, top=120, resizable=no, scrollbars=no');
             })
         })
-        function cargaproveedor() {
-            PageMethods.catproveedor(function (opcion) {
+        function cargaproveedor(area) {
+            PageMethods.catproveedor(area, function (opcion) {
                 var opt = eval('(' + opcion + ')');
                 var lista = '';
                 for (var list = 0; list < opt.length; list++) {
@@ -49,6 +56,35 @@
                 $('#dlproveedor').empty();
                 $('#dlproveedor').append(inicial);
                 $('#dlproveedor').append(lista);
+            }, iferror);
+        }
+        function cargaarea() {
+            PageMethods.area(function (opcion) {
+                var opt = eval('(' + opcion + ')');
+                var lista = '';
+                for (var list = 0; list < opt.length; list++) {
+                    lista += '<option value="' + opt[list].id + '">' + opt[list].desc + '</option>';
+                };
+                $('#dlarea').empty();
+                $('#dlarea').append(inicial);
+                $('#dlarea').append(lista);
+                $('#dlarea').val(0);
+                $('#dlarea').change(function () {
+                    cargaproveedor($('#dlarea').val())
+                })
+            }, iferror);
+        }
+        function cargalinea() {
+            PageMethods.linea(function (opcion) {
+                var opt = eval('(' + opcion + ')');
+                var lista = '';
+                for (var list = 0; list < opt.length; list++) {
+                    lista += '<option value="' + opt[list].id + '">' + opt[list].desc + '</option>';
+                };
+                $('#dllinea').empty();
+                $('#dllinea').append(inicial);
+                $('#dllinea').append(lista);
+                $('#dllinea').val(0);               
             }, iferror);
         }
         function waitingDialog(waiting) { // I choose to allow my loading screen dialog to be customizable, you don't have to
@@ -131,22 +167,35 @@
                             </div>
                             <div class="row">
                                 <div class="col-lg-2 text-right">
+                                    <label for="dlarea">Area que gestiona:</label>
+                                </div>
+                                <div class="col-lg-2">
+                                    <select id="dlarea" class="form-control"></select>
+                                </div>
+                                <div class="col-lg-2 text-right">
+                                    <label for="dllinea">Tipo de servicio:</label>
+                                </div>
+                                <div class="col-lg-2">
+                                    <select id="dllinea" class="form-control"></select>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-lg-2 text-right">
                                     <label for="dlproveedor">Proveedor:</label>
                                 </div>
                                 <div class="col-lg-4">
                                     <select id="dlproveedor" class="form-control"></select>
                                 </div>
-
                             </div>
                             <div class="row">
-                                <div class="col-lg-2 text-right">
+                                <!--<div class="col-lg-2 text-right">
                                     <label for="txfecini">F. inicio:</label>
                                 </div>
                                 <div class="col-lg-2">
                                     <input type="text" id="txfecini" class="form-control" />
-                                </div>
-                                <div class="col-lg-2">
-                                    <label for="txfecfin">F. final:</label>
+                                </div>-->
+                                <div class="col-lg-2 text-right">
+                                    <label for="txfecfin">A la fecha:</label>
                                 </div>
                                 <div class="col-lg-2">
                                     <input type="text" id="txfecfin" class="form-control" />

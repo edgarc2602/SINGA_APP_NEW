@@ -25,9 +25,9 @@
             $('#nomusr').text('<%=minombre%>');
             cargacliente();
             $('#btimprime').click(function () {
-                var formula = ''
+                var formula = '{tb_cliente.id_status} =1'
                 if ($('#dlcliente').val() != 0) {
-                    formula = '{tb_cliente.id_cliente} =' + $('#dlcliente').val()
+                    formula += ' and {tb_cliente.id_cliente} =' + $('#dlcliente').val()
                 }
                 window.open('../RptForAll.aspx?v_nomRpt=igualacliente.rpt&v_formula=' + formula, '', 'width=850, height=600, left=80, top=120, resizable=no, scrollbars=no');
             });

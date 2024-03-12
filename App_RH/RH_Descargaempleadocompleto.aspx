@@ -9,6 +9,9 @@
 </head>
 <body>
     <form id="form1" runat="server">
+        <asp:ScriptManager ID="ScriptManager1" runat="server" EnablePageMethods="true">
+        </asp:ScriptManager>
+        <asp:HiddenField ID="opc1" runat="server" Value="0"/>
         <div>
         </div>
     </form>

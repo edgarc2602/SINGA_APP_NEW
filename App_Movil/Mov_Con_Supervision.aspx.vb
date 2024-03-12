@@ -28,7 +28,7 @@ Partial Class App_Movil_Default
         Return sql
     End Function
     <Web.Services.WebMethod()>
-    Public Shared Function encuestas(ByVal fini As String, ByVal ffin As String, ByVal cliente As Integer, ByVal supervisor As Integer, ByVal pagina As Integer) As String
+    Public Shared Function encuestas(ByVal fini As String, ByVal ffin As String, ByVal cliente As Integer, ByVal supervisor As Integer, ByVal gerente As Integer, ByVal estado As Integer, ByVal pagina As Integer) As String
         Dim myConnection As New SqlConnection((New Conexion).StrConexion)
         Dim sqlbr As New StringBuilder
 
@@ -49,6 +49,8 @@ Partial Class App_Movil_Default
         If fini <> "" Then sqlbr.Append("and cast(a.fechaini as date) between '" & Format(vfecini, "yyyyMMdd") & "' And '" & Format(vfecfin, "yyyyMMdd") & "'" & vbCrLf)
         If cliente <> 0 Then sqlbr.Append("and a.id_cliente = " & cliente & "" & vbCrLf)
         If supervisor <> 0 Then sqlbr.Append("and a.usuario = " & supervisor & "" & vbCrLf)
+        If gerente <> 0 Then sqlbr.Append("and b.id_operativo = " & gerente & "" & vbCrLf)
+        If estado <> 0 Then sqlbr.Append("and c.id_estado = " & estado & "" & vbCrLf)
         sqlbr.Append(")as tabla where RowNum BETWEEN (" & pagina & " - 1) * 50 And " & pagina & " * 50 order by fecha, cliente, inmueble for xml path('tr'), root('tbody') ")
         Dim mycommand As New SqlCommand(sqlbr.ToString(), myConnection)
         myConnection.Open()
@@ -64,7 +66,7 @@ Partial Class App_Movil_Default
     End Function
 
     <Web.Services.WebMethod()>
-    Public Shared Function contarencuesta(ByVal fini As String, ByVal ffin As String, ByVal cliente As Integer, ByVal supervisor As Integer) As String
+    Public Shared Function contarencuesta(ByVal fini As String, ByVal ffin As String, ByVal cliente As Integer, ByVal supervisor As Integer, ByVal gerente As Integer, ByVal estado As Integer) As String
         Dim sqlbr As New StringBuilder
         Dim sql As String = ""
 
@@ -73,10 +75,14 @@ Partial Class App_Movil_Default
         Dim vfecfin As Date
         If ffin <> "" Then vfecfin = ffin
 
-        sqlbr.Append("SELECT COUNT(*)/50 + 1 as Filas, COUNT(*) % 50 as Residuos FROM tb_supervision where id_cliente != 0" & vbCrLf)
+        sqlbr.Append("SELECT COUNT(*)/50 + 1 as Filas, COUNT(*) % 50 as Residuos FROM tb_supervision a inner join tb_cliente b ON a.id_cliente=b.id_cliente" & vbCrLf)
+        sqlbr.Append("LEFT OUTER JOIN tb_cliente_inmueble c ON a.id_inmueble=c.id_inmueble " & vbCrLf)
+        sqlbr.Append("LEFT OUTER JOIN Personal d ON a.usuario= d.IdPersonal where a.id_cliente != 0" & vbCrLf)
         If fini <> "" Then sqlbr.Append("and cast(fechaini as date) between '" & Format(vfecini, "yyyyMMdd") & "' And '" & Format(vfecfin, "yyyyMMdd") & "'" & vbCrLf)
-        If cliente <> 0 Then sqlbr.Append("and id_cliente =" & cliente & "" & vbCrLf)
-        If supervisor <> 0 Then sqlbr.Append("and usuario =" & supervisor & "" & vbCrLf)
+        If cliente <> 0 Then sqlbr.Append("and a.id_cliente =" & cliente & "" & vbCrLf)
+        If supervisor <> 0 Then sqlbr.Append("and a.usuario =" & supervisor & "" & vbCrLf)
+        If gerente <> 0 Then sqlbr.Append("and b.id_operativo = " & gerente & "" & vbCrLf)
+        If estado <> 0 Then sqlbr.Append("and c.id_estado = " & estado & "" & vbCrLf)
         Dim ds As New DataTable
         Dim myconnection As String = (New Conexion).StrConexion
         Dim comm As New SqlDataAdapter(sqlbr.ToString(), myconnection)
@@ -132,6 +138,28 @@ Partial Class App_Movil_Default
                 If x > 0 Then sql += ","
                 sql += "{id:'" & dt.Rows(x)("usuario") & "'," & vbCrLf
                 sql += "desc:'" & dt.Rows(x)("supervisor") & "'}" & vbCrLf
+            Next
+        End If
+        sql += "]"
+        Return sql
+    End Function
+
+    <Web.Services.WebMethod()>
+    Public Shared Function estado() As String
+        Dim myConnection As New SqlConnection((New Conexion).StrConexion)
+        Dim sqlbr As New StringBuilder
+        Dim sql As String = ""
+
+        sqlbr.Append("select id_estado, descripcion from tb_estado order by descripcion ")
+        Dim da As New SqlDataAdapter(sqlbr.ToString, myConnection)
+        Dim dt As New DataTable
+        da.Fill(dt)
+        sql = "["
+        If dt.Rows.Count > 0 Then
+            For x As Integer = 0 To dt.Rows.Count - 1
+                If x > 0 Then sql += ","
+                sql += "{id:'" & dt.Rows(x)("id_estado") & "'," & vbCrLf
+                sql += "desc:'" & dt.Rows(x)("descripcion") & "'}" & vbCrLf
             Next
         End If
         sql += "]"

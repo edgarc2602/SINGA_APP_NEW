@@ -52,7 +52,7 @@ Partial Class App_RH_RH_Con_Empleado
     End Function
 
     <Web.Services.WebMethod()>
-    Public Shared Function contarempleado(ByVal cliente As String, ByVal inmueble As String, ByVal noemp As String, ByVal nombre As String, ByVal tipo As Integer, ByVal forma As Integer, ByVal estatus As Integer) As String
+    Public Shared Function contarempleado(ByVal cliente As String, ByVal inmueble As String, ByVal noemp As String, ByVal nombre As String, ByVal tipo As Integer, ByVal forma As Integer, ByVal estatus As Integer, ByVal turno As Integer) As String
 
         Dim sqlbr As New StringBuilder
         Dim sql As String = ""
@@ -66,6 +66,7 @@ Partial Class App_RH_RH_Con_Empleado
         If tipo <> 0 Then sqlbr.Append("and a.id_area = " & tipo & " " & vbCrLf)
         If forma <> 0 Then sqlbr.Append("and a.formapago = " & forma & " " & vbCrLf)
         If estatus <> 0 Then sqlbr.Append("and a.id_status = " & estatus & " " & vbCrLf)
+        If turno <> 0 Then sqlbr.Append("and a.id_turno = " & turno & " " & vbCrLf)
         Dim ds As New DataTable
         Dim myconnection As String = (New Conexion).StrConexion
         Dim comm As New SqlDataAdapter(sqlbr.ToString(), myconnection)
@@ -82,10 +83,11 @@ Partial Class App_RH_RH_Con_Empleado
     End Function
 
     <Web.Services.WebMethod()>
-    Public Shared Function empleado(ByVal pagina As Integer, ByVal cliente As String, ByVal inmueble As String, ByVal noemp As String, ByVal nombre As String, ByVal tipo As Integer, ByVal forma As Integer, ByVal estatus As Integer) As String
+    Public Shared Function empleado(ByVal pagina As Integer, ByVal cliente As String, ByVal inmueble As String, ByVal noemp As String, ByVal nombre As String, ByVal tipo As Integer, ByVal forma As Integer, ByVal estatus As Integer, ByVal turno As Integer) As String
         Dim myConnection As New SqlConnection((New Conexion).StrConexion)
         Dim sqlbr As New StringBuilder
         sqlbr.Append("select (select 'btn btn-success tbeditar' as '@class', 'Doctos' as '@value', 'button' as '@type' for xml path('input'),root('td'),type),'','',")
+        sqlbr.Append("(select 'btn btn-primary tbcontrato' as '@class', 'Contrato' as '@value', 'button' as '@type' for xml path('input'),root('td'),type),'',")
         sqlbr.Append("id_empleado as 'td','', empleado as 'td','',  rfc as 'td','', curp as 'td','', ss as 'td','', pensionado as 'td','', tipo as 'td','', " & vbCrLf)
         sqlbr.Append("estatus as 'td','', empresa as 'td','', cliente as 'td','', inmueble as 'td','', puesto as 'td','', turno as 'td','', jornal as 'td',''," & vbCrLf)
         sqlbr.Append("fnacimiento as 'td','', lugar as 'td','', nacionalidad as 'td','', genero as 'td','', civil as 'td','', talla as 'td','', " & vbCrLf)
@@ -118,6 +120,7 @@ Partial Class App_RH_RH_Con_Empleado
         If tipo <> 0 Then sqlbr.Append("and a.id_area = " & tipo & " " & vbCrLf)
         If forma <> 0 Then sqlbr.Append("and a.formapago = " & forma & " " & vbCrLf)
         If estatus <> 0 Then sqlbr.Append("and a.id_status = " & estatus & " " & vbCrLf)
+        If turno <> 0 Then sqlbr.Append("and a.id_turno = " & turno & " " & vbCrLf)
         sqlbr.Append(") result where RowNum BETWEEN (" & pagina & " - 1) * 80 + 1 And " & pagina & " * 80  " & vbCrLf)
         sqlbr.Append("order by empleado for xml path('tr'), root('tbody')" & vbCrLf)
 
@@ -133,6 +136,27 @@ Partial Class App_RH_RH_Con_Empleado
         Return xdoc1.OuterXml()
     End Function
 
+    <Web.Services.WebMethod()>
+    Public Shared Function turno() As String
+        Dim myConnection As New SqlConnection((New Conexion).StrConexion)
+        Dim sqlbr As New StringBuilder
+        Dim sql As String = ""
+
+        sqlbr.Append("select id_turno, descripcion from tb_turno where id_status = 1 order by descripcion")
+        Dim da As New SqlDataAdapter(sqlbr.ToString, myConnection)
+        Dim dt As New DataTable
+        da.Fill(dt)
+        sql = "["
+        If dt.Rows.Count > 0 Then
+            For x As Integer = 0 To dt.Rows.Count - 1
+                If x > 0 Then sql += ","
+                sql += "{id:'" & dt.Rows(x)("id_turno") & "'," & vbCrLf
+                sql += "desc:'" & dt.Rows(x)("descripcion") & "'}" & vbCrLf
+            Next
+        End If
+        sql += "]"
+        Return sql
+    End Function
     Protected Sub Page_Load(sender As Object, e As EventArgs) Handles Me.Load
         Dim usuario As HttpCookie
         Dim userid As Integer

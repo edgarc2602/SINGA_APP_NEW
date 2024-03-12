@@ -95,6 +95,9 @@
             if ($('#idsol').val() != 0) {
                 cargasolicitud($('#idsol').val());
             }
+            if ($('#seresp').val() != 0) {
+                cargaservicioespecial($('#seresp').val(),0);
+            }
             $('#btbuscap').click(function () {
                 $("#divmodal1").dialog('option', 'title', 'Buscar empleado');
                 dialog1.dialog('open');
@@ -102,8 +105,7 @@
             $('#btbuscaj').click(function () {
                 $("#divmodal2").dialog('option', 'title', 'Buscar Jornalero');
                 dialog2.dialog('open');
-            })
-            
+            })            
             $('#btbuscaemp').click(function () {
                 cargaempleado();
             })
@@ -129,7 +131,7 @@
                 }
             })
             $('#txnoemp').change(function (){
-                PageMethods.empleado($('#txnoemp').val(), function (detalle) {
+                PageMethods.empleado($('#txnoemp').val(), $('#dltipo').val(), function (detalle) {
                     var datos = eval('(' + detalle + ')');
                     if (datos.id == '') {
                         alert('El numero de empleado que ha capturado no es valido, verifique');
@@ -138,8 +140,6 @@
                     } else {
                         $('#txclave').val(datos.id);
                         $('#txnombre').val(datos.nombre);
-                        //$('#txempresa').val(datos.empresa);
-                        //$('#idempresa').val(datos.idemp);
                     }
                 })
             })
@@ -160,8 +160,7 @@
                     case '1':
                         $('#dvconcepto').show();
                         $('#dvfactura').hide();
-                        /*$('#btfacturas').hide();*/
-                        $('#btfacturas').show();
+                        $('#btfacturas').hide();
                         break;
                     case '2':
                         $('#dvconcepto').hide();
@@ -173,42 +172,84 @@
             $('#btnuevo').click(function () {
                 limpia();
             })
+
             $('#btguarda').click(function () {
                 if (valida()) {
-                    waitingDialog({});
-                    //var tipoop = 0;
-                    //if ($('#dltipo').val() == 5 && $('#dlpago').val() == 2) {
-                    //    tipoop = 1;
-                    //} else {
-                    //    tipoop = 2;
-                    //}
-                    var xmlgraba = '<movimiento> <solicitud id="' + $('#txfolio').val() + '" empleado="' + $('#txnoemp').val() + '"';
-                    xmlgraba += ' empresa="' + $('#dlempresa').val() + '" areasolicita="' + $('#txsolicita').val() + '"';
-                    xmlgraba += ' proveedor="' + $('#dlproveedor').val() + '" areaautoriza="' + $('#dlarea1').val() + '" concepto="' + $('#txdesc').val() + '"';
-                    xmlgraba += ' tipogasto="' + $('#dltipo').val() + '" formapago="' + $('#dlforma').val() + '" tipopago="' + $('#dlpago').val() + '"' ;
-                    xmlgraba += ' subtot= "' + $('#txsubtotalg').val() + '" iva = "' + $('#txivag').val() + '" total = "' + $('#txtotalg').val() + '"';
-                    xmlgraba += ' usuario ="' + $('#idusuario').val() + '" piva="' + $('#dliva').val() + '" cliente="' + $('#dlcliente').val() + '" cm="0" jornalero="' + $('#txjornal').val() + '" ';
-                    xmlgraba += ' inmueble ="' + $('#dlsucursal').val() + '" linea ="' + $('#dllinea').val() + '" iguala ="' + $('#dliguala').val() + '" />'
-                    if ($('#dltipo').val() == 5 && $('#dlpago').val() == 2) {
-                        $('#tblistaf tr input[type=checkbox]:checked').each(function () {
-                            xmlgraba += '<partida provision="' + $(this).closest('tr').find('td').eq(0).text() + '" factura="' + $(this).closest('tr').find('td').eq(1).text() + '"  importe="' + parseFloat($(this).closest('tr').find("input:eq(0)").val()) + '"/>'
-                        });
+                    if ($('#txorigen').val() == 'Servicios especiales') {
+                        PageMethods.cargaservicioespecial($('#txfolioorigen').val(), $('#txfolio').val(), function (detalle) {
+                            var datos = eval('(' + detalle + ')');
+                            var total = parseFloat(datos.solicitado) + parseFloat($('#txsubtotalg').val());
+                            if (parseFloat(total) > parseFloat(datos.costodirecto)) {
+                                alert('El monto que esta solicitando supera el presupuesto autorizado, no puede continuar, verifique');
+                            } else {
+                                grabatodo()
+                                $('#txgastoorigen').val(total);
+                            }
+                        })
                     } else {
-                        $('#tblistac tbody tr').each(function () {
-                            xmlgraba += '<partida concepto="' + $(this).closest('tr').find('td').eq(0).text() + '" importe="' + parseFloat($(this).closest('tr').find("input:eq(0)").val()) + '"/>'
-                        });
-                    }
-                    xmlgraba += '</movimiento>';
-                    alert(xmlgraba);
-                    
-                    PageMethods.guarda(xmlgraba, tipoop, function (res) {
-                        closeWaitingDialog();
-                        $('#txfolio').val(res);
-                        alert('Registro completado');
-                    }, iferror);
+                        grabatodo()
+                    }                    
                 }
             })
         })
+        function grabatodo() {
+            waitingDialog({});
+            var tipoop = 0;
+            if ($('#dltipo').val() == 5 && $('#dlpago').val() == 2) {
+                tipoop = 1;
+            } else {
+                tipoop = 2;
+            }
+            var xmlgraba = '<movimiento> <solicitud id="' + $('#txfolio').val() + '" empleado="' + $('#txnoemp').val() + '"';
+            xmlgraba += ' empresa="' + $('#dlempresa').val() + '" areasolicita="' + $('#txsolicita').val() + '"';
+            xmlgraba += ' proveedor="' + $('#dlproveedor').val() + '" areaautoriza="' + $('#dlarea1').val() + '" concepto="' + $('#txdesc').val() + '"';
+            xmlgraba += ' tipogasto="' + $('#dltipo').val() + '" formapago="' + $('#dlforma').val() + '" tipopago="' + $('#dlpago').val() + '"';
+            xmlgraba += ' subtot= "' + $('#txsubtotalg').val() + '" iva = "' + $('#txivag').val() + '" total = "' + $('#txtotalg').val() + '"';
+            xmlgraba += ' usuario ="' + $('#idusuario').val() + '" piva="' + $('#dliva').val() + '" cliente="' + $('#dlcliente').val() + '" jornalero="' + $('#txjornal').val() + '" ';
+            xmlgraba += ' inmueble ="' + $('#dlsucursal').val() + '" linea ="' + $('#dllinea').val() + '" iguala ="' + $('#dliguala').val() + '"'
+            if ($('#txorigen').val() == 'Servicios especiales') {
+                xmlgraba += ' servicioespecial="' + $('#txfolioorigen').val() + '"';
+            } else {
+                xmlgraba += ' servicioespecial="0"';
+            }
+            if ($('#txorigen').val() == 'Correctivo mayor') {
+                xmlgraba += ' cm="' + $('#txfolioorigen').val() + '"';
+            } else {
+                xmlgraba += ' cm="0"';
+            }
+            xmlgraba += '/>';
+            if ($('#dltipo').val() == 5 && $('#dlpago').val() == 2) {
+                $('#tblistaf tr input[type=checkbox]:checked').each(function () {
+                    xmlgraba += '<partida provision="' + $(this).closest('tr').find('td').eq(0).text() + '" factura="' + $(this).closest('tr').find('td').eq(1).text() + '"  importe="' + parseFloat($(this).closest('tr').find("input:eq(0)").val()) + '"/>'
+                });
+            } else {
+                $('#tblistac tbody tr').each(function () {
+                    xmlgraba += '<partida concepto="' + $(this).closest('tr').find('td').eq(0).text() + '" importe="' + parseFloat($(this).closest('tr').find("input:eq(0)").val()) + '"/>'
+                });
+            }
+            xmlgraba += '</movimiento>';
+            //alert(xmlgraba);
+            PageMethods.guarda(xmlgraba, tipoop, function (res) {
+                closeWaitingDialog();
+                $('#txfolio').val(res);
+                alert('Registro completado');
+            }, iferror);
+        }
+        function cargaservicioespecial(servicio) {
+            $('#txorigen').val('Servicios especiales');
+            PageMethods.cargaservicioespecial(servicio,0, function (detalle) {
+                var datos = eval('(' + detalle + ')');
+                $('#txfolioorigen').val(servicio);
+                $('#idcliente').val(datos.cliente);
+                cargacliente();
+                $('#idinmueble').val(datos.inmueble);
+                cargainmueble(datos.cliente);
+                $('#dllinea').val(2);
+                $('#dliguala').val(2);
+                $('#txmontoorigen').val(datos.costodirecto)
+                $('#txgastoorigen').val(datos.solicitado)
+            })
+        }
         function cargalinea() {
             PageMethods.linea(function (opcion) {
                 var opt = eval('(' + opcion + ')');
@@ -247,22 +288,24 @@
                     $('#idproveedor').val(datos.idproveedor);
                     cargaproveedor();
                     $('#dlpago').val(datos.tipopago);
-                } if (datos.tipo == 3) {
-                    $('#dvproveedor').hide();
-                    $('#dvjornal').show();
-                    $('#dvconcepto').show();
-                    $('#dvfactura').hide();
-                    $('#txjornal').val(datos.idjornalero);
-                    $('#txnombrej').val(datos.jornalero);
                 } else {
-                    $('#dvproveedor').hide();
-                    $('#dvempleado').show();
-                    $('#dvconcepto').show();
-                    $('#dvfactura').hide();
-                    $('#txnoemp').val(datos.idempleado);
-                    $('#txnombre').val(datos.empleado);
-                }
-            
+                    if (datos.tipo == 3) {
+                        $('#dvproveedor').hide();
+                        $('#dvjornal').show();
+                        $('#dvconcepto').show();
+                        $('#dvfactura').hide();
+                        $('#txjornal').val(datos.idjornalero);
+                        $('#txnombrej').val(datos.jornalero);
+                    }
+                    else {
+                        $('#dvproveedor').hide();
+                        $('#dvempleado').show();
+                        $('#dvconcepto').show();
+                        $('#dvfactura').hide();
+                        $('#txnoemp').val(datos.idempleado);
+                        $('#txnombre').val(datos.empleado);
+                    }
+                }            
                 if (datos.tipo == 5 && datos.tipopago == 2) {
                     $('#dvconcepto').hide();
                     $('#dvfactura').show();
@@ -280,6 +323,10 @@
                 $('#txivag').val(datos.iva);
                 $('#txtotalg').val(datos.total);
                 $('#dliva').val(datos.piva);
+                $('#seresp').val(datos.se);
+                if (datos.se != 0) {                   
+                    cargaservicioespecial(datos.se,0);
+                }
             })
         }
         function limpia() {
@@ -320,6 +367,11 @@
             var linea = '<tbody></tbody>'
             $('#tbllista1').append(linea);
             $('#tblistac').append(linea);
+            $('#dliguala').val(0);
+            $('#dlsucursal').val(0);
+            $('#dllinea').val(0);
+            $('#idlinea').val(0);
+            $('#dliva').val(0.16);            
         }
         function cargaempresa() {
             PageMethods.empresa(function (opcion) {
@@ -337,7 +389,7 @@
             }, iferror);
         }
         function cargaempleado() {
-            PageMethods.empleadolista($('#dlbusca').val(), $('#txbusca').val(), function (res) {
+            PageMethods.empleadolista($('#dlbusca').val(), $('#txbusca').val(), $('#dltipo').val(), function (res) {
                 var ren = $.parseHTML(res);
                 $('#tbllista1 tbody').remove();
                 $('#tbllista1').append(ren);
@@ -421,7 +473,22 @@
                 alert('Debe agregar al menos un concepto de pago');
                 return false;
             }
-            
+            if ($('#dlarea1').val() == 11) {
+                if ($('#dltipo').val() != 2 && $('#dltipo').val() != 6 && $('#dltipo').val() != 7) {
+                    alert('El área de mantenimiento solo puede validar solicitudes de viáticos, caja chica y reembolsos, verifique');
+                    return false;
+                }   
+            }/*
+            if ($('#txorigen').val() == 'Servicios especiales') {
+                PageMethods.cargaservicioespecial($('#txfolioorigen').val(), function (detalle) {
+                    var datos = eval('(' + detalle + ')');
+                    var total = parseFloat(datos.solicitado) + parseFloat($('#txsubtotalg').val());
+                    if (parseFloat(total) > parseFloat(datos.costodirecto)) {                        
+                        alert('El monto que esta solicitando supera el presupuesto autorizado, no puede continuar, verifique');
+                        return false;
+                    }
+                })
+            }*/
             return true;
         }
         function limpiaconcepto() {
@@ -614,6 +681,9 @@
                     $('#dltipo').val($('#idtipo').val());
                 }
                 $('#dltipo').change(function () {
+                    $('#dlproveedor').val(0);
+                    $('#txnoemp').val('');
+                    $('#txnombre').val('');
                     switch ($('#dltipo').val()) {
                         case '5': 
                             $('#dvproveedor').show();
@@ -637,7 +707,11 @@
                     if ($('#dltipo').val() == 4 || $('#dltipo').val() == 3) {
                         $('#dlarea1').val(9);
                     } else {
-                        $('#dlarea1').val(0);
+                        if ($('#dltipo').val() == 8) {
+                            $('#dlarea1').val(15);
+                        } else {
+                            $('#dlarea1').val(0);
+                        }
                     }
                 })
             }, iferror);
@@ -689,6 +763,7 @@
         <asp:HiddenField ID="idempresa" runat="server" Value="0" />
         <asp:HiddenField ID="idcliente" runat="server" Value="0" />
         <asp:HiddenField ID="idlinea" runat="server" Value="0" />
+        <asp:HiddenField ID="seresp" runat="server" Value="0" />
         <div class="wrapper">
             <div class="main-header">
                 <!-- Logo -->
@@ -755,13 +830,13 @@
                                 <div class="col-lg-2">
                                     <input type="text" id="txfecha" class="form-control" disabled="disabled" />
                                 </div>
-                                <div class="col-lg-1">
+                                <div class="col-lg-1 text-right">
                                     <label for="txfolio">Folio</label>
                                 </div>
                                 <div class="col-lg-2">
                                     <input type="text" id="txfolio" class="form-control text-right" disabled="disabled" value="0" />
                                 </div>
-                                <div class="col-lg-1">
+                                <div class="col-lg-1 text-right">
                                     <label for="txstatus">Estatus</label>
                                 </div>
                                 <div class="col-lg-2">
@@ -770,19 +845,19 @@
                             </div>
                             <div class="row">
                                 <div class="col-lg-1 text-right">
-                                    <label for="dlempresa">Empresa:</label>
+                                    <label for="dlempresa">Empresa</label>
                                 </div>
                                 <div class="col-lg-3">
                                     <select id="dlempresa" class="form-control"></select>
                                 </div>
                                 <div class="col-lg-1 text-right">
-                                    <label for="dlcliente">Cliente:</label>
+                                    <label for="dlcliente">Cliente</label>
                                 </div>
                                 <div class="col-lg-3">
                                     <select id="dlcliente" class="form-control"></select>
                                 </div>
                                 <div class="col-lg-1 text-right">
-                                    <label for="dlsucursal">Pto Atn:</label>
+                                    <label for="dlsucursal">Pto Atn</label>
                                 </div>
                                 <div class="col-lg-3">
                                     <select id="dlsucursal" class="form-control"></select>
@@ -790,13 +865,13 @@
                             </div>
                             <div class="row">
                                 <div class="col-lg-1 text-right">
-                                    <label for="dllinea">Línea:</label>
+                                    <label for="dllinea">Línea</label>
                                 </div>
                                 <div class="col-lg-3">
                                     <select id="dllinea" class="form-control"></select>
                                 </div>
                                 <div class="col-lg-1 text-right">
-                                    <label for="dliguala">Iguala:</label>
+                                    <label for="dliguala">Iguala</label>
                                 </div>
                                 <div class="col-lg-3">
                                     <select id="dliguala" class="form-control">
@@ -805,6 +880,12 @@
                                         <option value="2">Fuera de iguala</option>
                                     </select>
                                 </div>
+                                <div class="col-lg-1 text-right">
+                                    <label for="txorigen">Origen</label>
+                                </div>
+                                <div class="col-lg-2">
+                                    <input type="text" id="txorigen" class="form-control" disabled="disabled"/>
+                                </div>                                
                             </div>
                             <div class="row">
                                 <div class="col-lg-1 text-right">
@@ -885,6 +966,7 @@
                                         <option value="1">Cheque</option>
                                         <option value="2">Transferencia</option>
                                         <option value="3">Orden empresarial</option>
+                                        <option value="3">Efectivo</option>
                                     </select>
                                 </div>
                             </div>
@@ -896,6 +978,26 @@
                                     <textarea class=" form-control" id="txdesc"></textarea>
                                 </div>
                             </div>
+                            <div class="row">
+                                <div class="col-lg-1 text-right">
+                                    <label for="txfolioorigen">Folio de origen</label>
+                                </div>
+                                <div class="col-lg-1">
+                                    <input type="text" class=" form-control" id="txfolioorigen" disabled="disabled" />
+                                </div>
+                                <div class="col-lg-2 text-right">
+                                    <label for="txmontoorigen">Monto prespuestado</label>
+                                </div>
+                                <div class="col-lg-2">
+                                    <input type="text" class=" form-control" id="txmontoorigen" disabled="disabled" />
+                                </div>
+                                <div class="col-lg-1">
+                                    <label for="txgastoorigen">Monto utilizado</label>
+                                </div>
+                                <div class="col-lg-2">
+                                    <input type="text" class=" form-control" id="txgastoorigen" disabled="disabled" />
+                                </div>
+                            </div>
                         </div>
 
                     </div>
@@ -903,7 +1005,7 @@
                         <table class=" table table-condensed h6" id="tblistac">
                             <thead>
                                 <tr>
-                                    <th class="bg-light-blue-active">Id</th>
+                                    <th class="bg-light-blue-active"></th>
                                     <th class="bg-light-blue-active">Concepto</th>
                                     <th class="bg-light-blue-active">Importe</th>
                                     <th class="bg-light-blue-active"></th>

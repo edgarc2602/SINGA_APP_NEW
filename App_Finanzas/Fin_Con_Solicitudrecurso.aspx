@@ -97,7 +97,7 @@
                     cargalista();
                 }
             })
-            $('#btautoriza').click(function () {
+            $('#btautoriza').click(function () {                  
                 if (validastatus()) {
                     waitingDialog({});
                     PageMethods.cambiaestatus($('#txreq').val(), $('#dlestatus1').val(), $('#idusuario').val(), $('#txmotivo').val(), function (res) {
@@ -170,6 +170,10 @@
             }, iferror);
         }
         function validastatus() {
+            if ($('#dlestatus1').val() == 0) {
+                alert('Debe elegir un estatus valido');
+                return false;
+            }
             if ($('#dlestatus1').val() == 6 && $('#txmotivo').val() == '') {
                 alert('Al rechazar una solicitud debe colocar un motivo para informar a la persona que elaboro la solicitud');
                 return false;
@@ -244,9 +248,20 @@
                         }
                     });
                     $('#tblista tbody tr').delegate(".btvalida", "click", function () {
-                        if ($('#idusuario').val() != 1 && $('#idusuario').val() != 59 && $('#idusuario').val() != 81 && $('#idusuario').val() != 85 && $('#idusuario').val() != 100 && $('#idusuario').val() != 20656 && $('#idusuario').val() != 84 && $('#idusuario').val() != 164) {
+                        if ($('#idusuario').val() != 1 && $('#idusuario').val() != 59 && $('#idusuario').val() != 81 && $('#idusuario').val() != 85 && $('#idusuario').val() != 100 && $('#idusuario').val() != 20656 && $('#idusuario').val() != 84 && $('#idusuario').val() != 164 && $('#idusuario').val() != 20615 && $('#idusuario').val() != 20535 && $('#idusuario').val() != 158 && $('#idusuario').val() != 5 && $('#idusuario').val() != 20654) {
                             alert('Usted no esta autorizado para realizar esta operación');
                         } else {
+                            $('#dlestatus1').empty();
+                            if ($(this).closest('tr').find('td').eq(11).text() == 'Mantenimiento') {
+                                var lista = '<option value="0">Seleccione...</option>';
+                                lista += '<option value="3">Liberar</option>';
+                                lista += '<option value="6">Rechazar</option>';
+                            } else {
+                                var lista = '<option value="0">Seleccione...</option>';
+                                lista += '<option value="2">Validar</option>';
+                                lista += '<option value="6">Rechazar</option>'; 
+                            }
+                            $('#dlestatus1').append(lista);
                             $('#txreq').val($(this).closest('tr').find('td').eq(0).text());
                             $("#divmodal1").dialog('option', 'title', 'Validar/rechazar Solicitud');
                             dialog1.dialog('open');
@@ -281,7 +296,7 @@
                         }
                     });
                     $('#tblista tbody tr').delegate(".btpagado", "click", function () {
-                        if ($('#idusuario').val() != 139 && $('#idusuario').val() != 138) {
+                        if ($('#idusuario').val() != 139 && $('#idusuario').val() != 138 && $('#idusuario').val() != 1 && $('#idusuario').val() != 57) {
                         /*if ($('#idusuario').val() == 0) {*/
                             alert('Usted no esta autorizado para realizar esta operación');
                         } else {
@@ -291,8 +306,10 @@
                                 cargalista();
                                 closeWaitingDialog();
                             }, iferror);
-                        }
-                        
+                        }                        
+                    });
+                    $('#tblista tbody tr').delegate(".btcomprueba", "click", function () {
+                        window.open('Fin_Pro_Comprobacionrecurso.aspx?folio=' + $(this).closest('tr').find('td').eq(0).text(), '_blank')
                     });
                 }
             }, iferror);
@@ -504,6 +521,7 @@
                                         <th class="bg-light-blue-gradient"><span>CLABE</span></th>
                                         <th class="bg-light-blue-gradient"><span>Cuenta</span></th>
                                         <th class="bg-light-blue-gradient"><span>Área valida</span></th>
+                                        <th class="bg-light-blue-gradient"><span>Origen</span></th>
                                     </tr>
                                 </thead>
                             </table>

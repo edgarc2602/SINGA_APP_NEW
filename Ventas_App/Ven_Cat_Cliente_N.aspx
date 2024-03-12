@@ -18,7 +18,9 @@
     <script src="https://code.jquery.com/ui/1.11.4/jquery-ui.min.js" type="text/javascript"></script>
 
     <script type="text/javascript">
-        var inicial = '<option value=0>Seleccione...</option>'
+        var inicial = '<option value=0>Seleccione...</option>';
+        var idarea = getParameterByName("IdArea");
+
         $(function () {
             $('#hdpagina').val(1); // ASIGNACION DEL INICIO DE PAGINA
             $('#var1').html('<%=listamenu%>');
@@ -59,50 +61,51 @@
                 $('#dvtabla').hide();
                 $('#dvdatos').toggle('slide', { direction: 'down' }, 500);
             }
+
             
             $('#btoficinas').on('click', function () {
-                var mywin = window.open('Ven_Cat_Cliente_Oficinas.aspx?id=' + $('#txid').val() + '&nombre=' + $('#txnombre').val(), '_blank', 'top = 100, left = 300, width = 400, height = 400')
+                var mywin = window.open('Ven_Cat_Cliente_Oficinas.aspx?id=' + $('#txid').val() + '&IdArea=' + idarea + '&nombre=' + $('#txnombre').val(), '_blank', 'top = 100, left = 300, width = 400, height = 400')
             });
             $('#btlineas').on('click', function () {
-                var mywin = window.open('Ven_Cat_Cliente_Lineas.aspx?id=' + $('#txid').val() + '&nombre=' + $('#txnombre').val() + '&monto=' + $('#txmonto').val(), '_blank', 'top = 100, left = 300, width = 500, height = 400')
+                var mywin = window.open('Ven_Cat_Cliente_Lineas.aspx?id=' + $('#txid').val() + '&IdArea=' + idarea + '&nombre=' + $('#txnombre').val() + '&monto=' + $('#txmonto').val(), '_blank', 'top = 100, left = 300, width = 500, height = 400')
             });
             //08/08/2023
             $('#btimportar').on('click', function () {
-                var mywin = window.open('Ven_Descarga_Igualas.aspx?id=' + $('#txid').val() + '&nombre=' + $('#txnombre').val() + '&monto=' + $('#txmonto').val(), '_blank', 'top = 100, left = 300, width = 400, height = 400')
+                var mywin = window.open('Ven_Descarga_Igualas.aspx?id=' + $('#txid').val() + '&IdArea=' + idarea + '&nombre=' + $('#txnombre').val() + '&monto=' + $('#txmonto').val(), '_blank', 'top = 100, left = 300, width = 400, height = 400')
             });
 
             $('#btinmueble').on('click', function () {
-                var mywin = window.open('Ven_Cat_Cliente_inmueble.aspx?id=' + $('#txid').val() + '&nombre=' + $('#txnombre').val(), '_blank', 'top = 100, left = 100, width = 1200, height = 500')
+                var mywin = window.open('Ven_Cat_Cliente_inmueble.aspx?id=' + $('#txid').val() + '&IdArea=' + idarea + '&nombre=' + $('#txnombre').val(), '_blank', 'top = 100, left = 100, width = 1200, height = 500')
             });
             $('#btiguala').on('click', function () {
-                var mywin = window.open('Ven_Cat_Cliente_Iguala.aspx?id=' + $('#txid').val() + '&nombre=' + $('#txnombre').val(), '_blank', 'top = 100, left = 100, width = 1200, height = 500')
+                var mywin = window.open('Ven_Cat_Cliente_Iguala.aspx?id=' + $('#txid').val() + '&IdArea=' + idarea + '&nombre=' + $('#txnombre').val(), '_blank', 'top = 100, left = 100, width = 1200, height = 500')
             });
             $('#btplantilla').on('click', function () {
-                var mywin = window.open('Ven_Cat_Cliente_Plantilla.aspx?id=' + $('#txid').val() + '&nombre=' + $('#txnombre').val() + '&usu=' + $('#idusuario').val(), '_blank', '')
+                var mywin = window.open('Ven_Cat_Cliente_Plantilla.aspx?id=' + $('#txid').val() + '&IdArea=' + idarea + '&nombre=' + $('#txnombre').val() + '&usu=' + $('#idusuario').val(), '_blank', '')
             });
             $('#btlistamaterial').on('click', function () {
-                var mywin = window.open('Ven_Cat_Cliente_Listatipo.aspx?id=' + $('#txid').val() + '&nombre=' + $('#txnombre').val(), '_blank', 'top = 100, left = 300, width = 1200, height = 500')
+                var mywin = window.open('Ven_Cat_Cliente_Listatipo.aspx?id=' + $('#txid').val() + '&IdArea=' + idarea + '&nombre=' + $('#txnombre').val(), '_blank', 'top = 100, left = 300, width = 1200, height = 500')
             });
             $('#btmaterial').on('click', function () {
-                var mywin = window.open('Ven_Cat_Cliente_Material.aspx?id=' + $('#txid').val() + '&nombre=' + $('#txnombre').val(), '_blank', 'top = 100, left = 300, width = 900, height = 500')
+                var mywin = window.open('Ven_Cat_Cliente_Material.aspx?id=' + $('#txid').val() + '&IdArea=' + idarea + '&nombre=' + $('#txnombre').val() + '&categoria=1', '_blank', 'top = 100, left = 300, width = 900, height = 500')
             });
             $('#btherr').on('click', function () {
-                var mywin = window.open('Ven_Cat_Cliente_Herramienta.aspx?id=' + $('#txid').val() + '&nombre=' + $('#txnombre').val(), '_blank', 'top = 100, left = 300, width = 900, height = 500')
+                var mywin = window.open('Ven_Cat_Cliente_Herramienta.aspx?id=' + $('#txid').val() + '&IdArea=' + idarea + '&nombre=' + $('#txnombre').val() + '&categoria=2', '_blank', 'top = 100, left = 300, width = 900, height = 500')
             });
             $('#btotroeq').on('click', function () {
-                var mywin = window.open('Ven_Cat_Cliente_Otroeq.aspx?id=' + $('#txid').val() + '&nombre=' + $('#txnombre').val(), '_blank', 'top = 100, left = 300, width = 900, height = 500')
+                var mywin = window.open('Ven_Cat_Cliente_Otroeq.aspx?id=' + $('#txid').val() + '&IdArea=' + idarea + '&nombre=' + $('#txnombre').val() + '&categoria=3', '_blank', 'top = 100, left = 300, width = 900, height = 500')
             });
             $('#btviatico').on('click', function () {
                 var mywin = window.open('Ven_Cat_Cliente_Viatico.aspx?folio=1 &est=2', '_blank')
             });
             $('#btsubcontrato').on('click', function () {
-                var mywin = window.open('Ven_Cat_Cliente_Subcontrato.aspx?id=' + $('#txid').val() + '&nombre=' + $('#txnombre').val(), '_blank', 'top = 100, left = 300, width = 900, height = 500')
+                var mywin = window.open('Ven_Cat_Cliente_Subcontrato.aspx?id=' + $('#txid').val() + '&IdArea=' + idarea + '&nombre=' + $('#txnombre').val() + '&categoria=4', '_blank', 'top = 100, left = 300, width = 900, height = 500')
             });
             $('#btcostofin').on('click', function () {
                 var mywin = window.open('Ven_Cat_Cliente_Gastofin.aspx?folio=1 &est=2', '_self')
             });
             $('#tblistaauto').on('click', function () {
-                var mywin = window.open('Ven_Cat_Cliente_listaauto.aspx?id=' + $('#txid').val() + '&nombre=' + $('#txnombre').val(), '_blank', 'top = 100, left = 300, width = 900, height = 500')
+                var mywin = window.open('Ven_Cat_Cliente_listaauto.aspx?id=' + $('#txid').val() + '&IdArea=' + idarea + '&nombre=' + $('#txnombre').val(), '_blank', 'top = 100, left = 300, width = 900, height = 500')
             });
             cuentacliente();
             cargalista();
@@ -114,7 +117,7 @@
                 $('#dvtabla').show();
                 $('#dvdatos').hide();
             });
-
+            
             $("#txdialimfact").on('input', function () {
                 var valor = $(this).val();
                 valor = valor.replace(/\D/g, "");
@@ -189,14 +192,40 @@
                     if ($('#cbtiempo').is(':checked')) {
                         ppzo = 1;
                     }
-                    var xmlgraba = '<cliente id= "' + $('#txid').val() + '" tipo ="' + $('#dltipo').val() + '" nombre = "' + $('#txnombre').val() + '" contacto = "' + $('#txcontacto').val() + '" ';
-                    xmlgraba += ' depto= "' + $('#txdepto').val() + '" puesto= "' + $('#txpuesto').val() + '" correo = "' + $('#txcorreo').val() + '" telefono = "' + $('#txtelefono').val() + '" ';
-                    xmlgraba += ' ejecutivo = "' + $('#dlejecutivo').val() + '" encargado = "' + $('#dlencargado').val() + '" factura = "' + $('#dlperfac').val() + '" tipofac = "' + $('#dltipfac').val() + '" credito = "' + $('#txcred').val() + '" ';
-                    xmlgraba += ' fini = "' + finicio + '" vigencia = "' + $('#txvigencia').val() + '" ffin = "' + ffin + '" usuario="' + $('#idusuario').val() + '"';
+                    var xmlgraba = '<cliente id= "' + $('#txid').val() + '"';
+                    xmlgraba += ' tipo ="' + $('#dltipo').val() + '"';
+                    xmlgraba += ' nombre = "' + $('#txnombre').val() + '"';
+                    xmlgraba += ' contacto = "' + $('#txcontacto').val() + '"';
+                    xmlgraba += ' depto= "' + $('#txdepto').val() + '"';
+                    xmlgraba += ' puesto= "' + $('#txpuesto').val() + '"';
+                    xmlgraba += ' correo = "' + $('#txcorreo').val() + '"';
+                    xmlgraba += ' telefono = "' + $('#txtelefono').val() + '"';
+                    xmlgraba += ' ejecutivo = "' + $('#dlejecutivo').val() + '"';
+                    xmlgraba += ' encargado = "' + $('#dlencargado').val() + '"';
+                    xmlgraba += ' factura = "' + $('#dlperfac').val() + '"';
+                    xmlgraba += ' tipofac = "' + $('#dltipfac').val() + '"';
+                    xmlgraba += ' credito = "' + $('#txcred').val() + '"';
+                    xmlgraba += ' fini = "' + finicio + '"';
+                    xmlgraba += ' vigencia = "' + $('#txvigencia').val() + '"';
+                    xmlgraba += ' ffin = "' + ffin + '"';
+                    xmlgraba += ' usuario="' + $('#idusuario').val() + '"';
                     //xmlgraba += ' ptmat= "' + $('#txpmat').val() + '" ptind= "' + $('#txpind').val() + '" dialimfac="' + $('#txdialimfact').val() + '" montotot="' + $('#txtotal').val() + '" ';
-                    xmlgraba += ' ptmat= "' + $('#txpmat').val() + '" ptind= "' + $('#txpind').val() + '" dialimfac="' + $('#txdialimfact').val() + '" montotot="0" ';
-                    xmlgraba += ' pmat = "' + pmat + '" pser = "' + pser + '" ppla = "' + ppla + '" ppzo = "' + ppzo + '" empresa = "' + $('#dlempresa').val() + '" />';
-                    PageMethods.guarda(xmlgraba, function (res) {
+                    xmlgraba += ' ptmat= "' + $('#txpmat').val() + '"';
+                    xmlgraba += ' ptind= "' + $('#txpind').val() + '"';
+                    xmlgraba += ' dialimfac="' + $('#txdialimfact').val() + '"';
+                    xmlgraba += ' montotot="0"';
+                    xmlgraba += ' pmat = "' + pmat + '" pser = "' + pser + '" ppla = "' + ppla + '" ppzo = "' + ppzo + '" empresa = "' + $('#dlempresa').val() + '"';
+                    xmlgraba += ' idpersonal = "' + <%= Request.Cookies("Usuario").Value %>  + '"';
+                    xmlgraba += '/> ';
+
+                    var xmllog = '<log';
+                    xmllog += ' IdArea = "' + idarea + '"';
+                    xmllog += ' titulovista = "' + document.title + '"';
+                    xmllog += ' idpersonal = "' + <%= Request.Cookies("Usuario").Value %>  + '"';
+                    xmllog += ' direccionip = "' + $('#ipaddress').val() + '"';
+                    xmllog += '/>';
+
+                    PageMethods.guarda(xmlgraba, xmllog, function (res) {
                         closeWaitingDialog();
                         $('#txid').val(res)
                         alert('Registro completado.');
@@ -212,8 +241,28 @@
             $('#btbaja').click(function () {
                 if (validabaja()) {
                     //alert('hola');
+
+                    var fb = $('#txfbaja').val().split('/');
+                    var fbaja = fb[2] + fb[1] + fb[0];
+
+                    var xml = '<cliente '
+                    xml += ' idcliente = "' + $('#txid').val() + '"'
+                    xml += ' fechabaja = "' + fbaja + '"'
+                    xml += ' comentario = "' + $('#txcomentario').val() + '"'
+                    xml += ' idejecutivo = "' + $('#idejecutivo').val() + '"'
+                    xml += ' idencargado = "' + $('#idencargado').val() + '"'
+                    xml += ' idpersonal = "' + <%= Request.Cookies("Usuario").Value %> + '"'
+                    xml += '/> '
+
+                    var xmllog = '<log'
+                    xmllog += ' IdArea = "' + idarea + '"';
+                    xmllog += ' titulovista = "' + document.title + '"'
+                    xmllog += ' idpersonal = "' + <%= Request.Cookies("Usuario").Value %> + '"'
+                    xmllog += ' direccionip = "' + $('#ipaddress').val() + '"'
+                    xmllog += '/> '
+
                     waitingDialog({});
-                    PageMethods.elimina($('#txid').val(), $('#txnombre').val(), $('#txfbaja').val(), $('#txcomentario').val(), $('#idejecutivo').val(), $('#idencargado').val(), function () {
+                    PageMethods.elimina(xml, xmllog,function () {
                         closeWaitingDialog();
                         alert('El Cliente se ha registrado para baja automática, en la fecha señalada, ya no se podran realizar cambios a su registro.');
                         cargalista();
@@ -239,6 +288,14 @@
                 //cargalista();
             })
         });
+
+        function getParameterByName(name) {
+            name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
+            var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
+                results = regex.exec(location.search);
+            return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+        }
+
         function asignapagina(np) {
             $('#paginacion li').removeClass("active");
             $('#hdpagina').val(np);
@@ -476,6 +533,9 @@
         <asp:HiddenField ID="idejecutivo" runat="server" />
         <asp:HiddenField ID="idencargado" runat="server" />
         <asp:HiddenField ID="idempresa" runat="server" />
+
+        <input type="hidden" value="<%= GetIPAddress() %>" id="ipaddress" readonly/>
+
         <div class="wrapper">
             <div class="main-header">
                 <!-- Logo -->

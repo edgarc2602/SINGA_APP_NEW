@@ -134,19 +134,11 @@
                 var ren = $.parseHTML(res);
                 $('#tblista tbody').remove();
                 $('#tblista').append(ren);
-                /*
+                
                 $('#tblista tbody tr').on('click', '.btver', function () {
-                    $('#lbfolio').text($(this).closest('tr').find('td').eq(2).text());
-                    $('#lbinmueble').text($(this).closest('tr').find('td').eq(1).text());
-                    $('#lbtipo').text($(this).closest('tr').find('td').eq(3).text());
-                    PageMethods.listadod($(this).closest('tr').find('td').eq(2).text(), function (res) {
-                        var ren1 = $.parseHTML(res);
-                        $('#tblistaj tbody').remove();
-                        $('#tblistaj').append(ren1);
-                    }, iferror);
-                    $("#divmodal").dialog('option', 'title', 'Detalle de materiales');
-                    dialog.dialog('open');
-                });*/
+                    var formula = '{tb_listadomaterial.id_listado}=' + $(this).closest('tr').find('td').eq(2).text()
+                    window.open('../RptForAll.aspx?v_nomRpt=listadoinventario.rpt&v_formula=' + formula, '', 'width=850, height=600, left=80, top=120, resizable=no, scrollbars=no');
+                });
                 $('#tblista tbody tr').on('click', '.btacuse', function () {
                     $('#lbfolio1').text($(this).closest('tr').find('td').eq(2).text());
                     $('#lbinmueble1').text($(this).closest('tr').find('td').eq(1).text());

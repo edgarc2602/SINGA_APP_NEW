@@ -44,7 +44,7 @@
                 dialog1.dialog('open');
             })
             $('#btbuscap').click(function () {
-                PageMethods.productol($('#txbusca').val(), function (res) {
+                PageMethods.productol($('#txbusca').val(), $('#idcte').val(), function (res) {
                     var ren1 = $.parseHTML(res);
                     $('#tbbusca tbody').remove();
                     $('#tbbusca').append(ren1);

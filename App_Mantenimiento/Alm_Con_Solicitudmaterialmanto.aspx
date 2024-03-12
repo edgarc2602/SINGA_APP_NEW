@@ -22,6 +22,13 @@
             width:0px;
             display:none;
         }
+        
+        .table-container {
+            width: 98%; /* Ancho deseado del contenedor */
+            height: 300px; /* Altura deseada del contenedor */
+            overflow: auto; /* Agregar barras de desplazamiento cuando sea necesario */
+        }
+
     </style>
      <script type="text/javascript">
         var inicial = '<option value=0>Seleccione...</option>'
@@ -34,20 +41,21 @@
              cargacliente();
              dialog1 = $('#divmodal1').dialog({
                  autoOpen: false,
-                 height: 350,
-                 width: 800, 
+                 height: 250,
+                 width:450, 
                  modal: true,
                  close: function () {
                  }
              });
              dialog2 = $('#divmodal2').dialog({
                  autoOpen: false,
-                 height: 350,
+                 height: 450,
                  width: 900,
                  modal: true,
                  close: function () {
                  }
              });
+             
              $("#loadingScreen").dialog({
                  autoOpen: false,    // set this to false so we can manually open it
                  dialogClass: "loadingScreenWindow",
@@ -87,41 +95,59 @@
                  }
              })
              $('#btguarda').click(function () {
-                 waitingDialog({});
-                 var incompleto = 0
-                 var xmlgraba = '<Movimiento> <salida documento="8" almacen="14" factura="0"';
+                /* waitingDiaog({});*/
+                 var incompleto = 0;
+                 var NumDespachos = 0
+                 var xmlgraba = '<Movimiento> <salida documento="19" almacen="' + $('#idalmacen').val() + '" factura="0"';//Salida por Despacho Mantenimiento 19 Cambio fide 14-02-2024
                  xmlgraba += ' cliente="' + $('#idcliente').val() + '" almacen1="' + $('#idalmacen1').val() + '"';
                  xmlgraba += ' orden="' + $('#txsol2').val() + '" usuario="' + $('#idusuario').val() + '"/>'
                  $('#tbbusca tbody tr').each(function () {
-                     if (parseFloat($(this).closest('tr').find('td').eq(6).text()) != 0) {
-                         xmlgraba += '<pieza clave="' + $(this).closest('tr').find('td').eq(0).text() + '" cantidad="' + $(".txcant").val() + '"';
+                     if (parseFloat($(this).closest('tr').find('td').eq(3).text()) !== 0 && parseFloat(parseFloat($(this).closest('tr').find("input:eq(0)").val())) !== 0) {
+                         xmlgraba += '<pieza clave="' + $(this).closest('tr').find('td').eq(0).text() + '" cantidad="' + parseFloat(parseFloat($(this).closest('tr').find("input:eq(0)").val())) + '"';
                          xmlgraba += ' precio="' + parseFloat($(this).closest('tr').find('td').eq(4).text()) + '"/>';
+                         NumDespachos++;
                      } else {
-                         incompleto = 1
+                         incompleto++;
+                     }
+
+                     if (parseFloat($(this).closest('tr').find('td').eq(3).text()) > parseFloat($(this).closest('tr').find('td').eq(5).text()) ) { //lo q se solicita es mayo a lo existente(disponible)
+                         incompleto++;
                      }
                  });
-
-                 if (incompleto == 1) {
-                     alert('Solo se despachara material con existencias disponibles');
-                 }
                  xmlgraba += '</Movimiento>';
-                 alert(xmlgraba);
 
-                 PageMethods.guarda(xmlgraba, function (res) {
-                     closeWaitingDialog();
+                 //alert(xmlgraba);
+
+                 if (NumDespachos == 0) {
+                        alert('No hay productos para despachar');
+                         return;
+                 }
+                 else if (incompleto > 0) {
+                     var resultado = confirm('Materiales sin existencias, esta de acuerdo en que:\n\n  ¿Solo se despachen materiales con existencias disponibles?');
+                     if (!resultado) {
+                         /*closeWaitingDialog();*/
+                         return;
+                     }
+                 }
+                                  
+
+                 PageMethods.guarda(xmlgraba, incompleto, function (res) {
+                     /*closeWaitingDialog();*/
                      if (res == 0) {
                          alert('algo salio mal');
-                     } else {
+                     } else {//se guardo correctamente
                          $('#lbdespacho').val(res);
-
                          alert('Registro completado');
+                         dialog2.dialog('close');
+                         cargalista();
                      }
                  }, iferror);
-                 PageMethods.autoriza(5, $('#txsol2').val(), function () {
-                     alert('La solicitud ha sido despachada correctamente')
-                     dialog2.dialog('close');
-                     cargalista();
-                 }, iferror);
+
+                  //PageMethods.autoriza(5, $('#txsol2').val(), function () { 'se actualiza el estatus dentro del [sp_kardexsalida] q se ejecuta en el PageMethods.guarda()
+                 //    alert('La solicitud ha sido despachada correctamente')
+                 //    dialog2.dialog('close');
+                 //    cargalista();
+                 //}, iferror);
              })
             
          })
@@ -169,7 +195,7 @@
                      });
 
                      $('#tblista tbody tr').delegate(".btauto", "click", function () {
-                         /*if ($('#idusuario').val() != 1 && $('#idusuario').val() != 59 && $('#idusuario').val() != 81 && $('#idusuario').val() != 85 && $('#idusuario').val() != 100 && $('#idusuario').val() != 130 && $('#idusuario').val() != 84) {*/
+                         //if ($('#idusuario').val() != 1 && $('#idusuario').val() != 59 && $('#idusuario').val() != 81 && $('#idusuario').val() != 85 && $('#idusuario').val() != 100 && $('#idusuario').val() != 130 && $('#idusuario').val() != 84) {
                          if ($('#idusuario').val() != 163) {
                              alert('Usted no esta autorizado para realizar esta operación');
                          } else {
@@ -183,28 +209,51 @@
 
                             if ($(this).closest('tr').find('td').eq(5).text() == 'Autorizada') {
                                  //alert($(this).closest('tr').find('td').eq(12).text());
-                                 $('#txsol2').val($(this).closest('tr').find('td').eq(0).text());
-                                 $('#idalmacen1').val($(this).closest('tr').find('td').eq(11).text());
+                                $('#txsol2').val($(this).closest('tr').find('td').eq(0).text());
+                                $('#idalmacen1').val($(this).closest('tr').find('td').eq(11).text());
+
+                                //INICIO Cambio Fide, asignación de almacen de Salida'
+                                var auxInputAlmacenSal = $(this).closest('tr').find('td').eq(12).attr('text');
+                                $('#idalmacen').val(auxInputAlmacenSal);
+                                //FIN Cambio Fide, asignación de almacen de Salida'
+
                                 $('#idcliente').val($(this).closest('tr').find('td').eq(10).text());
                                 $('#lbalmacen1').val($(this).closest('tr').find('td').eq(2).text());
                                 $('#lbcliente').val($(this).closest('tr').find('td').eq(4).text());
 
 
-                                 PageMethods.detalles($(this).closest('tr').find('td').eq(0).text(), function (res) {
+                                PageMethods.detalles($(this).closest('tr').find('td').eq(0).text(), auxInputAlmacenSal, function (res) {
                                      //closeWaitingDialog();
                                      var ren = $.parseHTML(res);
                                      $('#tbbusca tbody').remove();
-                                     $('#tbbusca').append(ren);
-                                     $('#tbbusca tbody tr').delegate(".txcant", "focusout", function () {
-                                         if (parseFloat($(this).closest('tr').find("input:eq(0)").val()) > parseFloat($(this).closest('tr').find('td').eq(5).text())) {
-                                             alert('No puede despachar cantidad mayor superior al disponible');
-                                             return;
-                                             $(this).closest('tr').find("input:eq(0)").val(parseFloat($(this).closest('tr').find('td').eq(3).text()))
-                                             $(this).closest('tr').find("input:eq(0)").focus();
-                                         }
-                                     });
+                                    $('#tbbusca').append(ren);
+
+                                     //$('#tbbusca tbody tr').delegate(".txcant", "focusout", function () {
+                                     //    if (parseFloat($(this).closest('tr').find("input:eq(0)").val()) > parseFloat($(this).closest('tr').find('td').eq(5).text())) {
+                                     //        alert('No puede despachar cantidad mayor superior al disponible');
+                                     //        return;
+                                     //        $(this).closest('tr').find("input:eq(0)").val(parseFloat($(this).closest('tr').find('td').eq(3).text()))
+                                     //        $(this).closest('tr').find("input:eq(0)").focus();
+                                     //    }
+                                     //});
+
+                                    $('.txcant').on('change', function () {
+                                        var AuxCantidad = parseFloat($(this).attr("cantidad"));
+                                        var despacho = parseFloat($(this).val());
+
+                                        //alert('Despacho:' + despacho + ' cantidad solicitada ' + AuxCantidad );
+
+                                        if (despacho>AuxCantidad) {
+                                            alert('El despacho no puede ser mayor a la cantidad solicitada ' );
+                                            $(this).focus();
+                                        }
+                                    });
+
                                      $("#divmodal2").dialog('option', 'title', 'Despacho de materiales');
-                                     dialog2.dialog('open');
+                                    dialog2.dialog('open');
+
+                                    //$('#btguarda').focus();
+
                                  });
                              } else {
                                  alert('Solo se puede despachar solicitudes autorizadas');
@@ -245,7 +294,7 @@
 </head>
 <body class="skin-blue sidebar-mini">
     <form id="form1" runat="server">
-            <asp:ScriptManager ID="ScriptManager1" runat="server" EnablePageMethods="true">
+        <asp:ScriptManager ID="ScriptManager1" runat="server" EnablePageMethods="true">
         </asp:ScriptManager>
         <asp:HiddenField ID="hdpagina" runat="server" />
         <asp:HiddenField ID="idusuario" runat="server" />
@@ -368,6 +417,7 @@
                                     <th class="bg-light-blue-active">Precio</th>
                                     <th class="bg-light-blue-active"></th>
                                     <th class="bg-light-blue-active"></th>
+                                    <th class="bg-light-blue-active"></th>
                                 </tr>
                             </thead>
                             <tbody></tbody>
@@ -386,88 +436,82 @@
                             </li>
                         </ul>
                     </nav>
-                    <div id="divmodal1">
+                    <div id="divmodal1" style="width:100%;overflow-x:hidden">
                         <div class="row">
-                            <div class="row">
-                                <div class="col-lg-2 text-right">
-                                    <label for="txsol1">No. Solicitud</label>
-                                </div>
-                                <div class="col-lg-2">
-                                    <input type="text" class=" form-control" id="txsol1" disabled="disabled" />
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-lg-2 text-right">
-                                    <label for="dlestatus1">Estatus</label>
-                                </div>
-                                <div class="col-lg-3">
-                                    <select id="dlestatus1" class="form-control">
+                            <table style="width:90%;">
+                                <tr>
+                                    <td style="text-align:right"><label for="txsol1">No. Solicitud : &nbsp;</label></td>
+                                    <td style="text-align:center"><input style="width:90%;" type="text" class=" form-control" id="txsol1" disabled="disabled" /></td>
+                                </tr>
+                                <tr> <td colspan="2">&nbsp; </td></tr>
+                                <tr>
+                                    <td style="text-align:right"><label for="dlestatus1">Estatus : &nbsp;</label></td>
+                                    <td style="text-align:center;">
+                                        <select id="dlestatus1" class="form-control" style="width:90%;">
                                         <option value="0">Seleccione...</option>
                                         <option value="2">Autorizar</option>
                                         <option value="3">Rechazar</option>
                                     </select>
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-lg-1">
-                                    <input type="button" class="btn btn-primary" value="Guardar" id="btautoriza" />
-                                </div>
-                            </div>
+
+                                    </td>
+                                </tr>
+                                <tr> <td colspan="2">&nbsp; </td></tr>
+                                <tr> <td colspan="2" style="text-align:center"><input type="button" class="btn btn-primary" value="Guardar" id="btautoriza" /></td></tr>
+                            </table>
+                            
                         </div>
                     </div>
-                    <div id="divmodal2">
+                          <div id="divmodal2"  style="width:100%;overflow-x:hidden">
+
+                           <div class="form-row">
+                            <div class="form-group col-md-4">
+                              <label for="txsol2">No. Solicitud</label>
+                              <input type="text" class="form-control" id="txsol2" disabled="disabled" />
+                            </div>
+                               <div class="form-group col-md-4">
+                              <label for="lbalmacen1">Almacen Ent:</label>
+                              <input type="text" class="form-control" id="lbalmacen1" disabled="disabled" />
+                            </div>
+                            <div class="form-group col-md-4">
+                              <label for="lbdespacho">Despacho:</label>
+                              <input type="text" class="form-control" id="lbdespacho" disabled="disabled" />
+                            </div>
+                          </div>
+                              
+
+                        <div class="form-row">
+                            <div class="form-group col-md-8">
+                              <label for="lbcliente">Cliente:</label>
+                              <input type="text" class="form-control" id="lbcliente" disabled="disabled" />
+                            </div>
+                            
+                          </div>
+
                         <div class="row">
-                            <div class="row">
-                                <div class="col-lg-2 text-right">
-                                    <label for="txsol2">No. Solicitud</label>
-                                </div>
-                                <div class="col-lg-2">
-                                    <input type="text" class=" form-control" id="txsol2" disabled="disabled" />
-                                </div>
-                                <div class="col-lg-2">
-                                    <label>Despacho:</label>
-                                </div>
-                                <div class="col-lg-2">
-                                    <input type="text" class=" form-control" id="lbdespacho" disabled="disabled" />
-                                </div>
+                            <%--<div class="tbheader col-md-12">--%>
+                                <div class="col-md-12 tbheader" style="max-height: 200px; overflow-y: auto; width: 99%">
+                                    <table class="table table-condensed table-container" id="tbbusca">
+                                        <thead class="sticky-top">
+                                            <tr>
+                                                <th class="bg-navy sticky-col" style="width:120px;"><span>Clave</span></th>
+                                                <th class="bg-navy sticky-col"><span>Producto</span></th>
+                                                <th class="bg-navy sticky-col"><span>Unidad</span></th>
+                                                <th class="bg-navy sticky-col"><span>Solicitado</span></th>
+                                                <th class="bg-navy sticky-col"><span>Precio</span></th>
+                                                <th class="bg-navy sticky-col"><span>Disponible</span></th>
+                                                <th class="bg-navy sticky-col" style="width:100px;"><span>Despachar</span></th>
+                                            </tr>
+                                        </thead>
+                                    </table>
+
                             </div>
-                            <div class="row">
-                                <div class="col-lg-2 text-right">
-                                     <label>Cliente:</label>
-                                </div>
-                                <div class="col-lg-6">
-                                    <input type="text" class=" form-control" id="lbcliente" disabled="disabled" />
-                                </div>
                             </div>
-                             <div class="row">
-                                <div class="col-lg-2">
-                                    <label>Almacen Ent:</label>
-                                </div>
-                                <div class="col-lg-3">
-                                    <input type="text" class=" form-control" id="lbalmacen1" disabled="disabled" />
-                                </div>
-                            </div>
-                            <div class="tbheader">
-                                <table class="table table-condensed" id="tbbusca">
-                                    <thead>
-                                        <tr>
-                                            <th class="bg-navy"><span>Clave</span></th>
-                                            <th class="bg-navy"><span>Producto</span></th>
-                                            <th class="bg-navy"><span>Unidad</span></th>
-                                            <th class="bg-navy"><span>Solicitado</span></th>
-                                            <th class="bg-navy"><span>Precio</span></th>
-                                            <th class="bg-navy"><span>Disponible</span></th>
-                                            <th class="bg-navy" style="width:100px;"><span>Despachar</span></th>
-                                        </tr>
-                                    </thead>
-                                </table>
-                            </div>
-                        </div>
-                            <div class="row">
-                                <div class="col-lg-1">
+                            
+                                <div class="row">
+                                  <div class="col-md-12 text-center"> 
                                     <input type="button" class="btn btn-primary" value="Ejecutar despacho" id="btguarda" />
+                                  </div>
                                 </div>
-                            </div>
                         </div>
                     </div>
                 </div>

@@ -5,7 +5,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head runat="server">
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-     <title>INVENTARIO DE BAÑOS</title>
+    <title>INVENTARIO DE BAÑOS</title>
     <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
     <meta charset="utf-8" />
     <link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css" />
@@ -28,19 +28,37 @@
             $('#txfecini').datepicker({ dateFormat: 'dd/mm/yy' });
             $('#txfecfin').datepicker({ dateFormat: 'dd/mm/yy' });
             cargaestatus();
+            cargalinea();
             $('#btimprime').click(function () {
                 var fini = $('#txfecini').val().split('/');
                 var ffin = $('#txfecfin').val().split('/');
                 var formula = '{tb_solicitudrecurso.falta} in Date (' + fini[2] + ' , ' + fini[1] + ' , ' + fini[0] + ') to Date (' + ffin[2] + ' , ' + ffin[1] + ' , ' + ffin[0] + ')'
+                if ($('#dllinea').val() != 0) {
+                    formula += ' and {tb_solicitudrecurso.id_lineanegocio} = ' + $('#dllinea').val();
+                }
+                if ($('#idusuario').val() != 1 && $('#idusuario').val() != 85 && $('#idusuario').val() != 81 && $('#idusuario').val() != 20615 && $('#idusuario').val() != 20670 && $('#idusuario').val() != 20431) {
+                    formula += ' and not ({tb_solicitudrecurso.id_empleado} in [17, 20, 3262, 56069])'
+                    //formula += ' and {tb_solicitudrecurso.usuarioalta} = ' + $('#idusuario').val()
+                } 
                 if ($('#dlstatus').val() != 0) {
                     formula += ' and {tb_solicitudrecurso.id_status} = ' + $('#dlstatus').val();
-                } else {
-                    formula += ' and {tb_solicitudrecurso.id_status} <> 6';
-                }
+                }                                 
                 //alert(formula);
                 window.open('../RptForAll.aspx?v_nomRpt=solicitudrecurso.rpt&v_formula=' + formula, '', 'width=850, height=600, left=80, top=120, resizable=no, scrollbars=no');
             })
         })
+        function cargalinea() {
+            PageMethods.linea(function (opcion) {
+                var opt = eval('(' + opcion + ')');
+                var lista = '';
+                for (var list = 0; list < opt.length; list++) {
+                    lista += '<option value="' + opt[list].id + '">' + opt[list].desc + '</option>';
+                };
+                $('#dllinea').empty();
+                $('#dllinea').append(inicial);
+                $('#dllinea').append(lista);                
+            }, iferror);
+        }
         function cargaestatus() {
             PageMethods.estatus(function (opcion) {
                 var opt = eval('(' + opcion + ')');
@@ -69,7 +87,7 @@
 </head>
 <body class="skin-blue sidebar-mini">
     <form id="form1" runat="server">
-         <asp:ScriptManager ID="ScriptManager1" runat="server" EnablePageMethods="true">
+        <asp:ScriptManager ID="ScriptManager1" runat="server" EnablePageMethods="true">
         </asp:ScriptManager>
         <asp:HiddenField ID="hdpagina" runat="server" />
         <asp:HiddenField ID="idusuario" runat="server" />
@@ -144,6 +162,14 @@
                                 <div class="col-lg-2">
                                     <input type="text" id="txfecfin" class="form-control" />
                                 </div>
+                            </div>
+                            <div class="row">
+                                 <div class="col-lg-2 text-right">
+                                    <label for="dllinea">Línea:</label>
+                                </div >
+                                <div class="col-lg-3">
+                                    <select id="dllinea" class="form-control"></select>
+                                </div>                                
                             </div>
                             <div class="row">
                                  <div class="col-lg-2 text-right">

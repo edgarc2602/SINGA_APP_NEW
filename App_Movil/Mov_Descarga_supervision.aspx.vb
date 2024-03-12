@@ -34,7 +34,7 @@ Partial Class App_Movil_Mov_Descarga_supervision
         context.Response.End()
     End Sub
 
-    Protected Sub rptencuesta(ByVal fini As String, ByVal ffin As String, ByVal cliente As Integer, ByVal supervisor As Integer)
+    Protected Sub rptencuesta(ByVal fini As String, ByVal ffin As String, ByVal cliente As Integer, ByVal supervisor As Integer, ByVal gerente As Integer, ByVal estado As Integer)
         Dim con As New SqlConnection((New Conexion).StrConexion)
         Dim sqlbr As New StringBuilder()
 
@@ -54,6 +54,8 @@ Partial Class App_Movil_Mov_Descarga_supervision
         If fini <> "" Then sqlbr.Append("and cast(a.fechaini as date) between '" & Format(vfecini, "yyyyMMdd") & "' And '" & Format(vfecfin, "yyyyMMdd") & "'" & vbCrLf)
         If cliente <> 0 Then sqlbr.Append("and a.id_cliente = " & cliente & "" & vbCrLf)
         If supervisor <> 0 Then sqlbr.Append("and a.usuario = " & supervisor & "" & vbCrLf)
+        If gerente <> 0 Then sqlbr.Append("and b.id_operativo = " & gerente & "" & vbCrLf)
+        If estado <> 0 Then sqlbr.Append("and c.id_estado = " & estado & "" & vbCrLf)
         sqlbr.Append(")as tabla order by fecha, cliente, inmueble ")
         Dim dt As New DataTable()
         Dim da As New SqlDataAdapter(sqlbr.ToString(), con)
@@ -70,8 +72,10 @@ Partial Class App_Movil_Mov_Descarga_supervision
         Dim fecfin As String = Trim(Request("fecfin"))
         Dim cliente As Integer = Request("cliente")
         Dim supervisor As Integer = Request("supervisor")
+        Dim gerente As Integer = Request("gerente")
+        Dim estado As Integer = Request("estado")
 
-        rptencuesta(fecini, fecfin, cliente, supervisor)
+        rptencuesta(fecini, fecfin, cliente, supervisor, gerente, estado)
 
         'Select Case prm.tname
         ' Case "kardex"

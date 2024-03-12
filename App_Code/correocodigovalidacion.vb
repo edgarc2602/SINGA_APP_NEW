@@ -1,8 +1,8 @@
-﻿Imports System.Data
+﻿Imports Microsoft.VisualBasic
+Imports System.Data
 Imports System.Data.SqlClient
 Imports System.Net
 Imports System.Net.Mail
-Imports Microsoft.VisualBasic
 
 Public Class correocodigovalidacion
     Public Function codigoval(ByVal parametro As String) As String
@@ -11,7 +11,7 @@ Public Class correocodigovalidacion
         Dim fecha As Date = Date.Now
         'Dim per As String = periodo.ToString() & " " & tipo & " " & anio.ToString() & " " & tipoctext.ToString()
         Dim myConnection As New SqlConnection((New Conexion).StrConexion)
-        Dim sql As String = "select correo from tb_solicitudprestamo where codigovalidacion ='" & parametro & "'" & vbCrLf
+        Dim sql As String = "select correo, codigovalidacion from tb_solicitudprestamo where id_solicitud =" & parametro
         Dim da As New SqlDataAdapter(sql, myConnection)
         Dim dt As New DataTable
         da.Fill(dt)
@@ -179,7 +179,7 @@ Public Class correocodigovalidacion
         sqlbr.Append("<td align=""center"" style=""padding:0;Margin:0;padding-top:10px;padding-bottom:10px;""><p style=""Margin:0;-webkit-text-size-adjust:none;-ms-text-size-adjust:none;mso-line-height-rule:exactly;font-size:14px;font-family:arial, 'helvetica neue', helvetica, sans-serif;line-height:21px;color:#333333;"">Estimado colaborador, el codigo que acabas de recibir es exclusivo para poder firmar tus documentos a traves de la aplicación Diaso Firma, que podras descargar a travez de Play Store o bien desde el link  <a href=""https://play.google.com/store/apps/details?id=com.diaso.diasofirma"">Diaso Firma</a> POR TU SEGURIDAD, NO LO COMPARTAS.Recuerda que solo podras utilizar el codigo una vez<br></p></td>" & vbCrLf)
         sqlbr.Append("</tr>" & vbCrLf)
         sqlbr.Append("<tr style=""border-collapse:collapse;"">" & vbCrLf)
-        sqlbr.Append("<td align=""center"" style=""padding:0;Margin:0;padding-bottom:10px;padding-top:15px;""><h3 style=""Margin:0;line-height:24px;mso-line-height-rule:exactly;font-family:tahoma, verdana, segoe, sans-serif;font-size:20px;font-style:normal;font-weight:normal;color:#333333;"">Codigo de Verificación: " & parametro & "  </h3></td>" & vbCrLf)
+        sqlbr.Append("<td align=""center"" style=""padding:0;Margin:0;padding-bottom:10px;padding-top:15px;""><h3 style=""Margin:0;line-height:24px;mso-line-height-rule:exactly;font-family:tahoma, verdana, segoe, sans-serif;font-size:20px;font-style:normal;font-weight:normal;color:#333333;"">Codigo de Verificación: " & dt.Rows(0)("codigovalidacion") & "  </h3></td>" & vbCrLf)
         sqlbr.Append("</tr>" & vbCrLf)
         sqlbr.Append("</table></td>" & vbCrLf)
         sqlbr.Append("</tr>" & vbCrLf)
@@ -325,7 +325,10 @@ Public Class correocodigovalidacion
         sqlbr.Append("</body>" & vbCrLf)
         sqlbr.Append("</html>" & vbCrLf)
 
-        envia(sqlbr.ToString, destinos)
+        'envia(sqlbr.ToString, destinos)
+        Dim enviartodo As New enviacorreo()
+        Dim notificacion As String = "NOTIFICACION DE SINGA"
+        enviartodo.envia(sqlbr.ToString, destinos, notificacion)
 
         Return ""
     End Function
@@ -353,10 +356,7 @@ Public Class correocodigovalidacion
         'mailClient.Credentials = basicAuthenticationInfo
         'mailClient.Port = 587
 
-        ServicePointManager.SecurityProtocol = 3072
-
-
-        Dim pass As String = "Ad*Gb1001"
+        Dim pass As String = "Ad*Gb6584"
         Dim mailClient As New SmtpClient()
         Dim basicAuthenticationInfo As New NetworkCredential("adminsinga@grupobatia.com.mx", "" & pass & "")
         mailClient.Host = "smtp.office365.com"

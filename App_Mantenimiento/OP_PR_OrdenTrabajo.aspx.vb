@@ -12,6 +12,27 @@ Partial Class OP_PR_OrdenTrabajo
     Public minombre As String = ""
 
     <Web.Services.WebMethod()>
+    Public Shared Function Trae_id_Orden_Compra(ByVal id_orden_trabajo As Integer) As Int32
+
+        Dim Aux_id_Orden_Compra As Int32 = 0
+
+        Using connection As New SqlConnection((New Conexion).StrConexion)
+            Dim command As New SqlCommand("SELECT isnull([id_orden],0) id_Orden_Compra FROM tb_ordencompra where id_orden_trabajo=@id_orden_trabajo", connection)
+            command.Parameters.AddWithValue("@id_orden_trabajo", id_orden_trabajo)
+            'Try
+            connection.Open()
+            Dim reader As SqlDataReader = command.ExecuteReader()
+            If reader.Read() Then Aux_id_Orden_Compra = reader("id_Orden_Compra")
+            reader.Close()
+            'Catch ex As Exception
+            '    Console.WriteLine(ex.Message)
+            'End Try
+        End Using
+        Return Aux_id_Orden_Compra
+
+    End Function
+
+    <Web.Services.WebMethod()>
     Public Shared Function tipos() As String
         Dim myConnection As New SqlConnection((New Conexion).StrConexion)
         Dim sqlbr As New StringBuilder
@@ -164,13 +185,18 @@ Partial Class OP_PR_OrdenTrabajo
     End Function
 
     <Web.Services.WebMethod()>
-    Public Shared Function tecnico() As String
+    Public Shared Function tecnico(ByVal TipoTecnico As String) As String
         Dim myConnection As New SqlConnection((New Conexion).StrConexion)
         Dim sqlbr As New StringBuilder
         Dim sql As String = ""
 
-        sqlbr.Append("select id_empleado, nombre + ' ' + paterno + ' ' + rtrim(materno) as empleado  from tb_empleado " & vbCrLf)
-        sqlbr.Append("where id_status = 2 and id_area = 11 order by empleado")
+
+        If TipoTecnico = "P" Then
+            sqlbr.Append("select id_proveedor as id_empleado, nombre as empleado  from tb_proveedor where id_status=1 and id_lineanegocio=1 and idarea=11  order by nombre")
+        Else sqlbr.Append("select id_empleado, nombre + ' ' + paterno + ' ' + rtrim(materno) as empleado  from tb_empleado where id_status = 2 and id_area = 11 order by empleado")
+        End If
+
+
         Dim da As New SqlDataAdapter(sqlbr.ToString, myConnection)
         Dim dt As New DataTable
         da.Fill(dt)
@@ -250,7 +276,7 @@ Partial Class OP_PR_OrdenTrabajo
     Public Shared Function getalmacen(ByVal almacen As String) As String
         Dim myConnection As New SqlConnection((New Conexion).StrConexion)
         Dim sqlbr As New StringBuilder
-        sqlbr.Append("select id_almacen as 'td','', nombre as 'td' from tb_almacen where id_status=1 " & vbCrLf)
+        sqlbr.Append("select id_almacen as 'td','', nombre as 'td' from tb_almacen where Tipo<>1 and id_status=1 " & vbCrLf)
         If almacen <> "" Then sqlbr.Append("And nombre Like'%" & almacen & "%'" & vbCrLf)
         sqlbr.Append("For xml path('tr'), root('tbody')" & vbCrLf)
 
@@ -272,11 +298,19 @@ Partial Class OP_PR_OrdenTrabajo
     Public Shared Function material(ByVal desc As String, ByVal almacen As Integer) As String
         Dim myConnection As New SqlConnection((New Conexion).StrConexion)
         Dim sqlbr As New StringBuilder
-        sqlbr.Append("select a.clave as 'td','', b.descripcion as 'td','', c.descripcion as 'td','', cast(a.costoultimo as numeric(12,2)) as 'td','', cast(a.existencia as numeric(12))  as 'td' " & vbCrLf)
+
+        sqlbr.Append("SELECT")
+
+        If desc = "" Then sqlbr.Append(" TOP 100")
+        sqlbr.Append(" a.clave as 'td','', b.descripcion as 'td','', c.descripcion as 'td','', cast(a.costoultimo as numeric(12,2)) as 'td','', cast(a.existencia as numeric(12))  as 'td' " & vbCrLf)
+        sqlbr.Append(",(select b.id_unidad as '@id_unidad','display: none;' AS '@style' for xml path('td'),type) " & vbCrLf)
         sqlbr.Append("From tb_inventario a" & vbCrLf)
         sqlbr.Append("inner join tb_producto b on a.clave=b.clave" & vbCrLf)
         sqlbr.Append("inner Join tb_unidadmedida c on b.id_unidad=c.id_unidad" & vbCrLf)
-        sqlbr.Append("where id_almacen=" & almacen & " and b.descripcion like '%" & desc & "%'  for xml path('tr'), root('tbody')" & vbCrLf)
+        sqlbr.Append("where id_almacen=" & almacen & vbCrLf)
+        If desc <> "" Then sqlbr.Append("and b.descripcion like '%" & desc & "%'" & vbCrLf)
+        sqlbr.Append(" order by b.descripcion  for xml path('tr'), root('tbody')" & vbCrLf)
+
         Dim mycommand As New SqlCommand(sqlbr.ToString(), myConnection)
         myConnection.Open()
         Dim xdoc1 As New XmlDocument()
@@ -383,7 +417,7 @@ Partial Class OP_PR_OrdenTrabajo
         Dim sql As String = ""
 
         sqlbr.Append("select id_orden, id_servicio, id_cliente, id_inmueble, id_tecnico, fregistro, id_repcliente, desctrabajos, id_status, " & vbCrLf)
-        sqlbr.Append("edificio, piso, area, subarea, fejecucion, trabajosejecutados, tipo, id_especialidad From tb_ordentrabajo" & vbCrLf)
+        sqlbr.Append("edificio, piso, area, subarea, fejecucion, trabajosejecutados, tipo, id_especialidad, id_Proveedor From tb_ordentrabajo" & vbCrLf)
         sqlbr.Append("Where id_orden = " & orden & ";")
         Dim da As New SqlDataAdapter(sqlbr.ToString, myConnection)
         Dim dt As New DataTable
@@ -395,6 +429,8 @@ Partial Class OP_PR_OrdenTrabajo
             sql += "id_servicio:'" & dt.Rows(0)("id_servicio") & "',"
             sql += "id_inmueble:'" & dt.Rows(0)("id_inmueble") & "',"
             sql += "id_tecnico:'" & dt.Rows(0)("id_tecnico") & "',"
+            sql += "id_Proveedor:'" & dt.Rows(0)("id_Proveedor") & "',"
+
             sql += "fregistro:'" & Format(dt.Rows(0)("fregistro"), "dd/MM/yyyy") & "',"
             sql += "id_repcliente:'" & dt.Rows(0)("id_repcliente") & "',"
             sql += "id_status:'" & dt.Rows(0)("id_status") & "',"
@@ -483,17 +519,18 @@ Partial Class OP_PR_OrdenTrabajo
     End Function
 
     <Web.Services.WebMethod()>
-    Public Shared Function ordendetper(ByVal prm As String) As String
+    Public Shared Function ordendetper(ByVal prm As Integer) As String
         Dim myConnection As New SqlConnection((New Conexion).StrConexion)
         Dim sqlbr As New StringBuilder
         Dim sql As String = ""
-        Dim dto As New Generic.Dictionary(Of String, String)
-        dto = JsonConvert.DeserializeObject(Of Generic.Dictionary(Of String, String))(prm)
+        'Dim dto As New Generic.Dictionary(Of String, String)
+        'dto = JsonConvert.DeserializeObject(Of Generic.Dictionary(Of String, String))(prm)
 
         sqlbr.Append("SELECT a.id_empleado,  nombre + ' ' + paterno + ' ' + rtrim(materno) as empleado , cast(costoxhora as numeric(8,2)) as chora , " & vbCrLf)
         sqlbr.Append("cast(horas As numeric(8, 2))  as horas, cast(Total as numeric(8,2)) as total " & vbCrLf)
         sqlbr.Append(" From tb_ordentrabajo_mobra a " & vbCrLf)
-        sqlbr.Append(" inner join tb_empleado b on a.Id_Empleado = b.id_empleado where id_orden = '" + dto("ord") + "'" & vbCrLf)
+        sqlbr.Append(" inner join tb_empleado b on a.Id_Empleado = b.id_empleado" & vbCrLf)
+        sqlbr.Append(" where id_orden=" & prm & vbCrLf)
         sqlbr.Append(" Order By nombre " & vbCrLf)
         Dim da As New SqlDataAdapter(sqlbr.ToString, myConnection)
         Dim dt As New DataTable

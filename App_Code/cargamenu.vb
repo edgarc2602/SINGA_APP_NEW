@@ -1,13 +1,13 @@
-﻿Imports System.Data
+﻿Imports Microsoft.VisualBasic
+Imports System.Data
 Imports System.Data.SqlClient
 Imports System.Xml
-Imports Microsoft.VisualBasic
 
 Public Class cargamenu
 
-    'Public Sub New()
+    Public Sub New()
 
-    'End Sub
+    End Sub
     Public Function minombre(ByVal user As Integer) As String
         Dim myConnection As New SqlConnection((New Conexion).StrConexion)
         Dim sqlbr As New StringBuilder

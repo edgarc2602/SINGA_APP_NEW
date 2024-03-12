@@ -76,7 +76,6 @@
             }, iferror);
         }
         function cargalista() {
-            //alert('hola');
             PageMethods.vacantes($('#dlcliente').val(), $('#dlinmueble').val(), function (res) {
                 if (ren != '') {
                     var ren = $.parseHTML(res);
@@ -243,15 +242,14 @@
                                     <input type="button" value="Consultar" id="btconsulta" class="btn btn-info pull-right" />
                                 </div>
                             </div>
-                            <div class="col-md-18 tbheader" style="overflow-x:scroll;">
-                                <table class="table table-condensed h6" id="tbdatos" >
+                            <div class="col-md-18 tbheader" style="overflow-x:scroll">
+                                <table class="table table-condensed h6" id="tbdatos">
                                     <thead> 
                                         <tr>
                                             <th class="bg-light-blue-gradient"></th>
                                             <th class="bg-light-blue-gradient"></th>
                                             <th class="bg-light-blue-gradient"><span>Id</span></th>
                                             <th class="bg-light-blue-gradient"><span>Id</span></th>
-                                            <th class="bg-light-blue-gradient"><span>Completo</span></th>
                                             <th class="bg-light-blue-gradient"><span>Cliente</span></th>
                                             <th class="bg-light-blue-gradient"><span>Pto Atn</span></th>
                                             <th class="bg-light-blue-gradient"><span>Empleado</span></th>
@@ -265,9 +263,9 @@
                                             <th class="bg-light-blue-gradient"><span>Jornal</span></th>
                                             <th class="bg-light-blue-gradient"><span>F. Ingreso</span></th>
                                             <th class="bg-light-blue-gradient"><span>Banco</span></th>
+                                            <th class="bg-light-blue-gradient"><span>Clabe</span></th>
                                             <th class="bg-light-blue-gradient"><span>Cuenta</span></th>
-                                            <th class="bg-light-blue-gradient"><span>Tarjeta</span></th>
-                                            <th class="bg-light-blue-gradient"><span>Estatus</span></th>
+                                            <th class="bg-light-blue-gradient"><span>Telefono</span></th>
                                         </tr>
                                     </thead>
                                 </table>

@@ -251,7 +251,7 @@
                 //alert(xmlgraba);
 
                 PageMethods.procesa(xmlgraba, $('#dlperiodo').val(), tipo, anio, $('#dltipo').val(), $('#txfecini').val(), $('#txfecfin').val(), vforma, function (res) {
-                    alert(res);
+                    //alert(res);
                     closeWaitingDialog();
                     alert('Proceso concluido.');
                     carganomina();
@@ -442,9 +442,10 @@
                                 <div class="col-lg-3">
                                     <select id="dltipo" class="form-control">
                                          <option value="0">Seleccione...</option>
-                                            <option value="6">Administrativa</option>
-                                            <option value="4">Operativa</option>
-                                            <option value="11">Mantenimiento</option>
+                                        <option value="6">Administrativa</option>
+                                        <option value="4">Operativa</option>
+                                        <option value="11">Mantenimiento</option>
+                                        <option value="18">OLINE</option>
                                     </select>
                                 </div>
                                 <div class="col-lg-2">

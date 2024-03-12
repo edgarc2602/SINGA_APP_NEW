@@ -4,10 +4,11 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head runat="server">
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
     <title>CATALOGO DE PUNTOS DE ATENCION</title>
     <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
     <meta charset="utf-8" />
+    <meta name="viewport" content="initial-scale=1.0"/>
     <link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css" />
     <link href="../Content/form/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
     <link href="../Content/form/css/AdminLTE.min.css" rel="stylesheet" type="text/css" />
@@ -17,6 +18,16 @@
     <link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css" />
     <link href="../Content/form/css/_all-skins.min.css" rel="stylesheet" type="text/css" />
     <script src="https://code.jquery.com/ui/1.11.4/jquery-ui.min.js" type="text/javascript"></script>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=default"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Icons" rel="stylesheet" />
+    <style>
+        #map {
+            height: 300px;
+            width:800px;
+        }
+
+       
+    </style>
 
     <script type="text/javascript">
         var inicial = '<option value=0>Seleccione...</option>'
@@ -25,6 +36,7 @@
             //$('#var1').html('<%=listamenu%>');
             //$('#nomusr').text('<%=minombre%>');
             $('#dvdatos').hide();
+            
             cargatipo();
             cargaestado();
             cargaoficina();
@@ -81,7 +93,8 @@
                     xmlgraba += 'tipo= "' + $('#dltipo').val() + '" calle= "' + $('#txcalle').val() + '" entrecalle = "' + $('#txecalles').val() + '" colonia = "' + $('#txcolonia').val() + '" '
                     xmlgraba += ' del = "' + $('#txdelmun').val() + '" cp = "' + $('#txcp').val() + '" ciudad = "' + $('#txciudad').val() + '" estado = "' + $('#dlestado').val() + '" tel1 = "' + $('#txtel1').val() + '" ';
                     xmlgraba += ' tel2 = "' + $('#txtel2').val() + '" contacto = "' + $('#txcontacto').val() + '" correo = "' + $('#txcorreo').val() + '" cargo = "' + $('#txcargo').val() + '" ptto1 = "' + $('#txpttolim').val() + '" ';
-                    xmlgraba += ' ptto2 = "' + $('#txpttohig').val() + '" ptto3 = "' + $('#txpttoman').val() + '" prefijo = "' + $('#dlprefijo').val() + '"  />';
+                    xmlgraba += ' ptto2 = "' + $('#txpttohig').val() + '" ptto3 = "' + $('#txpttoman').val() + '" prefijo = "' + $('#dlprefijo').val() + '"  ';
+                    xmlgraba += ' lat = "' + $('#txlatitud').val() + '" lon = "' + $('#txlongitud').val() + '" banio = "' + $('#txbanio').val() + '"/>'
                     //alert(xmlgraba);
                     PageMethods.guarda(xmlgraba, function (res) {
                         $('#txidinm').val(res)
@@ -101,9 +114,53 @@
                 } else { alert('Antes de eliminar debe elegir un Punto de atención'); }
             })
         });
+        
+        function initMap(latitud, longitud, nombre) {            
+            const map = new google.maps.Map(document.getElementById("map"), {
+                zoom: 18,
+                center: new google.maps.LatLng(latitud, longitud),
+            });
+            const image = {
+                url: "https://developers.google.com/maps/documentation/javascript/examples/full/images/beachflag.png",
+                // This marker is 20 pixels wide by 32 pixels high.
+                size: new google.maps.Size(20, 32),
+                // The origin for this image is (0, 0).
+                origin: new google.maps.Point(0, 0),
+                // The anchor for this image is the base of the flagpole at (0, 32).
+                anchor: new google.maps.Point(0, 32),
+            };
+            const shape = {
+                coords: [1, 1, 1, 20, 18, 20, 18, 1],
+                type: "poly",
+            };
+            marker = new google.maps.Marker({
+                position: new google.maps.LatLng(latitud, longitud),
+                map,
+                //icon: image,
+                label: {
+                    text: "\ue0af",
+                    fontFamily: "Material Icons",
+                    color: "#ffffff",
+                    fontSize: "18px",
+                },
+                animation: google.maps.Animation.DROP,  
+                shape: shape,
+                title: nombre,
+                zIndex: 0,                
+            });
+            marker.addListener("click", toggleBounce);
+        }
+        
+        function toggleBounce() {
+            if (marker.getAnimation() !== null) {
+                marker.setAnimation(null);
+            } else {
+                marker.setAnimation(google.maps.Animation.BOUNCE);
+            }
+        }
         function asignapagina(np) {
             $('#paginacion li').removeClass("active");
-            $('#hdpagina').val(np);
+            $('#hdpagina').val(np);            
             cargalista();
             $('#paginacion li').eq(np - 1).addClass("active");
         };
@@ -112,6 +169,7 @@
             PageMethods.contarinmueble(idcte, function (cont) {
                 $('#paginacion li').remove();
                 var opt = eval('(' + cont + ')');
+                
                 var pag = '';
                 for (var x = 1; x <= opt[0].pag; x++) {
                     pag += '<li onclick="asignapagina(' + x + ')" class="page-item"><a class="page-link">' + x + '</a></li>';
@@ -121,6 +179,7 @@
         }
 
         function cargalista() {
+            //alert($('#hdpagina').val());
             PageMethods.cargainmueble($('#idcte').val(), $('#hdpagina').val(), function (res) {
                 //alert(res);
                 var ren = $.parseHTML(res);
@@ -153,6 +212,9 @@
                             $('#txpttoman').val(opt.ptto3);
                             $('#txcc').val(opt.cc);
                             $('#dlprefijo').val(opt.prefijo);
+                            $('#txlatitud').val(opt.latitud);
+                            $('#txlongitud').val(opt.longitud);
+                            initMap($('#txlatitud').val(), $('#txlongitud').val(), $('#txnombre').val());
                         }, iferror);
                         $('#dvdatos').toggle('slide', { direction: 'down' }, 500);
                         $('#tblistainm').hide();
@@ -188,10 +250,11 @@
                 alert('Debe capturar el nombre del punto de atención');
                 return false;
             }
+            /*
             if ($('#txnosuc').val() == '') {
                 alert('Debe capturar el Centro de costo');
                 return false;
-            }
+            }*/
             if ($('#dloficina').val() == 0) {
                 alert('Debe seleccionar la oficina que atiende este punto de atención');
                 return false;
@@ -255,9 +318,11 @@
                 };*/
             }, iferror);
         }
+        
         function iferror(err) {
             alert('ERROR ' + err._message);
         };
+        
     </script>
 </head>
 <body>
@@ -333,6 +398,7 @@
                                     <option value="DAZ">DAZ</option>
                                     <option value="PP">PP</option>
                                     <option value="OFI">OFI</option>
+                                    <option value="MOT">MOT</option>
                                 </select>
                             </div>
                         </div>
@@ -343,7 +409,7 @@
                             <div class="col-lg-4">
                                 <input type="text" id="txcalle" class="form-control" />
                             </div>
-                            <div class="col-lg-1 text-right">
+                            <div class="col-lg-2 text-right">
                                 <label for="txecalles">Entre calles:</label>
                             </div>
                             <div class="col-lg-3">
@@ -413,13 +479,19 @@
                             <div class="col-lg-3">
                                 <input type="text" id="txcorreo" class="form-control" />
                             </div>
+                             <div class="col-lg-1 text-right">
+                                <label for="txcargo">Cargo:</label>
+                            </div>
+                            <div class="col-lg-2">
+                                <input type="text" id="txcargo" class="form-control" />
+                            </div>
                         </div>
                         <div class="row">
                             <div class="col-lg-2 text-right">
-                                <label for="txcargo">Cargo:</label>
+                                <label for="txbanio">Cantidad de baños:</label>
                             </div>
-                            <div class="col-lg-3">
-                                <input type="text" id="txcargo" class="form-control" />
+                            <div class="col-lg-1">
+                                <input type="text" id="txbanio" class="form-control" />
                             </div>
                         </div>
                         <div class="row">
@@ -442,6 +514,26 @@
                                 <input type="text" id="txpttoman" class="form-control" />
                             </div>
                         </div>
+                        <div class="row">
+                            <div class="col-lg-2 text-right">
+                                <label for="txlatitud">Latitud:</label>
+                            </div>
+                            <div class="col-lg-2">
+                                <input type="text" id="txlatitud" class="form-control" />
+                            </div>
+                            <div class="col-lg-1">
+                                <label for="txlongitud">Longitud:</label>
+                            </div>
+                            <div class="col-lg-2">
+                                <input type="text" id="txlongitud" class="form-control" />
+                            </div>
+                        </div>
+                        <br />
+                        <div class="row right-side" id="map">
+                        </div>
+                        <br />
+                        <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCVCv-kzwcRcY1978_yM21WrdRxYtjBZ6M&&v=weekly" defer></script>
+
                         <ol class="breadcrumb">
                             <li id="btnuevo" class="puntero"><a><i class="fa fa-edit"></i>Nuevo</a></li>
                             <li id="btguarda" class="puntero"><a><i class="fa fa-save"></i>Guardar</a></li>
@@ -452,45 +544,40 @@
                     </div>
                 </div>
             </div>
-            <div class="row" id="tblistainm">
-                <div class="box box-info">
-                    <div class=" box-header">
-                        <!--<h3 class="box-title">Lista de Puntos de atención</h3>-->
-                    </div>
-                    <div class="col-md-18 tbheader">
-                        <table class="table table-condensed">
-                            <thead>
-                                <tr>
-                                    <th class="bg-navy"><span>Id</span></th>
-                                    <th class="bg-navy"><span>Nombre</span></th>
-                                    <th class="bg-navy"><span>Centro Costo</span></th>
-                                    <th class="bg-navy"><span>Tipo</span></th>
-                                    <th class="bg-navy"><span>Oficina</span></th>
-                                    <th class="bg-navy"><span>Contacto</span></th>
-                                    <th class="bg-navy"><span>Telefono</span></th>
-                                </tr>
-                            </thead>
-                        </table>
-                        <ol class="breadcrumb">
-                            <li id="btnuevoinm" class="puntero"><a><i class="fa fa-edit"></i>Nuevo</a></li>
-                            <li id="btsalir1" class="puntero" onclick="self.close();"><a><i class="fa fa-edit"></i>Actualizar y salir</a></li>
-                        </ol>
-                    </div>
-                    <nav aria-label="Page navigation example" class="navbar-right">
-                        <ul class="pagination justify-content-end" id="paginacion">
-                            <li class="page-item disabled">
-                                <a class="page-link" href="#" tabindex="-1">Previous</a>
-                            </li>
-                            <li class="page-item"><a class="page-link" href="#">1</a></li>
-                            <li class="page-item"><a class="page-link" href="#">2</a></li>
-                            <li class="page-item"><a class="page-link" href="#">3</a></li>
-                            <li class="page-item">
-                                <a class="page-link" href="#">Next</a>
-                            </li>
-                        </ul>
-                    </nav>
+            <div class="row" id="tblistainm" >                
+                <div class="col-md-18 tbheader" style="height:400px; overflow:scroll;">
+                    <table class="table table-condensed" >
+                        <thead>
+                            <tr>
+                                <th class="bg-navy"><span>Id</span></th>
+                                <th class="bg-navy"><span>Nombre</span></th>
+                                <th class="bg-navy"><span>Centro Costo</span></th>
+                                <th class="bg-navy"><span>Tipo</span></th>
+                                <th class="bg-navy"><span>Oficina</span></th>
+                                <th class="bg-navy"><span>Contacto</span></th>
+                                <th class="bg-navy"><span>Telefono</span></th>
+                            </tr>
+                        </thead>
+                    </table>
                 </div>
-            </div>
+                <ol class="breadcrumb">
+                    <li id="btnuevoinm" class="puntero"><a><i class="fa fa-edit"></i>Nuevo</a></li>
+                    <li id="btsalir1" class="puntero" onclick="self.close();"><a><i class="fa fa-edit"></i>Actualizar y salir</a></li>
+                </ol>
+                <nav aria-label="Page navigation example" class="navbar-right">
+                    <ul class="pagination justify-content-end" id="paginacion">
+                        <li class="page-item disabled">
+                            <a class="page-link" href="#" tabindex="-1">Previous</a>
+                        </li>
+                        <li class="page-item"><a class="page-link" href="#">1</a></li>
+                        <li class="page-item"><a class="page-link" href="#">2</a></li>
+                        <li class="page-item"><a class="page-link" href="#">3</a></li>
+                        <li class="page-item">
+                            <a class="page-link" href="#">Next</a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>                
         </div>
     </form>
 </body>

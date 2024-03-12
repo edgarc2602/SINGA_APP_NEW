@@ -17,7 +17,20 @@
     <link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css" />
     <link href="../Content/form/css/_all-skins.min.css" rel="stylesheet" type="text/css" />
     <script src="https://code.jquery.com/ui/1.11.4/jquery-ui.min.js" type="text/javascript"></script>
-     <script type="text/javascript">
+ <style type="text/css">
+        
+                /* Estilo para filas pares */
+        tr:nth-child(even) {
+          background-color: #f2f2f2;
+        }
+
+        /* Estilo para filas impares */
+        tr:nth-child(odd) {
+          background-color: #ffffff;
+        }
+    </style>
+
+    <script type="text/javascript">
          var inicial = '<option value=0>Seleccione...</option>'
          $(function () {
              setTimeout(function () {
@@ -31,7 +44,7 @@
              $('#txfecini').datepicker({ dateFormat: 'dd/mm/yy' });
              $('#txfecfin').datepicker({ dateFormat: 'dd/mm/yy' });
              cargaestatus();    
-
+             cargacliente();
              dialog1 = $('#divmodal1').dialog({
                  autoOpen: false,
                  height: 350,
@@ -48,9 +61,25 @@
                  close: function () {
                  }
              });
+             dialog2 = $('#dvfactura').dialog({
+                 autoOpen: false,
+                 height: 350,
+                 width: 800,
+                 modal: true,
+                 close: function () {
+                 }
+             });
+             dialog3 = $('#dvcarga1').dialog({
+                 autoOpen: false,
+                 height: 350,
+                 width: 800,
+                 modal: true,
+                 close: function () {
+                 }
+             });
              $('#dvabre').hide();
              $('#dvcarga').hide();
-
+             
              $("#loadingScreen").dialog({
                  autoOpen: false,    // set this to false so we can manually open it
                  dialogClass: "loadingScreenWindow",
@@ -71,12 +100,17 @@
                  }
              });
              $('#btconsulta').click(function () {
-                 if ($('#txfolio').val() == '') {
-                     $('#txfolio').val(0);
+                 if ($('#txfecini').val() == '' && $('#txfecfin').val() == '' && $('#txid').val() == 0) {
+                     alert('Debe colocar al menos un numero de solicitud o bien un rango de fechas ')
+                 } else {
+                     if ($('#txid').val() == '') {
+                         $('#txid').val(0);
+                     }
+                     $('#hdpagina').val(1);
+                     cuentacm();
+                     cargalista();
+
                  }
-                 $('#hdpagina').val(1);
-                 cuentacm();
-                 cargalista();
              })
              $('#btautoriza').click(function () {
                  if (validastatus()){
@@ -93,8 +127,95 @@
                  var archivo = $('#lbarchivo').val();
                  window.open('../Doctos/' + archivo, '_blank', 'width=850, height=600, left=80, top=120, resizable=no, scrollbars=no ');
              })
- 
+             $('#btnuevo1').click(function () {
+                 location.reload();
+             })
          });
+        function cargacliente() {
+            PageMethods.cliente(function (opcion) {
+                var opt = eval('(' + opcion + ')');
+                var lista = '';
+                for (var list = 0; list < opt.length; list++) {
+                    lista += '<option value="' + opt[list].id + '">' + opt[list].desc + '</option>';
+                }
+                $('#dlcliente').empty()
+                $('#dlcliente').append(inicial);
+                $('#dlcliente').append(lista);                
+            }, iferror);
+        }
+         function validafactura() {
+
+             if ($('#txfactura').val() == '') {
+                 alert('Debe colocar un numero de factura o remisión');
+                 return false;
+             }
+            
+             return true;
+
+        }
+
+        function CierraFac() {
+            cargalista();
+            dialog2.dialog('close');
+        }
+
+         function xmlUpFile1(res) {
+             if (validafactura()) {
+                 //waitingDialog({});
+                 var fileup = $('#txarchivo1').get(0);
+                 var files = fileup.files;
+                 var misArchivos = [];
+
+                 var ndt = new FormData();
+                 for (var i = 0; i < files.length; i++) {
+                     ndt.append(files[i].name, files[i]);
+                     misArchivos.push(files[i].name);
+                 }
+                 ndt.append('cm', $('#txfoliocm').val());
+
+                 PageMethods.validaFile(misArchivos, $('#txfoliocm').val(), function (res) {
+                     if (res != 'Ok') {
+                         alert(res);
+                         return;
+                     }
+                     else {
+
+                         $.ajax({
+                             url: '../GH_Upfacturacm.ashx',
+                             type: 'POST',
+                             data: ndt,
+                             contentType: false,
+                             processData: false,
+                             success: function () {
+                                 var xmlgraba = '<Movimiento> <factura folio= "' + $('#txfoliocm').val() + '" nofactura= "' + $('#txfactura').val() + '"';
+                                 xmlgraba += ' usuario= "' + $('#idusuario').val() + '"  />'
+                                 for (var i = 0; i < files.length; i++) {
+                                     xmlgraba += '<archivo folio= "' + $('#txfoliocm').val() + '" archivos="' + files[i].name + '"/>';
+                                 }
+                                 xmlgraba += '</Movimiento>';
+                                 PageMethods.guardafactura(xmlgraba, $('#txfoliocm').val(), function (res) {
+                                     cuentacm();
+                                     //cargalista();
+                                     //dialog2.dialog('close');
+                                     closeWaitingDialog();
+                                     alert('Se cargo la factura correctamente');
+                                     $('#txfactura').val("");
+                                     $('#txarchivo1').val("");
+                                 }, iferror);
+                             },
+                             error: function (err) {
+                                 alert(err.statusText);
+                             }
+                         });
+
+                     }
+                 }, iferror);
+
+               
+
+                 
+             }
+         }
          function validastatus() {
              if ($('#dlestatus1').val() == 6 && $('#txmotivo').val() == '') {
                  alert('Al rechazar una solicitud debe colocar un motivo para informar a la persona que elaboro la solicitud');
@@ -102,7 +223,6 @@
              }
              return true;
          }
-
          function valida() {
              if ($('#txarchivo').val() == '') {
                  alert('Debe seleccionar el archivo del acuse antes de continuar');
@@ -136,7 +256,7 @@
              $('#paginacion li').eq(np - 1).addClass("active");
          };
          function cuentacm() {
-             PageMethods.contarcm($('#txfecini').val(), $('#txfecfin').val(), $('#txid').val(), $('#dlestatus').val(), function (cont) {
+             PageMethods.contarcm($('#txfecini').val(), $('#txfecfin').val(), $('#txid').val(), $('#dlestatus').val(), $('#dlcliente').val(), function (cont) {
                  $('#paginacion li').remove();
                  var opt = eval('(' + cont + ')');
                  var pag = '';
@@ -147,120 +267,94 @@
              }, iferror);
          }
 
-         function cargalista() {
-             //waitingDialog({});
-             PageMethods.solicitudes($('#txfecini').val(), $('#txfecfin').val(), $('#txid').val(), $('#hdpagina').val(), $('#dlestatus').val(),  function (res) {
-                 //closeWaitingDialog();
+        function cargalista() {
+            PageMethods.solicitudes($('#txfecini').val(), $('#txfecfin').val(), $('#txid').val(), $('#hdpagina').val(), $('#dlestatus').val(), $('#dlcliente').val(), function (res) {
+                var ren = $.parseHTML(res);
+                if (ren == null) {
+                    $('#tblista tbody').remove();
+                    alert('No se han encontrado registros con los criterios seleccionado');
+                }
+                else {
+                    $('#tblista tbody').remove();
+                    $('#tblista').append(ren);
+                    $('#tblista tbody tr').on('click', '.btedita', function () {
+                        if ($(this).closest('tr').find('td').eq(4).text() == 'Alta', 'Autorizado') {
+                            window.open('Man_Pro_CorrectivoMayor.aspx?folio=' + $(this).closest('tr').find('td').eq(0).text(), '_blank')
+                        } else {
+                            alert('El estatus actual del correctivo no permite realizar cambios, verifique');
+                        }
+                    })
+                    $('#tblista tbody tr').on('click', '.btcierra', function () {
+                        waitingDialog({});
+                        PageMethods.cierra($(this).closest('tr').find('td').eq(0).text(), function () {
+                            cuentacm();
+                            cargalista();
+                            closeWaitingDialog();
+                        }, iferror);
+                    })
+                    $('#tblista tbody tr').on('click', '.btfactura', function () {
+                        $("#dvfactura").dialog('option', 'title', 'Carga de factura');
+                        $('#txfoliocm').val($(this).closest('tr').find('td').eq(0).text());
+                        dialog2.dialog('open');
+                    })
+                    $('#tblista tbody tr').on('click', '.btcobra', function () {
+                        waitingDialog({});
+                        PageMethods.cobra($(this).closest('tr').find('td').eq(0).text(), function () {
+                            cuentacm();
+                            cargalista();
+                            closeWaitingDialog();
+                        }, iferror);
+                    })
+                }
+                $('#tblista tbody tr').on('click', '.btevidencia', function () {
+                    $('#txid1').val($(this).closest('tr').find('td').eq(0).text());
+                    $("#divmodal").dialog('option', 'title', 'Carga de expediente');
+                    dialog.dialog('open');
+                    if ($(this).closest('tr').find('td').eq(7).text() == 'Si') {
+                        $('#lbarchivo').val($(this).closest('tr').find('td').eq(8).text());
+                        $('#dvabre').show();
+                        $('#dvcarga').hide();
+                    } else {
+                        $('#dvabre').hide();
+                        $('#dvcarga').show();
+                    }
+                });
 
-                 var ren = $.parseHTML(res);
-                 if (ren == null) {
-                     $('#tblista tbody').remove();
-                     alert('No se han encontrado registros con los criterios seleccionado');
-                 }
-                 else {
-                     $('#tblista tbody').remove();
-                     $('#tblista').append(ren);
-                     $('#tblista tbody tr').on('click', '.btedita', function () {
-                         if ($(this).closest('tr').find('td').eq(4).text() == 'Alta','Autorizado') {
-                             window.open('Man_Pro_CorrectivoMayor.aspx?folio=' + $(this).closest('tr').find('td').eq(0).text(), '_blank')
-                         } else {
-                             alert('El estatus actual del correctivo no permite realizar cambios, verifique');
-                         }
-                     })
-                 }
+                $('#tblista tbody tr').on('click', '.btver', function () {
+                    $("#dvcarga1").dialog('option', 'title', 'Facturas registradas');
+                    $('#txfoliocm1').val($(this).closest('tr').find('td').eq(0).text());
+                    cargaexistentes();
+                    dialog3.dialog('open');
+                });
 
-                 $('#tblista tbody tr').on('click', '.btevidencia', function () {
-                     $('#txid1').val($(this).closest('tr').find('td').eq(0).text());
-                     $("#divmodal").dialog('option', 'title', 'Carga de expediente');
-                     dialog.dialog('open');
-                     if ($(this).closest('tr').find('td').eq(7).text() == 'Si') {
-                         $('#lbarchivo').val($(this).closest('tr').find('td').eq(8).text());
-                         $('#dvabre').show();
-                         $('#dvcarga').hide();
-                     } else {
-                         $('#dvabre').hide();
-                         $('#dvcarga').show();
-                     }
+                $('#tblista tbody tr').delegate(".btauto", "click", function () {
+                    if ($('#idusuario').val() != 134 && $('#idusuario').val() != 20623 && $('#idusuario').val() != 20535 && $('#idusuario').val() != 1 && $('#idusuario').val() != 20508 && $('#idusuario').val() != 20654 && $('#idusuario').val() != 30867) {
+                        alert('Usted no esta autorizado para realizar esta operación');
+                    } else {
 
-                 });
+                        $('#txreq').val($(this).closest('tr').find('td').eq(0).text());
+                        $("#divmodal1").dialog('option', 'title', 'Autorizar/rechazar Correctivo');
+                        dialog1.dialog('open');
+                    }
+                })
+                    
+            }, iferror);
+        };
+        
 
-                 $('#tblista tbody tr').delegate(".btauto", "click", function () {
-                     if ($('#idusuario').val() != 163 ) {
-                         alert('Usted no esta autorizado para realizar esta operación');
-                     } else {
-                         $('#dlestatus1').empty();
-                         var lista = '<option value="0">Seleccione...</option>';
-                         lista += '<option value="4">Autorizar</option>'
-                         lista += '<option value="6">Rechazar</option>'
-                         $('#dlestatus1').append(lista);
-                         $('#txreq').val($(this).closest('tr').find('td').eq(0).text());
-                         $("#divmodal1").dialog('option', 'title', 'Autorizar/rechazar Correctivo');
-                         dialog1.dialog('open');
-                     }
-                 });
-                 /*$('#tblista tbody tr').delegate(".btauto", "click", function () {
-                     if ($('#idusuario').val() != 163) {
-                         alert('Usted no esta autorizado para realizar esta operación');
-                     } else {
-                         $('#txreq').val($(this).closest('tr').find('td').eq(0).text());
-                         $("#divmodal1").dialog('option', 'title', 'Autorizar/Rechazar Correctivo');
-                         dialog1.dialog('open');
-                     }  
-                 });*/
-
-                     /*
-                     $('#tblista tbody tr').delegate(".btvalida", "click", function () {
-                         if ($('#idusuario').val() != 1 && $('#idusuario').val() != 59 && $('#idusuario').val() != 81 && $('#idusuario').val() != 85 && $('#idusuario').val() != 100 && $('#idusuario').val() != 130 && $('#idusuario').val() != 84) {
-                             alert('Usted no esta autorizado para realizar esta operación');
-                         } else {
-                             $('#txreq').val($(this).closest('tr').find('td').eq(0).text());
-                             $("#divmodal1").dialog('option', 'title', 'Validar/rechazar Solicitud');
-                             dialog1.dialog('open');
-                         }
-                     });
-                     $('#tblista tbody tr').delegate(".btlibera", "click", function () {
-                         if ($('#idusuario').val() != 5) {
-                             alert('Usted no esta autorizado para realizar esta operación');
-                         } else {
-                             $('#dlestatus1').empty();
-                             var lista = '<option value="0">Seleccione...</option>';
-                             lista += '<option value="3">Liberar</option>'
-                             lista += '<option value="6">Rechazar</option>'
-                             $('#dlestatus1').append(lista);
-                             $('#txreq').val($(this).closest('tr').find('td').eq(0).text());
-                             $("#divmodal1").dialog('option', 'title', 'liberar/rechazar Solicitud');
-                             dialog1.dialog('open');
-                         }
-                     });
-                     $('#tblista tbody tr').delegate(".btautoriza", "click", function () {
-                         if ($('#idusuario').val() != 27) {
-                             alert('Usted no esta autorizado para realizar esta operación');
-                         } else {
-                             $('#dlestatus1').empty();
-                             var lista = '<option value="0">Seleccione...</option>';
-                             lista += '<option value="4">Autorizar</option>'
-                             lista += '<option value="6">Rechazar</option>'
-                             $('#dlestatus1').append(lista);
-                             $('#txreq').val($(this).closest('tr').find('td').eq(0).text());
-                             $("#divmodal1").dialog('option', 'title', 'Autorizar/rechazar Solicitud');
-                             dialog1.dialog('open');
-                         }
-                     });
-                     $('#tblista tbody tr').delegate(".btpagado", "click", function () {
-                         if ($('#idusuario').val() != 139 && $('#idusuario').val() != 138) {
-                             alert('Usted no esta autorizado para realizar esta operación');
-                         } else {
-                             waitingDialog({});
-                             PageMethods.cambiaestatus($(this).closest('tr').find('td').eq(0).text(), 5, $('#idusuario').val(), $('#txmotivo').val(), function (res) {
-                                 cuentasolicitud();
-                                 cargalista();
-                                 closeWaitingDialog();
-                             }, iferror);
-                         }
-
-                     });*/
-             }, iferror);
-         }
+        function cargaexistentes() {
+            PageMethods.listadocto($('#txfoliocm1').val(), function (res) {
+                var ren1 = $.parseHTML(res);
+                $('#tblistaa tbody').remove();
+                $('#tblistaa').append(ren1);
+                $('#tblistaa tbody tr').on('click', '.btver', function () {
+                    var carpeta = $('#txfoliocm1').val()
+                    var arc = $(this).closest('tr').find('td').eq(0).text();
+                    //alert(arc);
+                    window.open('../Doctos/CM/' + carpeta + '/' + arc, '_blank', 'width=650, height=600, left=80, top=120, resizable=no, scrollbars=no ');
+                });
+            })
+        }
          function closeWaitingDialog() {
              $("#loadingScreen").dialog('close');
          }
@@ -269,30 +363,45 @@
                  waitingDialog({});
                  var fileup = $('#txarchivo').get(0);
                  var files = fileup.files;
+                 var misArchivos = [];
+
                  var ndt = new FormData();
                  for (var i = 0; i < files.length; i++) {
                      ndt.append(files[i].name, files[i]);
-                     ndt.append("Id", $("#txid1").val());
+                     misArchivos.push(files[i].name);
                  }
-                 ndt.append('nmr', res);
-                 $.ajax({
-                     url: '../GH_Updoctocorrec.ashx',
-                     type: 'POST',
-                     data: ndt,
-                     contentType: false,
-                     processData: false,
-                     success: function (res) {
-                         PageMethods.actualiza($('#txid1').val(), res, function (res) {
-                             alert('La evidencia de ha cargado exitosamente');
-                             cargalista();
-                             closeWaitingDialog();
-                             dialog.dialog('close');
-                         }, iferror);
-                     },
-                     error: function (err) {
-                         alert(err.statusText);
+                 ndt.append('cm', $('#txid1').val());
+
+                 PageMethods.validaFile(misArchivos, $('#txid1').val(), function (res) {
+                     if (res != 'Ok') {
+                         closeWaitingDialog();
+                         dialog.dialog('close');
+                         alert(res);
+                         return;
+                     }
+                     else {
+
+                         $.ajax({
+                             url: '../GH_Upfacturacm.ashx',
+                             type: 'POST',
+                             data: ndt,
+                             contentType: false,
+                             processData: false,
+                             success: function (res) {
+                                 PageMethods.actualiza($('#txid1').val(), res, function (res) {
+                                     alert('La evidencia de ha cargado exitosamente');
+                                     cargalista();
+                                     closeWaitingDialog();
+                                     dialog.dialog('close');
+                                 }, iferror);
+                             },
+                             error: function (err) {
+                                 alert(err.statusText);
+                             }
+                         });
                      }
                  });
+
              }
          }
          function iferror(err) {
@@ -306,20 +415,25 @@
          }
          function closeWaitingDialog() {
              $("#loadingScreen").dialog('close');
-         }
+        }
 
-     </script>
+        var MaxLen = function () {
+            //alert($(this).attr("maxlength"));
+            if ($(this).val().length > parseInt($(this).attr("maxlength"))) { $(this).val($(this).val().substr(0, parseInt($(this).attr("maxlength")))); }
+        }//* Fin de MaxLen *//
+
+    </script>
 </head>
 <body class="skin-blue sidebar-mini">
     <form id="form1" runat="server">
         <asp:ScriptManager ID="ScriptManager1" runat="server" EnablePageMethods="true">
         </asp:ScriptManager>
-        <asp:HiddenField ID="hdpagina" runat="server" />
-        <asp:HiddenField ID="idusuario" runat="server" />
-        <asp:HiddenField ID="idcliente1" runat="server" />
-        <asp:HiddenField ID="hdstatus" runat="server" Value="1" />
+        <asp:HiddenField ID="hdpagina" runat="server"/>
+        <asp:HiddenField ID="idusuario" runat="server"/>
+        <asp:HiddenField ID="idcliente1" runat="server"/>
+        <asp:HiddenField ID="hdstatus" runat="server" Value="1"/>
         <asp:HiddenField ID="valida" runat="server"  Value="0"/>
-        <asp:HiddenField ID="idfolio" runat="server" />
+        <asp:HiddenField ID="idfolio" runat="server"/>
         <div class="wrapper">
             <div class="main-header">
                 <!-- Logo -->
@@ -369,7 +483,7 @@
                     <ol class="breadcrumb">
                         <li><a href="../Home.aspx"><i class="fa fa-dashboard"></i>Home</a></li>
                         <li><a>Mantenimiento</a></li>
-                        <li class="active">Consulta de Correctivo</li>
+                        <li class="active">Consulta de Correctivos</li>
                     </ol>
                 </div>
                 <div class="content">
@@ -382,7 +496,7 @@
                                 </div>
                                 <div class="row">
                                     <div class="col-lg-1 text-right">
-                                        <label for="dltipo">No. CM:</label>
+                                        <label for="dltipo">Folio CM:</label>
                                     </div>
                                     <div class="col-lg-1">
                                         <input type="text" id="txid" class="form-control" value ="0"/>
@@ -402,6 +516,12 @@
                                 </div>
                                 <div class="row">
                                     <div class="col-lg-1 text-right">
+                                        <label for="dlcliente">Cliente:</label>
+                                    </div>
+                                    <div class="col-lg-3">
+                                        <select id="dlcliente" class="form-control"></select>
+                                    </div>
+                                    <div class="col-lg-1 text-right">
                                         <label for="dlestatus">Estatus:</label>
                                     </div>
                                     <div class="col-lg-2">
@@ -415,7 +535,7 @@
                                 </div>
                                 <ol class="breadcrumb">
                                     <li id="btnuevo1" class="puntero"><a><i class="fa fa-edit"></i>Nuevo</a></li>
-                                    <li id="btexporta1" class="puntero"><a><i class="fa fa-save"></i>Exportar a excel</a></li>
+                                   <!-- <li id="btexporta1" class="puntero"><a><i class="fa fa-save"></i>Exportar a excel</a></li>-->
                                 </ol>
                             </div>
                             <div class="col-md-18 tbheader" style=" height: 300px; overflow-y: scroll;">
@@ -429,7 +549,6 @@
                                             <th class="bg-light-blue-gradient"><span>Estatus</span></th>                                           
                                             <th class="bg-light-blue-gradient"><span>F. Alta</span></th>                                                                                 
                                             <th class="bg-light-blue-gradient"><span>Descripción</span></th> 
-                                            
                                         </tr>
                                     </thead>
                                 </table>
@@ -466,7 +585,7 @@
                                     <div class="col-lg-3">
                                         <select id="dlestatus1" class="form-control">
                                             <option value="0">Seleccione...</option>
-                                            <option value="4">Autorizar</option>
+                                            <option value="2">Autorizar</option>
                                             <option value="6">Rechazar</option>
                                         </select>
                                     </div>
@@ -475,7 +594,7 @@
                                     <div class="col-lg-2 text-right">
                                         <label for="txmotivo">Motivo:</label>
                                     </div>
-                                    <div class="col-lg-6" >
+                                    <div class="col-lg-6">
                                         <textarea class="form-control" id="txmotivo" maxlength="300"></textarea>
                                     </div>
                                 </div>
@@ -500,7 +619,7 @@
                         <div class="row" id="dvcarga">
                             <div class="row">
                                 <div class="col-lg-2 text-right">
-                                    <label for="dlcliente">Archivo:</label>
+                                    <label for="txarchivo">Archivo:</label>
                                 </div>
                                 <div class="col-lg-8">
                                     <input type="file" id="txarchivo" class="form-control" />
@@ -512,6 +631,65 @@
                                 </div>
                             </div>
                         </div>
+                        <div id="dvfactura">
+                            <div class="row">
+                                <div class="col-lg-3 text-right">
+                                    <label for="txfoliocm">Folio Correctivo:</label>
+                                </div>
+                                <div class="col-lg-2">
+                                <input type="text" id="txfoliocm" class="form-control" disabled="disabled"/>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-lg-3 text-right">
+                                    <label for="txfactura">Folio Factura:</label>
+                                </div >
+                                <div class="col-lg-2">
+                                    <input type="text" id="txfactura" class="form-control MaxLen" maxlength="10"/>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-lg-3 text-right">
+                                    <label for="txarchivo1">Archivo:</label>
+                                </div>
+                                <div class="col-lg-6">
+                                    <input type="file" id="txarchivo1" class="form-control" multiple="multiple" />
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-lg-4 text-right">
+                                    <input type="button" id="btfile1" class="btn btn-success" value="Subir Archivo" onclick="xmlUpFile1()" />
+                                </div>
+                                <div class="col-lg-4">
+                                    <input type="button" id="btCerrarFactura" class="btn btn-success" value="Cerrar" onclick="CierraFac()" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row" id="dvcarga1">  
+                            <div class="row">
+                                <div class="col-lg-3 text-right">
+                                    <label for="txfoliocm1">Folio:</label>
+                                </div>
+                                <div class="col-lg-2">
+                                    <input type="text" id="txfoliocm1" class="form-control" disabled="disabled" />
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-lg-3">
+                                    <label for="dlbanco">Facturas:</label>
+                                </div>
+                                <div id="dvarchivos" class="tbheader col-lg-8" style="height: 200px; overflow-y: scroll;">
+                                    <table class=" table table-condensed h6" id="tblistaa">
+                                        <thead>
+                                            <tr>                                            
+                                                <th class="bg-light-blue-active">Documento</th>
+                                                <th class="bg-light-blue-active"></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody></tbody>
+                                    </table>
+                                </div>
+                            </div>
                         <div class="row" id="dvabre">
                             <asp:HiddenField id="lbarchivo" runat="server" />
                             <div class="col-lg-4 text-right">

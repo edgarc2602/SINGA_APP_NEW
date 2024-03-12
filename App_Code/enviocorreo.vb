@@ -1,8 +1,8 @@
-﻿Imports System.Data
+﻿Imports Microsoft.VisualBasic
+Imports System.Data
 Imports System.Data.SqlClient
 Imports System.Net
 Imports System.Net.Mail
-Imports Microsoft.VisualBasic
 
 Public Class enviocorreo
     Public Function correovacante(ByVal fecha As String, ByVal titulo As String, ByVal cliente As String, ByVal puesto As String, ByVal sucursal As String, ByVal ubicacion As String, ByVal horario As String, ByVal idcli As Integer, ByVal folio As Integer) As String
@@ -331,7 +331,10 @@ Public Class enviocorreo
         sqlbr.Append("</body>" & vbCrLf)
         sqlbr.Append("</html>" & vbCrLf)
 
-        envia(sqlbr.ToString, destinos)
+        'envia(sqlbr.ToString, destinos)
+        Dim enviartodo As New enviacorreo()
+        Dim notificacion As String = "NOTIFICACION DE SINGA"
+        enviartodo.envia(sqlbr.ToString, destinos, notificacion)
 
         Return ""
     End Function
@@ -678,7 +681,10 @@ Public Class enviocorreo
         sqlbr.Append("</body>" & vbCrLf)
         sqlbr.Append("</html>" & vbCrLf)
 
-        envia(sqlbr.ToString, destinos)
+        'envia(sqlbr.ToString, destinos)
+        Dim enviartodo As New enviacorreo()
+        Dim notificacion As String = "NOTIFICACION DE SINGA"
+        enviartodo.envia(sqlbr.ToString, destinos, notificacion)
 
         Return ""
     End Function
@@ -999,7 +1005,10 @@ Public Class enviocorreo
         sqlbr.Append("</body>" & vbCrLf)
         sqlbr.Append("</html>" & vbCrLf)
 
-        envia(sqlbr.ToString, destinos)
+        'envia(sqlbr.ToString, destinos)
+        Dim enviartodo As New enviacorreo()
+        Dim notificacion As String = "NOTIFICACION DE SINGA"
+        enviartodo.envia(sqlbr.ToString, destinos, notificacion)
         Return ""
     End Function
 
@@ -1344,7 +1353,11 @@ Public Class enviocorreo
         sqlbr.Append("</body>" & vbCrLf)
         sqlbr.Append("</html>" & vbCrLf)
 
-        envia(sqlbr.ToString, destinos)
+        'envia(sqlbr.ToString, destinos)
+        Dim enviartodo As New enviacorreo()
+        Dim notificacion As String = "NOTIFICACION DE SINGA"
+        enviartodo.envia(sqlbr.ToString, destinos, notificacion)
+
 
         Return ""
     End Function
@@ -1714,7 +1727,10 @@ Public Class enviocorreo
         sqlbr.Append("</body>" & vbCrLf)
         sqlbr.Append("</html>" & vbCrLf)
 
-        envia(sqlbr.ToString, destinos)
+        'envia(sqlbr.ToString, destinos)
+        Dim enviartodo As New enviacorreo()
+        Dim notificacion As String = "NOTIFICACION DE SINGA"
+        enviartodo.envia(sqlbr.ToString, destinos, notificacion)
 
         Return ""
     End Function
@@ -2062,7 +2078,10 @@ Public Class enviocorreo
         sqlbr.Append("</body>" & vbCrLf)
         sqlbr.Append("</html>" & vbCrLf)
 
-        envia(sqlbr.ToString, destinos)
+        'envia(sqlbr.ToString, destinos)
+        Dim enviartodo As New enviacorreo()
+        Dim notificacion As String = "NOTIFICACION DE SINGA"
+        enviartodo.envia(sqlbr.ToString, destinos, notificacion)
 
         Return ""
     End Function

@@ -1,9 +1,6 @@
-﻿Imports System
-Imports System.Data
+﻿Imports System.Data
 Imports System.Data.SqlClient
-Imports System.Text
 Imports System.Xml
-Imports Microsoft.VisualBasic
 Partial Class App_Finanzas_Fin_Pro_Provisionfactura
     Inherits System.Web.UI.Page
 

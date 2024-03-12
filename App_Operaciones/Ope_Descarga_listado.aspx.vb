@@ -34,19 +34,20 @@ Partial Class App_Operaciones_Ope_Descarga_listado
         context.Response.End()
     End Sub
 
-    Protected Sub rptlistado(ByVal cliente As Integer, ByVal mes As Integer, ByVal anio As Integer)
+    Protected Sub rptlistado(ByVal cliente As Integer, ByVal mes As Integer, ByVal anio As Integer, ByVal tipo As Integer)
         Dim con As New SqlConnection((New Conexion).StrConexion)
         Dim sqlbr As New StringBuilder()
 
 
-        sqlbr.Append("select  ROW_NUMBER()Over(Order by a.nombre) As RowNum, a.id_inmueble, a.nombre, isnull(b.id_listado,0) as id_listado, case when b.id_status = 1 then 'Alta' when b.id_status = 2 then  "& vbCrLf)
-        sqlbr.Append("'Aprobado' when b.id_status = 3 then 'Despachado' when b.id_status = 4 then 'Entregado' when b.id_status = 5 then 'Cancelado' else 'No existe' end as estatus," & vbCrLf)
-        sqlbr.Append("cast(a.presupuestol as numeric(12,2)) as pttol," & vbCrLf)
-        sqlbr.Append("cast(isnull(SUM(c.cantidad * c.precio),0) as numeric(12,2)) as total, cast(isnull(a.presupuestol - SUM(c.cantidad * c.precio),0) as numeric(12,2)) as desviacion" & vbCrLf)
-        sqlbr.Append("from tb_cliente_inmueble a left outer join tb_listadomaterial b on a.id_inmueble = b.id_inmueble and mes = " & mes & " and anio = " & anio & "" & vbCrLf)
-        sqlbr.Append("left outer join tb_listadomateriald c on b.id_listado = c.id_listado" & vbCrLf)
-        sqlbr.Append("where a.id_cliente = " & cliente & " and a.id_status = 1 group by a.id_inmueble, a.nombre, a.presupuestol, b.id_listado, b.id_status")
-
+        sqlbr.Append("select  ROW_NUMBER()Over(Order by a.nombre) As RowNum, a.id_inmueble, a.nombre, isnull(b.id_listado,0) as id_listado, isnull(d.descripcion,'') as tipo, e.descripcion as estatus," & vbCrLf)
+        sqlbr.Append("isnull(convert(varchar(12), falta, 103),'') as falta," & vbCrLf)
+        sqlbr.Append("cast(isnull(SUM(c.cantidad * c.precio),0) as numeric(12,2)) as total"& vbCrLf)
+        sqlbr.Append("from tb_cliente_inmueble a left outer join tb_listadomaterial b on a.id_inmueble = b.id_inmueble " & vbCrLf)
+        sqlbr.Append("left outer join tb_listadomateriald c on b.id_listado = c.id_listado left outer join tb_tipolistado d on b.tipo = d.id_tipo"& vbCrLf)
+        sqlbr.Append("inner join tb_statusl e on b.id_status = e.id_status" & vbCrLf)
+        sqlbr.Append("where a.id_cliente = " & cliente & " and a.id_status = 1 and b.mes = " & mes & " and b.anio = " & anio & "" & vbCrLf)
+        If tipo <> 0 Then sqlbr.Append(" and b.tipo = " & tipo & "" & vbCrLf)
+        sqlbr.Append("group by a.id_inmueble, a.nombre, b.falta, b.id_listado, b.id_status, d.descripcion, e.descripcion")
         Dim dt As New DataTable()
         Dim da As New SqlDataAdapter(sqlbr.ToString(), con)
         da.Fill(dt)
@@ -61,8 +62,8 @@ Partial Class App_Operaciones_Ope_Descarga_listado
         Dim cliente As Integer = Request("cliente")
         Dim mes As Integer = Request("mes")
         Dim anio As Integer = Request("anio")
+        Dim tipo As Integer = Request("tipo")
 
-
-        rptlistado(cliente, mes, anio)
+        rptlistado(cliente, mes, anio, tipo)
     End Sub
 End Class

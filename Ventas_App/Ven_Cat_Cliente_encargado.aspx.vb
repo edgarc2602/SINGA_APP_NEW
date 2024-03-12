@@ -1,9 +1,6 @@
-﻿Imports System
-Imports System.Data
+﻿Imports System.Data
 Imports System.Data.SqlClient
-Imports System.Text
 Imports System.Xml
-Imports Microsoft.VisualBasic
 Partial Class Ventas_App_Ven_Cat_Cliente_encargado
     Inherits System.Web.UI.Page
 

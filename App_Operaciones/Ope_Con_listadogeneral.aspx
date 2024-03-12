@@ -35,47 +35,63 @@
             });
             cargacliente();
             cargames();
-            $('#btmostrar').click( function(){
-                cargaptto();
-                cuentalistados();
-                cargalistados();
+            $('#btmostrar').click(function () {
+                if (validacarga()) {
+                    cargaptto();
+                    cuentalistados();
+                    cargalistados();
+                }                
             })
             $('#btimprime').click(function () {
                 var formula = '{tb_cliente_inmueble.id_cliente}=' + $('#dlcliente').val() + ' and {tb_listadomaterial.mes} =' + $('#dlmes').val() + ' and {tb_listadomaterial.anio}=' + $('#txanio').val()  
                 window.open('../RptForAll.aspx?v_nomRpt=listadomatriz.rpt&v_formula=' + formula, '', 'width=850, height=600, left=80, top=120, resizable=no, scrollbars=no');
             })
             $('#btexporta').click(function () {
-                window.open('Ope_Descarga_listado.aspx?cliente=' + $('#dlcliente').val() + '&mes=' + $('#dlmes').val() + '&anio=' + $('#txanio').val(), '_blank');
+                window.open('Ope_Descarga_listado.aspx?cliente=' + $('#dlcliente').val() + '&mes=' + $('#dlmes').val() + '&anio=' + $('#txanio').val() + '&tipo=' + $('#dltipo').val(), '_blank');
             })
             $('#btautoriza').click(function () {
                 if (validaauto()) {
-                    PageMethods.autoriza($('#dlcliente').val(), $('#dlmes').val(), $('#txanio').val(), 2, function (res) {
+                    PageMethods.autoriza($('#dlcliente').val(), $('#dlmes').val(), $('#txanio').val(), $('#dltipo').val(), 2, function () {
                         cargalistados();
-                        alert('Todos los listados se han autorizado');
+                        alert('Todos los listados se han Aprobado');
                     }, iferror);
                 }
-                
             })
             $('#btlibera').click(function () {
                 if (validaauto()) {
-                    PageMethods.autoriza($('#dlcliente').val(), $('#dlmes').val(), $('#txanio').val(), 1, function (res) {
+                    PageMethods.autoriza($('#dlcliente').val(), $('#dlmes').val(), $('#txanio').val(), $('#dltipo').val(), 1, function () {
                         cargalistados();
-                        alert('Todos los listados se han liberado');
-
+                        alert('Todos los listados se han Liberado');
                     }, iferror);
                 }
-            })
+            })            
         });
+        function validacarga() {
+            if ($('#txfolio').val() == '') {
+                $('#txfolio').val(0)
+                return true;
+            }
+            if ($('#txfolio').val() == '' || $('#txfolio').val() == 0) {
+                if ($('#dlcliente').val() == 0){
+                    alert('Debe elegir un cliente')
+                    return false;
+                }
+                if ($('#dlmes').val() == 0) {
+                    alert('Debe elegir un mes')
+                    return false;
+                }
+            }
+            return true;
+        }
         function validaauto() {
-            if ($('#idusuario').val() != 1 && $('#idusuario').val() != 59 && $('#idusuario').val() != 81 && $('#idusuario').val() != 85) {
+            if ($('#idusuario').val() != 1 && $('#idusuario').val() != 59 && $('#idusuario').val() != 81 && $('#idusuario').val() != 85 && $('#idusuario').val() != 20615) {
                 alert('Usted no tiene permisos para realizar esta acción');
                 return false;
-            }
-            
+            }            
             return true;
         }
         function cuentalistados() {
-            PageMethods.contarlistados($('#dlcliente').val(), $('#dlmes').val(), $('#txanio').val(), $('#dltipo').val(), function (cont) {
+            PageMethods.contarlistados($('#dlcliente').val(), $('#dlmes').val(), $('#txanio').val(), $('#dltipo').val(), $('#txfolio').val(), function (cont) {
                 $('#paginacion li').remove();
                 var opt = eval('(' + cont + ')');
                 var pag = '';
@@ -86,7 +102,7 @@
             }, iferror);
         }
         function cargalistados() {
-            PageMethods.listados($('#dlcliente').val(), $('#dlmes').val(), $('#txanio').val(), $('#hdpagina').val(), $('#dltipo').val(),  function (res) {
+            PageMethods.listados($('#dlcliente').val(), $('#dlmes').val(), $('#txanio').val(), $('#hdpagina').val(), $('#dltipo').val(), $('#txfolio').val(),  function (res) {
                 var ren = $.parseHTML(res);
                 $('#tblista tbody').remove();
                 $('#tblista').append(ren);
@@ -118,16 +134,15 @@
                     var resp = ''
                     var auto = 0
                     if (validaauto()) {
-                        if ($(this).closest('tr').find("input:eq(3)").val() == 'Autoriza') {
-                            resp = confirm('Esta seguro de autorizar el listado: ' + $(this).closest('tr').find('td').eq(2).text().toString())
+                        if ($(this).closest('tr').find("input:eq(2)").val() == 'Aprobar') {
+                            resp = confirm('Esta seguro de Aprobar el listado: ' + $(this).closest('tr').find('td').eq(2).text().toString())
                             auto = 2
-                        }
-                            /*
-                            resp = confirm('Esta seguro de liberar el listado: ' + $(this).closest('tr').find('td').eq(2).text().toString())
-                            auto = 1
                         } else {
-                            
-                        }*/
+                            if ($(this).closest('tr').find("input:eq(2)").val() == 'Liberar') {
+                                resp = confirm('Esta seguro de liberar el listado: ' + $(this).closest('tr').find('td').eq(2).text().toString())
+                                auto = 1
+                            }
+                        }              
                         if (resp == true) {
                             PageMethods.auto($(this).closest('tr').find('td').eq(2).text(), auto, function (res) {
                                 cargalistados();
@@ -258,7 +273,15 @@
                             <div class="box-header">
                             </div>
                             <div class="row">
-                                <div class="col-lg-2 text-right">
+                                <div class="col-lg-1 text-right">
+                                    <label for="txfolio">Folio:</label>
+                                </div>
+                                <div class="col-lg-1">
+                                    <input type="text" id="txfolio" class="form-control" value="0"/>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-lg-1 text-right">
                                     <label for="dlcliente">Cliente:</label>
                                 </div >
                                 <div class="col-lg-3">
@@ -266,7 +289,7 @@
                                 </div>
                             </div>
                             <div class="row">
-                                <div class="col-lg-2 text-right">
+                                <div class="col-lg-1 text-right">
                                     <label for="txanio">Año:</label>
                                 </div>
                                 <div class="col-lg-1">
@@ -317,7 +340,7 @@
                                     <input type="text" id="txptto" class="form-control text-right"/>
                                 </div>
                                 <div class="col-lg-2 text-right">
-                                    <label for="txpttou">Total a utilizar:</label>
+                                    <label for="txpttou">Total de listados:</label>
                                 </div>
                                 <div class="col-lg-2">
                                     <input type="text" id="txpttou" class="form-control text-right"/>
@@ -344,8 +367,8 @@
                         <ol class="breadcrumb">
                             <li id="btexporta" class="puntero"><a><i class="fa fa-save"></i>Exportar a excel</a></li>
                             <li id="btimprime"  class="puntero"><a ><i class="fa fa-print"></i>Imprimir Matriz</a></li>
-                            <li id="btautoriza"  class="puntero"><a ><i class="fa fa-edit"></i>Aprobar</a></li>
-                            <!--<li id="btlibera"  class="puntero"><a ><i class="fa fa-undo"></i>Liberar</a></li>-->
+                            <li id="btautoriza"  class="puntero"><a ><i class="fa fa-edit"></i>Aprobar todo</a></li>
+                            <li id="btlibera"  class="puntero"><a ><i class="fa fa-undo"></i>Liberar todo</a></li>
                         </ol>
                         <nav aria-label="Page navigation example" class="navbar-right">
                             <ul class="pagination justify-content-end" id="paginacion">

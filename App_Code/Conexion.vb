@@ -1,7 +1,9 @@
-﻿Imports System.Data.SqlClient
 Imports Microsoft.VisualBasic
+Imports System.Data.SqlClient
+Imports System.Data
 
 Public Class Conexion
+
 #Region " Variables "
 
     Private mUsuario As String
@@ -68,6 +70,7 @@ Public Class Conexion
             mSqlConn = Value
         End Set
     End Property
+
 #End Region
 
 #Region " Constructor y Variables Conexion **** "
@@ -75,30 +78,20 @@ Public Class Conexion
     Public Sub New()
         Try
 
-            'PRUEBAS DE FACTURACION
-            Me.Servidor = "192.168.2.4"
-            Me.BaseDatos = "TESTING"
-            Me.Usuario = "sa"
-            Me.Password = "S1ng42019"
 
-            ''PRUEBAS PREVENTIVOS
-            'Me.Servidor = "SISTEMAS\SQLEXPRESS2019"
+            'Esta seccion de variables de la conexion
+            'prefiero hacerlo asi, en lugar de un archivo conexion
+            'Me.Servidor = "SRV-GBATIA"
+            ''Me.Servidor = "192.168.2.5"
             'Me.BaseDatos = "SINGA"
             'Me.Usuario = "sa"
             'Me.Password = "S1ng42019"
 
-            'Esta seccion de variables de la conexion
-            'prefiero hacerlo asi, en lugar de un archivo conexion
-            'Me.Servidor = "DESKTOP-4RGV6FC\SQLEXPRESS2019"
-            'Me.Servidor = "192.168.2.4"
-            'Me.BaseDatos = "SINGAPROD"
-            'Me.BaseDatos = "TESTING"
-            'Me.Usuario = "sa"
-            'Me.Usuario = "JorgeMtz"
-            'Me.Usuario = "sa"
-            'Me.Password = "S1ng42019"
-            'Me.Password = "Proskater45"
-            'Me.Password = "sasa"
+            Me.Servidor = "DESKTOP-9GUNCJ2\SQLEXPRESS"
+            Me.BaseDatos = "SINGA"
+            Me.Usuario = "sa"
+            Me.Password = "123Mexico"
+
             SQLConn = New SqlConnection(Me.StrConexion)
         Catch ex As Exception
             Throw ex
@@ -120,5 +113,4 @@ Public Class Conexion
         End Try
     End Function
 #End Region
-
 End Class

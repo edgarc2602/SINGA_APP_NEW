@@ -51,7 +51,7 @@
                 else {
                     //formula = '{tb_clientependfactdet.anio} ="' + $('#txanio').val() + '" and {tb_clientependfactdet.mes} = "' + padLeft($('#dlmes').val(),2,"0") + '"'
                     //formula = '{tb_clientependfactdet.anio} =' + $('#txanio').val() + ' and {tb_clientependfactdet.mes} = ' + parseInt($('#dlmes').val()) + ''
-                    formula = '{sp_reportependfacturarmes;1.anio} =' + $('#txanio').val() + ' and {sp_reportependfacturarmes;1.idmes} = ' + parseInt($('#dlmes').val()) + ''
+                    formula = '{sp_reportependfacturarmes.anio} =' + $('#txanio').val() + ' and {sp_reportependfacturarmes.mes} = ' + parseInt($('#dlmes').val()) + ''
                     //formula = '{anio} =' + $('#txanio').val() + ' and {mes} = ' + parseInt($('#dlmes').val()) + ''
                     window.open('../RptForAll.aspx?v_nomRpt=pendientesdefacturarmes.rpt&v_formula=' + formula, '', 'width=850, height=600, left=80, top=120, resizable=no, scrollbars=no');
                 }

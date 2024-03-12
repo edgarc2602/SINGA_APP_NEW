@@ -87,7 +87,7 @@ Partial Class App_Finanzas_Fin_Con_listadomaterial
 
         Dim sqlbr As New StringBuilder
         Dim sql As String = ""
-        sqlbr.Append("SELECT COUNT(*)/50 + 1 as Filas, COUNT(*) % 50 as Residuos FROM tb_listadomaterial where id_status = 4 and  id_cliente = " & cliente & " and mes = " & mes & " and anio = " & anio & "" & vbCrLf)
+        sqlbr.Append("SELECT COUNT(*)/50 + 1 as Filas, COUNT(*) % 50 as Residuos FROM tb_listadomaterial where id_cliente = " & cliente & " and mes = " & mes & " and anio = " & anio & "" & vbCrLf)
         If sucursal <> 0 Then sqlbr.Append("and id_inmueble = " & sucursal & "")
 
         Dim ds As New DataTable
@@ -110,7 +110,7 @@ Partial Class App_Finanzas_Fin_Con_listadomaterial
         Dim myConnection As New SqlConnection((New Conexion).StrConexion)
         Dim sqlbr As New StringBuilder
         sqlbr.Append("select id_inmueble as'td','', nombre as'td','', id_listado as'td','', tipo as 'td','', estatus as'td','', pttol as'td','', total as'td','', desviacion as'td',''," & vbCrLf)
-        'sqlbr.Append("(select 'btn btn-primary btver' as '@class', 'Ver' as '@value', 'button' as '@type' for xml path('input'),root('td'),type),''," & vbCrLf)
+        sqlbr.Append("(select 'btn btn-primary btver' as '@class', 'Imprimir p/inventario' as '@value', 'button' as '@type' for xml path('input'),root('td'),type),''," & vbCrLf)
         sqlbr.Append("(select 'btn btn-primary btacuse' as '@class', 'Acuse' as '@value', 'button' as '@type' for xml path('input'),root('td'),type)" & vbCrLf)
         sqlbr.Append("from (" & vbCrLf)
         sqlbr.Append("select  ROW_NUMBER()Over(Order by a.nombre) As RowNum, a.id_inmueble, a.nombre, isnull(b.id_listado,0) as id_listado, isnull(d.descripcion,'') as tipo, case when b.id_status = 1 Then 'Alta' when b.id_status = 2 then  " & vbCrLf)
@@ -119,11 +119,10 @@ Partial Class App_Finanzas_Fin_Con_listadomaterial
         sqlbr.Append("cast(isnull(SUM(c.cantidad * c.precio),0) as numeric(12,2)) as total, cast(isnull(a.presupuestol - SUM(c.cantidad * c.precio),0) as numeric(12,2)) as desviacion, b.acuse" & vbCrLf)
         sqlbr.Append("from tb_cliente_inmueble a left outer join tb_listadomaterial b on a.id_inmueble = b.id_inmueble and mes = " & mes & " and anio = " & anio & "" & vbCrLf)
         sqlbr.Append("left outer join tb_listadomateriald c on b.id_listado = c.id_listado left outer join tb_tipolistado d on b.tipo = d.id_tipo" & vbCrLf)
-        sqlbr.Append("where a.id_cliente = " & cliente & " and a.id_status = 1 and b.id_status = 4 " & vbCrLf)
+        sqlbr.Append("where a.id_cliente = " & cliente & " and a.id_status = 1 " & vbCrLf)
         If sucursal <> 0 Then sqlbr.Append("and a.id_inmueble = " & sucursal & "" & vbCrLf)
         sqlbr.Append("group by a.id_inmueble, a.nombre, a.presupuestol, b.id_listado, b.id_status, d.descripcion, b.acuse" & vbCrLf)
         sqlbr.Append(") as result where RowNum BETWEEN (" & pagina & " - 1) * 50 And " & pagina & " * 50 order by nombre for xml path('tr'), root('tbody')")
-
         Dim mycommand As New SqlCommand(sqlbr.ToString(), myConnection)
         myConnection.Open()
         Dim xdoc1 As New XmlDocument()

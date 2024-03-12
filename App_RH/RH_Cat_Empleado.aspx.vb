@@ -199,7 +199,7 @@ Partial Class App_RH_RH_Cat_Empleado
         sqlbr.Append("cast(datediff(dd,fnacimiento,GETDATE()) / 365.25 as int) as edad, tallac, id_area, case when pensionado = 0 then 0 else 1 end as pensionado," & vbCrLf)
         sqlbr.Append("calle, noext, noint, colonia, cp, municipio, id_estado, tel1, tel2, contacto, sueldo, sueldoimss, sdi, fingreso, a.formapago, id_banco, clabe, cuenta, tarjeta," & vbCrLf)
         sqlbr.Append("case when tienecredito = 0 then 0 else 1 end as tienecredito, fcredito, tipocredito, montocredito, case when confirmaimss = 0 then 0 else 1 end confirma," & vbCrLf)
-        sqlbr.Append("a.id_plantilla,b.smntope, a.callef, a.coloniaf, a.cpf, a.municipiof, a.id_estadof" & vbCrLf)
+        sqlbr.Append("a.id_plantilla,b.smntope, a.callef, a.coloniaf, a.cpf, a.municipiof, a.id_estadof, a.confirmaexpediente" & vbCrLf)
         sqlbr.Append("from tb_empleado a left outer join tb_cliente_plantilla b on a.id_plantilla = b.id_plantilla" & vbCrLf)
         sqlbr.Append("where id_empleado =  " & empleado & "")
         Dim da As New SqlDataAdapter(sqlbr.ToString, myConnection)
@@ -221,7 +221,7 @@ Partial Class App_RH_RH_Cat_Empleado
             sql += "fingreso:'" & dt.Rows(0)("fingreso") & "', formapago:'" & dt.Rows(0)("formapago") & "', banco:'" & dt.Rows(0)("id_banco") & "', clabe:'" & dt.Rows(0)("clabe") & "',"
             sql += "cuenta:'" & dt.Rows(0)("cuenta") & "', tarjeta:'" & dt.Rows(0)("tarjeta") & "', tienecredito:'" & dt.Rows(0)("tienecredito") & "',"
             sql += "fcredito:'" & dt.Rows(0)("fcredito") & "', tipocredito:'" & dt.Rows(0)("tipocredito") & "', montocredito:'" & dt.Rows(0)("montocredito") & "', confirma:'" & dt.Rows(0)("confirma") & "', sueldoplantilla:'" & dt.Rows(0)("smntope") & "',"
-            sql += "callef:'" & dt.Rows(0)("callef") & "', coloniaf:'" & dt.Rows(0)("coloniaf") & "', cpf:'" & dt.Rows(0)("cpf") & "',municipiof:'" & dt.Rows(0)("municipiof") & "', estadof:'" & dt.Rows(0)("id_estadof") & "'}"
+            sql += "callef:'" & dt.Rows(0)("callef") & "', coloniaf:'" & dt.Rows(0)("coloniaf") & "', cpf:'" & dt.Rows(0)("cpf") & "',municipiof:'" & dt.Rows(0)("municipiof") & "', estadof:'" & dt.Rows(0)("id_estadof") & "', confirmaexp:'" & dt.Rows(0)("confirmaexpediente") & "'}"
         End If
         Return sql
     End Function
@@ -291,6 +291,23 @@ Partial Class App_RH_RH_Cat_Empleado
         Return ""
 
     End Function
+
+
+    <Web.Services.WebMethod()>
+    Public Shared Function confirma(ByVal empleado As String) As String
+
+        Dim sql As String = "Update tb_empleado set confirmaexpediente = 1 where id_empleado =" & empleado & ";"
+        Dim myConnection As New SqlConnection((New Conexion).StrConexion)
+        Dim mycommand As New SqlCommand(sql, myConnection)
+        myConnection.Open()
+        mycommand.ExecuteNonQuery()
+        myConnection.Close()
+        myConnection = Nothing
+        Return ""
+
+    End Function
+
+
     <Web.Services.WebMethod()>
     Public Shared Function guarda(ByVal registro As String, ByVal fecha As String, ByVal cliente As String, ByVal puesto As String, ByVal sucursal As String, ByVal persona As String, ByVal vacante As String, ByVal idvacante As Integer, ByVal usuario As Integer) As String
 

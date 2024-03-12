@@ -8,8 +8,8 @@ Public Class correocgo
         Dim sqlbr As New StringBuilder
 
         Dim myConnection As New SqlConnection((New Conexion).StrConexion)
-        'Dim destinos = "ricardob@grupobatia.com.mx;"
-        Dim destinos = "joses@grupobatia.com.mx;victorr@grupobatia.com.mx;"
+        Dim destinos = "ricardob@grupobatia.com.mx;"
+        'Dim destinos = "evairt@grupobatia.com.mx;victorr@grupobatia.com.mx;"
 
         Dim sql As String = ""
         sql = "select tk_folio, convert(varchar(10),GETDATE(), 103) fenvio, convert(varchar(10),Tk_FechaAlta, 103) as falta, "
@@ -29,7 +29,7 @@ Public Class correocgo
         Dim dt As New DataSet
         da.Fill(dt)
         If dt.Tables(0).Rows.Count > 0 Then
-            destinos += dt.Tables(0).Rows(0)("correos")
+            '    destinos += dt.Tables(0).Rows(0)("correos")
         End If
         sqlbr.Append("<html style=""width:100%;font-family:arial, 'helvetica neue', helvetica, sans-serif;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;padding:0;Margin:0;"">" & vbCrLf)
         sqlbr.Append("<head>" & vbCrLf)
@@ -407,7 +407,10 @@ Public Class correocgo
         sqlbr.Append("</body>" & vbCrLf)
         sqlbr.Append("</html>" & vbCrLf)
 
-        envia(sqlbr.ToString, destinos, folio)
+        'envia(sqlbr.ToString, destinos, folio)
+        Dim enviartodo As New enviacorreo()
+        Dim notificacion As String = "NOTIFICACION DE SINGA"
+        enviartodo.envia(sqlbr.ToString, destinos, notificacion)
 
         Return ""
     End Function
@@ -832,7 +835,10 @@ Public Class correocgo
         sqlbr.Append("</body>" & vbCrLf)
         sqlbr.Append("</html>" & vbCrLf)
 
-        envia(sqlbr.ToString, destinos, folio)
+        'envia(sqlbr.ToString, destinos, folio)
+        Dim enviartodo As New enviacorreo()
+        Dim notificacion As String = "NOTIFICACION DE SINGA"
+        enviartodo.envia(sqlbr.ToString, destinos, notificacion)
 
         Return ""
     End Function
@@ -1148,7 +1154,11 @@ Public Class correocgo
         sqlbr.Append("</body>" & vbCrLf)
         sqlbr.Append("</html>" & vbCrLf)
 
-        envia(sqlbr.ToString, destinos, 0)
+        'envia(sqlbr.ToString, destinos, 0)
+
+        Dim enviartodo As New enviacorreo()
+        Dim notificacion As String = "NOTIFICACION DE SINGA"
+        enviartodo.envia(sqlbr.ToString, destinos, notificacion)
 
         Return ""
     End Function
@@ -1464,7 +1474,10 @@ Public Class correocgo
         sqlbr.Append("</body>" & vbCrLf)
         sqlbr.Append("</html>" & vbCrLf)
 
-        envia(sqlbr.ToString, destinos, 0)
+        'envia(sqlbr.ToString, destinos, 0)
+        Dim enviartodo As New enviacorreo()
+        Dim notificacion As String = "NOTIFICACION DE SINGA"
+        enviartodo.envia(sqlbr.ToString, destinos, notificacion)
 
         Return ""
     End Function
@@ -1477,7 +1490,7 @@ Public Class correocgo
 
         Dim mail As New MailMessage
         mail.From = New MailAddress("adminsinga@grupobatia.com.mx")
-
+        Dim aa As String = ""
         Dim v_par As Array
         v_par = (destino).Split(";")
         For i As Integer = 0 To v_par.Length - 1
@@ -1501,11 +1514,16 @@ Public Class correocgo
         'mailClient.Credentials = basicAuthenticationInfo
         'mailClient.Port = 587
 
-        Dim pass As String = "Ad*Gb1001"
+        'Dim pass As String = "Ad*Gb1001"
+        'Dim message = New MimeMessage();
+
+        Dim pass As String = "Comprasgb2018"
         Dim mailClient As New SmtpClient()
-        Dim basicAuthenticationInfo As New NetworkCredential("adminsinga@grupobatia.com.mx", "" & pass & "")
-        mailClient.Host = "smtp.office365.com"
-        mailClient.UseDefaultCredentials = True
+        'Dim basicAuthenticationInfo As New NetworkCredential("adminsinga@grupobatia.com.mx", "" & pass & "")
+        Dim basicAuthenticationInfo = New Net.NetworkCredential("grupobatia2@gmail.com", "Comprasgb2018")
+        'mailClient.Host = "smtp.office365.com"
+        mailClient.Host = "smtp.gmail.com"
+        mailClient.UseDefaultCredentials = False
         mailClient.Credentials = basicAuthenticationInfo
         mailClient.Port = 587
         mailClient.EnableSsl = True
@@ -1515,6 +1533,7 @@ Public Class correocgo
 
         Catch ex As Exception
 
+            aa = ex.Message.ToString()
         End Try
 
         Return ""

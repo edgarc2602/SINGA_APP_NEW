@@ -111,11 +111,6 @@ Partial Class App_Operaciones_Ope_Pro_Listadomateriala
         sqlbr.Append("left outer join tb_productoprecio d on a.clave = d.clave and d.id_proveedor = c.id_proveedor " & vbCrLf)
         If tipo <> 2 Then sqlbr.Append("inner join tb_cliente_listaautorizada e on a.clave = e.clave and e.id_cliente = " & cliente & "")
         sqlbr.Append("where tipo = 1 and id_status = 1 and a.descripcion like '%" & desc & "%'")
-        'If cliente = 130 Then
-        ' sqlbr.Append("and a.id_cliente = " & cliente & "" & vbCrLf)
-        ' Else
-        ' sqlbr.Append("and a.id_cliente != 130" & vbCrLf)
-        ' End If
         sqlbr.Append("for xml path('tr'), root('tbody')")
         Dim mycommand As New SqlCommand(sqlbr.ToString(), myConnection)
         myConnection.Open()
@@ -186,23 +181,22 @@ Partial Class App_Operaciones_Ope_Pro_Listadomateriala
         Dim myConnection As New SqlConnection((New Conexion).StrConexion)
         Dim sqlbr As New StringBuilder
         Dim sql As String = ""
-        Dim vtipo As Integer = 0
+        Dim vtipo As String = ""
 
         sqlbr.Append("select isnull(sum(importe),0) as ptto from tb_cliente_material where id_cliente = " & cliente & " ")
         Select Case tipo
-            Case 1, 3
+            Case 3
                 sqlbr.Append("and id_concepto in(1,2);")
-                vtipo = 1
+                vtipo = "1,3"
             Case 4
                 sqlbr.Append("and id_concepto=3;")
-                vtipo = 4
+                vtipo = "4"
             Case 2
                 sqlbr.Append("and id_concepto=0;")
-                vtipo = 2
+                vtipo = "2"
         End Select
         sqlbr.Append("select isnull(SUM(cantidad * precio),0) as usado from tb_listadomateriald a inner join tb_listadomaterial b on a.id_listado = b.id_listado " & vbCrLf)
-        sqlbr.Append("where b.id_cliente = " & cliente & " and mes =" & mes & "  and anio =" & anio & " and tipo=" & vtipo & " AND B.id_status != 5")
-
+        sqlbr.Append("where b.id_cliente = " & cliente & " and mes =" & mes & "  and anio =" & anio & " and tipo in(" & vtipo & ") AND B.id_status != 5")
         Dim da As New SqlDataAdapter(sqlbr.ToString, myConnection)
         Dim dt As New DataSet
         da.Fill(dt)

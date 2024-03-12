@@ -28,6 +28,7 @@
             cargacliente();
             cargaencargado();
             cargasupervisor();
+            cargaestado();
             $('#btconsulta').click(function () {
                 $('#hdpagina').val(1);
                 cuentaencuesta();
@@ -37,7 +38,7 @@
                 location.reload();
             })
             $('#btexporta1').click(function () {
-                window.open('Mov_Descarga_supervision.aspx?fecini=' + $('#txfecini').val() + ' &fecfin=' + $('#txfecfin').val() + ' &cliente=' + $('#dlcliente').val() + '&supervisor=' + $('#dlsupervisor').val(), '_blank');
+                window.open('Mov_Descarga_supervision.aspx?fecini=' + $('#txfecini').val() + ' &fecfin=' + $('#txfecfin').val() + ' &cliente=' + $('#dlcliente').val() + '&supervisor=' + $('#dlsupervisor').val() + '&gerente=' + $('#dlgerente').val() + '&estado=' + $('#dlestado').val(), '_blank');
             })
             $('#btimprime').click(function () {
                 var fini = $('#txfecini').val().split('/');
@@ -49,11 +50,28 @@
                 if ($('#dlsupervisor').val() != 0) {
                     formula += ' and {tb_supervision.usuario} =' + $('#dlsupervisor').val();
                 }
-                //alert(formula);
-
+                if ($('#dlgerente').val() != 0) {
+                    formula += ' and {tb_cliente.id_operativo} =' + $('#dlgerente').val();
+                }
+                if ($('#dlestado').val() != 0) {
+                    formula += ' and {tb_cliente_inmueble.id_estado} =' + $('#dlestado').val();
+                }
+                alert(formula);
                 window.open('../RptForAll.aspx?v_nomRpt=supervisionlista.rpt&v_formula=' + formula, '', 'width=850, height=600, left=80, top=120, resizable=no, scrollbars=no');
             })
         });
+        function cargaestado() {
+            PageMethods.estado(function (opcion) {
+                var opt = eval('(' + opcion + ')');
+                var lista = '';
+                for (var list = 0; list < opt.length; list++) {
+                    lista += '<option value="' + opt[list].id + '">' + opt[list].desc + '</option>';
+                };
+                $('#dlestado').append(inicial);
+                $('#dlestado').append(lista);
+                $('#dlestado').val(0);               
+            }, iferror);
+        }
         function cargaencargado() {
             //alert('hola');
             PageMethods.empleado('esencargado', function (opcion) {
@@ -88,8 +106,9 @@
             cargalista();
             $('#paginacion ul').eq(np - 1).addClass("active");
         };
-       function cuentaencuesta() {
-           PageMethods.contarencuesta($('#txfecini').val(), $('#txfecfin').val(), $('#dlcliente').val(), $('#dlsupervisor').val(), function (cont) {
+        function cuentaencuesta() {
+            
+            PageMethods.contarencuesta($('#txfecini').val(), $('#txfecfin').val(), $('#dlcliente').val(), $('#dlsupervisor').val(), $('#dlgerente').val(), $('#dlestado').val(), function (cont) {
                 $('#paginacion li').remove();
                 var opt = eval('(' + cont + ')');
                 var pag = '';
@@ -113,7 +132,7 @@
         }
         function cargalista() {
             //waitingDialog({});
-            PageMethods.encuestas($('#txfecini').val(), $('#txfecfin').val(), $('#dlcliente').val(), $('#dlsupervisor').val(), $('#hdpagina').val(), function (res) {
+            PageMethods.encuestas($('#txfecini').val(), $('#txfecfin').val(), $('#dlcliente').val(), $('#dlsupervisor').val(), $('#dlgerente').val(), $('#dlestado').val(), $('#hdpagina').val(), function (res) {
                 //closeWaitingDialog();
                 var ren = $.parseHTML(res);
                 if (ren == null) {
@@ -220,8 +239,13 @@
                                 <div class="col-lg-3">
                                     <select id="dlcliente" class="form-control"></select>
                                 </div>
-                            </div>
-                            <!--
+                                <div class="col-lg-1 text-right">
+                                    <label for="dlsupervisor">Supervisor:</label>
+                                </div>
+                                <div class="col-lg-3">
+                                    <select id="dlsupervisor" class="form-control"></select>
+                                </div>
+                            </div>                            
                             <div class="row">
                                 <div class="col-lg-1 text-right">
                                     <label for="dlgerente">Gerente:</label>
@@ -229,13 +253,11 @@
                                 <div class="col-lg-3">
                                     <select id="dlgerente" class="form-control"></select>
                                 </div>
-                            </div>-->
-                            <div class="row">
                                 <div class="col-lg-1 text-right">
-                                    <label for="dlsupervisor">Supervisor:</label>
+                                    <label for="dlestado">Estado:</label>
                                 </div>
                                 <div class="col-lg-3">
-                                    <select id="dlsupervisor" class="form-control"></select>
+                                    <select id="dlestado" class="form-control"></select>
                                 </div>
                             </div>
                             <div class="row">

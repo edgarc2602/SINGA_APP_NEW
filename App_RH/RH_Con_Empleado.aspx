@@ -18,7 +18,6 @@
     <script src="https://code.jquery.com/ui/1.11.4/jquery-ui.min.js" type="text/javascript"></script>
     <style>
         #tbdatos thead th:nth-child(2), #tbdatos tbody td:nth-child(2){
-        
             width:300px;
         }
     </style>
@@ -52,7 +51,8 @@
                     $('body').css('overflow', 'auto');
                 }
             });
-            cargacliente(); 
+            cargacliente();
+            cargaturno();
             $('#btconsulta').click(function () {
                 $('#hdpagina').val(1); 
                 cuentaempleado();
@@ -62,9 +62,21 @@
                 window.open('RH_Descargaempleado.aspx?cliente=' + $('#dlcliente').val() + '&sucursal=' + $('#dlsucursal').val() + '&noemp=' + $('#txnoemp').val() + '&nombre=' + $('#txnombre').val() + '&tipo=' + $('#dltipo').val() + '&forma=' + $('#dlforma').val() + '&estatus=' + $('#dlestatus').val(), '_blank');
             })
             $('#btexporta1').click(function () {
-                window.open('RH_Descargaempleado.aspx?cliente=' + $('#dlcliente').val() + '&sucursal=' + $('#dlsucursal').val() + '&noemp=' + $('#txnoemp').val() + '&nombre=' + $('#txnombre').val() + '&tipo=' + $('#dltipo').val() + '&forma=' + $('#dlforma').val() + '&estatus=' + $('#dlestatus').val(), '_blank');
+                window.open('RH_Descargaempleado.aspx?cliente=' + $('#dlcliente').val() + '&sucursal=' + $('#dlsucursal').val() + '&noemp=' + $('#txnoemp').val() + '&nombre=' + $('#txnombre').val() + '&tipo=' + $('#dltipo').val() + '&forma=' + $('#dlforma').val() + '&estatus=' + $('#dlestatus').val() + '&turno=' + $('#dlturno').val(), '_blank');
             })
         });
+        function cargaturno() {
+            PageMethods.turno(function (opcion) {
+                var opt = eval('(' + opcion + ')');
+                var lista = '';
+                for (var list = 0; list < opt.length; list++) {
+                    lista += '<option value="' + opt[list].id + '">' + opt[list].desc + '</option>';
+                };
+                $('#dlturno').append(inicial);
+                $('#dlturno').append(lista);
+               
+            }, iferror);
+        }
         function cargacliente() {
             PageMethods.cliente(function (opcion) {
                 var opt = eval('(' + opcion + ')');
@@ -101,7 +113,7 @@
         };
         function cuentaempleado() {
 
-            PageMethods.contarempleado($('#dlcliente').val(), $('#dlsucursal').val(), $('#txnoemp').val(), $('#txnombre').val(), $('#dltipo').val(), $('#dlforma').val(), $('#dlestatus').val(), function (cont) {
+            PageMethods.contarempleado($('#dlcliente').val(), $('#dlsucursal').val(), $('#txnoemp').val(), $('#txnombre').val(), $('#dltipo').val(), $('#dlforma').val(), $('#dlestatus').val(), $('#dlturno').val(), function (cont) {
                 $('#paginacion li').remove();
                 var opt = eval('(' + cont + ')');
                 var pag = '';
@@ -113,7 +125,7 @@
         }
         function cargalista() {
             waitingDialog({});
-            PageMethods.empleado($('#hdpagina').val(), $('#dlcliente').val(), $('#dlsucursal').val(), $('#txnoemp').val(), $('#txnombre').val(), $('#dltipo').val(), $('#dlforma').val(),  $('#dlestatus').val(), function (res) {
+            PageMethods.empleado($('#hdpagina').val(), $('#dlcliente').val(), $('#dlsucursal').val(), $('#txnoemp').val(), $('#txnombre').val(), $('#dltipo').val(), $('#dlforma').val(), $('#dlestatus').val(), $('#dlturno').val(), function (res) {
                 closeWaitingDialog();
                 var ren = $.parseHTML(res);
                 if (ren == null) {
@@ -124,8 +136,13 @@
                     $('#tblista table tbody').remove();
                     $('#tblista table').append(ren);
                     $('#tblista table tbody tr').on('click', '.tbeditar', function () {
-                        var emp = $(this).closest('tr').find('td').eq(1).text();
+                        var emp = $(this).closest('tr').find('td').eq(2).text();
                         window.open('RH_Con_EmpleadoD.aspx?emp=' + emp, '_blank', 'width=650, height=600, left=80, top=120, resizable=no, scrollbars=no ');
+                    });
+                    $('#tblista table tbody tr').on('click', '.tbcontrato', function () {
+                        //alert($(this).closest('tr').find('td').eq(2).text());
+                        var formula = '{tb_empleado.id_empleado}=' + $(this).closest('tr').find('td').eq(2).text() 
+                        window.open('../RptForAll.aspx?v_nomRpt=contratoempleate.rpt&v_formula=' + formula + '', '', 'width=850, height=600, left=80, top=120, resizable=no, scrollbars=no')
                     });
                 }
             }, iferror);
@@ -244,6 +261,15 @@
                             </div>
                             <div class="row">
                                 <div class="col-lg-2 text-right">
+                                    <label for="dltipo">Turno:</label>
+                                </div>
+                                <div class="col-lg-2">
+                                    <select id="dlturno" class="form-control">
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-lg-2 text-right">
                                     <label for="dltipo">Tipo:</label>
                                 </div>
                                 <div class="col-lg-2">
@@ -286,62 +312,63 @@
                             </div>
                         </div>
                         <ol class="breadcrumb">
-                                    <li id="btexporta1" class="puntero"><a><i class="fa fa-save"></i>Exportar a excel</a></li>
-                                </ol>
+                            <li id="btexporta1" class="puntero"><a><i class="fa fa-save"></i>Exportar a excel</a></li>
+                        </ol>
                         <div class="col-md-18 tbheader" style ="overflow-x:scroll;">
-                                <table class="table table-condensed h6" id="tbdatos">
-                                    <thead>
-                                        <tr>
-                                            <th class="bg-light-blue-gradient"></th>
-                                            <th class="bg-light-blue-gradient"><span>No. Emp</span></th>
-                                            <th class="bg-light-blue-gradient"><span>Nombre</span></th>
-                                            <th class="bg-light-blue-gradient"><span>RFC</span></th>
-                                            <th class="bg-light-blue-gradient"><span>CURP</span></th>
-                                            <th class="bg-light-blue-gradient"><span>NSS</span></th>
-                                            <th class="bg-light-blue-gradient"><span>Pensionado</span></th>
-                                            <th class="bg-light-blue-gradient"><span>Tipo</span></th>
-                                            <th class="bg-light-blue-gradient"><span>Estatus</span></th>
-                                            <th class="bg-light-blue-gradient"><span>Empresa</span></th>
-                                            <th class="bg-light-blue-gradient"><span>Cliente</span></th>
-                                            <th class="bg-light-blue-gradient"><span>Pto Atn</span></th>
-                                            <th class="bg-light-blue-gradient"><span>Puesto</span></th>
-                                            <th class="bg-light-blue-gradient"><span>Turno</span></th>
-                                            <th class="bg-light-blue-gradient"><span>Jornal</span></th>
-                                            <th class="bg-light-blue-gradient"><span>F. Nacimiento</span></th>
-                                            <th class="bg-light-blue-gradient"><span>Lugar</span></th>
-                                            <th class="bg-light-blue-gradient"><span>Nacionalidad</span></th>
-                                            <th class="bg-light-blue-gradient"><span>Genero</span></th>
-                                            <th class="bg-light-blue-gradient"><span>Civil</span></th>
-                                            <th class="bg-light-blue-gradient"><span>Talla</span></th>
-                                            <th class="bg-light-blue-gradient"><span>Sueldo</span></th>
-                                            <th class="bg-light-blue-gradient"><span>F. Ingreso</span></th>
-                                            <th class="bg-light-blue-gradient"><span>Forma pago</span></th>
-                                            <th class="bg-light-blue-gradient"><span>Banco</span></th>
-                                            <th class="bg-light-blue-gradient"><span>Clabe</span></th>
-                                            <th class="bg-light-blue-gradient"><span>Cuenta</span></th>
-                                            <th class="bg-light-blue-gradient"><span>Tarjeta</span></th>
-                                            <th class="bg-light-blue-gradient"><span>F. Baja</span></th>
-                                            <th class="bg-light-blue-gradient"><span>Alta IMSS</span></th>
-                                        </tr>
-                                    </thead>
-                                </table>
-                                <ol class="breadcrumb">
-                                    <li id="btexporta" class="puntero"><a><i class="fa fa-save"></i>Exportar a excel</a></li>
-                                </ol>
-                                <nav aria-label="Page navigation example" class="navbar-right">
-                                    <ul class="pagination justify-content-end" id="paginacion">
-                                        <li class="page-item disabled">
-                                            <a class="page-link" href="#" tabindex="-1">Previous</a>
-                                        </li>
-                                        <li class="page-item"><a class="page-link" href="#">1</a></li>
-                                        <li class="page-item"><a class="page-link" href="#">2</a></li>
-                                        <li class="page-item"><a class="page-link" href="#">3</a></li>
-                                        <li class="page-item">
-                                            <a class="page-link" href="#">Next</a>
-                                        </li>
-                                    </ul>
-                                </nav>
-                            </div>
+                            <table class="table table-condensed h6" id="tbdatos">
+                                <thead>
+                                    <tr>
+                                        <th class="bg-light-blue-gradient"></th>
+                                        <th class="bg-light-blue-gradient"></th>
+                                        <th class="bg-light-blue-gradient"><span>No. Emp</span></th>
+                                        <th class="bg-light-blue-gradient"><span>Nombre</span></th>
+                                        <th class="bg-light-blue-gradient"><span>RFC</span></th>
+                                        <th class="bg-light-blue-gradient"><span>CURP</span></th>
+                                        <th class="bg-light-blue-gradient"><span>NSS</span></th>
+                                        <th class="bg-light-blue-gradient"><span>Pensionado</span></th>
+                                        <th class="bg-light-blue-gradient"><span>Tipo</span></th>
+                                        <th class="bg-light-blue-gradient"><span>Estatus</span></th>
+                                        <th class="bg-light-blue-gradient"><span>Empresa</span></th>
+                                        <th class="bg-light-blue-gradient"><span>Cliente</span></th>
+                                        <th class="bg-light-blue-gradient"><span>Pto Atn</span></th>
+                                        <th class="bg-light-blue-gradient"><span>Puesto</span></th>
+                                        <th class="bg-light-blue-gradient"><span>Turno</span></th>
+                                        <th class="bg-light-blue-gradient"><span>Jornal</span></th>
+                                        <th class="bg-light-blue-gradient"><span>F. Nacimiento</span></th>
+                                        <th class="bg-light-blue-gradient"><span>Lugar</span></th>
+                                        <th class="bg-light-blue-gradient"><span>Nacionalidad</span></th>
+                                        <th class="bg-light-blue-gradient"><span>Genero</span></th>
+                                        <th class="bg-light-blue-gradient"><span>Civil</span></th>
+                                        <th class="bg-light-blue-gradient"><span>Talla</span></th>
+                                        <th class="bg-light-blue-gradient"><span>Sueldo</span></th>
+                                        <th class="bg-light-blue-gradient"><span>F. Ingreso</span></th>
+                                        <th class="bg-light-blue-gradient"><span>Forma pago</span></th>
+                                        <th class="bg-light-blue-gradient"><span>Banco</span></th>
+                                        <th class="bg-light-blue-gradient"><span>Clabe</span></th>
+                                        <th class="bg-light-blue-gradient"><span>Cuenta</span></th>
+                                        <th class="bg-light-blue-gradient"><span>Tarjeta</span></th>
+                                        <th class="bg-light-blue-gradient"><span>F. Baja</span></th>
+                                        <th class="bg-light-blue-gradient"><span>Alta IMSS</span></th>
+                                    </tr>
+                                </thead>
+                            </table>
+                            <ol class="breadcrumb">
+                                <li id="btexporta" class="puntero"><a><i class="fa fa-save"></i>Exportar a excel</a></li>
+                            </ol>
+                            <nav aria-label="Page navigation example" class="navbar-right">
+                                <ul class="pagination justify-content-end" id="paginacion">
+                                    <li class="page-item disabled">
+                                        <a class="page-link" href="#" tabindex="-1">Previous</a>
+                                    </li>
+                                    <li class="page-item"><a class="page-link" href="#">1</a></li>
+                                    <li class="page-item"><a class="page-link" href="#">2</a></li>
+                                    <li class="page-item"><a class="page-link" href="#">3</a></li>
+                                    <li class="page-item">
+                                        <a class="page-link" href="#">Next</a>
+                                    </li>
+                                </ul>
+                            </nav>
+                        </div>
                     </div>
                 </div>
             </div>

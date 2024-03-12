@@ -231,7 +231,7 @@ Partial Class App_RH_RH_Pro_Asistencia
         sqlbr.Append("inner join tb_empleado_inmueble c on a.id_empleado = c.id_empleado" & vbCrLf)
         If inmueble <> 0 Then sqlbr.Append("and c.id_inmueble = " & inmueble & "")
         sqlbr.Append("inner join tb_cliente_inmueble e on c.id_inmueble = e.id_inmueble " & vbCrLf)
-        sqlbr.Append("left outer join tb_empleado_asistencia d on a.id_empleado = d.id_empleado and d.fecha = '" & Format(vfecha, "yyyyMMdd") & "' and c.id_inmueble = d.id_inmueble" & vbCrLf)
+        sqlbr.Append("left outer join tb_empleado_asistencia d on a.id_empleado = d.id_empleado and cast(d.fecha as date) = '" & Format(vfecha, "yyyyMMdd") & "' and c.id_inmueble = d.id_inmueble" & vbCrLf)
         'If inmueble <> 0 Then sqlbr.Append("and d.id_inmueble = " & inmueble & "")
         sqlbr.Append("inner join tb_turno f on a.id_turno = f.id_turno" & vbCrLf)
         sqlbr.Append("where a.id_status = 2 and cast(fingreso as date) <= '" & Format(vfecha, "yyyyMMdd") & "'  and a.formapago = " & forma & " and a.id_cliente = " & cliente & "" & vbCrLf)

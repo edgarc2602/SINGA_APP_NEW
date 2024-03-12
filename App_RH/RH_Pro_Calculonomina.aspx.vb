@@ -52,9 +52,9 @@ Partial Class App_RH_RH_Pro_Calculonomina
         Dim sqlbr As New StringBuilder
         Dim sql As String = ""
 
-        sqlbr.Append("select '$' + convert(varchar(12), convert(money , isnull(sum(percepcion),0)),1) as perc, " & vbCrLf)
-        sqlbr.Append("'$' + convert(varchar(12), convert(money , isnull(sum(deduccion),0)),1) as deduc," & vbCrLf)
-        sqlbr.Append("'$' + convert(varchar(12), convert(money , isnull(sum(percepcion + deduccion),0)),1) as total" & vbCrLf)
+        sqlbr.Append("select '$' + convert(varchar(16), convert(money , isnull(sum(percepcion),0)),1) as perc, " & vbCrLf)
+        sqlbr.Append("'$' + convert(varchar(16), convert(money , isnull(sum(deduccion),0)),1) as deduc," & vbCrLf)
+        sqlbr.Append("'$' + convert(varchar(16), convert(money , isnull(sum(percepcion + deduccion),0)),1) as total" & vbCrLf)
         sqlbr.Append("from tb_nominacalculada a inner join tb_empleado b on a.id_empleado = b.id_empleado " & vbCrLf)
         sqlbr.Append("inner join tb_cliente c on b.id_cliente = c.id_cliente" & vbCrLf)
         sqlbr.Append("where id_periodo = " & periodo & " and a.tipo = '" & tipo & "' and anio = " & anio & " and tipoempleado = " & tipoemp & "" & vbCrLf)
@@ -155,7 +155,7 @@ Partial Class App_RH_RH_Pro_Calculonomina
                     sqlbr.Append("DECLARE @cols1 NVARCHAR (MAX),  @query1 NVARCHAR(MAX);" & vbCrLf)
                     sqlbr.Append("SELECT @cols1 = COALESCE (@cols1 + ',[' + CONVERT(NVARCHAR, fecha, 103) + ']', " & vbCrLf)
                     sqlbr.Append("'[' + CONVERT(NVARCHAR, fecha, 103) + ']')" & vbCrLf)
-                    sqlbr.Append("FROM (SELECT DISTINCT fecha FROM tb_empleado_asistencia) PV  " & vbCrLf)
+                    sqlbr.Append("FROM (SELECT DISTINCT cast(fecha as date) as fecha FROM tb_empleado_asistencia) PV  " & vbCrLf)
                     sqlbr.Append("where fecha between '" & Format(vfecini, "yyyyMMdd") & "' and '" & Format(vfecfin, "yyyyMMdd") & "'" & vbCrLf)
                     sqlbr.Append("ORDER BY fecha" & vbCrLf)
                     sqlbr.Append("SET @query1 = '" & vbCrLf)
@@ -177,7 +177,7 @@ Partial Class App_RH_RH_Pro_Calculonomina
                     sqlbr.Append("DECLARE @cols1 NVARCHAR (MAX),  @query1 NVARCHAR(MAX);" & vbCrLf)
                     sqlbr.Append("SELECT @cols1 = COALESCE (@cols1 + ',[' + CONVERT(NVARCHAR, fecha, 103) + ']', " & vbCrLf)
                     sqlbr.Append("'[' + CONVERT(NVARCHAR, fecha, 103) + ']')" & vbCrLf)
-                    sqlbr.Append("FROM (SELECT DISTINCT fecha FROM tb_empleado_asistencia) PV  " & vbCrLf)
+                    sqlbr.Append("FROM (SELECT DISTINCT cast(fecha as date) as fecha FROM tb_empleado_asistencia) PV  " & vbCrLf)
                     sqlbr.Append("where fecha between '" & Format(vfecini, "yyyyMMdd") & "' and '" & Format(vfecfin, "yyyyMMdd") & "'" & vbCrLf)
                     sqlbr.Append("ORDER BY fecha" & vbCrLf)
                     sqlbr.Append("SET @query1 = '" & vbCrLf)
@@ -200,7 +200,7 @@ Partial Class App_RH_RH_Pro_Calculonomina
                     sqlbr.Append("DECLARE @cols1 NVARCHAR (MAX),  @query1 NVARCHAR(MAX);" & vbCrLf)
                     sqlbr.Append("SELECT @cols1 = COALESCE (@cols1 + ',[' + CONVERT(NVARCHAR, fecha, 103) + ']', " & vbCrLf)
                     sqlbr.Append("'[' + CONVERT(NVARCHAR, fecha, 103) + ']')" & vbCrLf)
-                    sqlbr.Append("FROM (SELECT DISTINCT fecha FROM tb_empleado_asistencia) PV  " & vbCrLf)
+                    sqlbr.Append("FROM (SELECT DISTINCT cast(fecha as date) as fecha FROM tb_empleado_asistencia) PV  " & vbCrLf)
                     sqlbr.Append("where fecha between '" & Format(vfecini, "yyyyMMdd") & "' and '" & Format(vfecfin, "yyyyMMdd") & "'" & vbCrLf)
                     sqlbr.Append("ORDER BY fecha" & vbCrLf)
                     sqlbr.Append("SET @query1 = '" & vbCrLf)
@@ -223,7 +223,7 @@ Partial Class App_RH_RH_Pro_Calculonomina
                     sqlbr.Append("DECLARE @cols1 NVARCHAR (MAX),  @query1 NVARCHAR(MAX);" & vbCrLf)
                     sqlbr.Append("SELECT @cols1 = COALESCE (@cols1 + ',[' + CONVERT(NVARCHAR, fecha, 103) + ']', " & vbCrLf)
                     sqlbr.Append("'[' + CONVERT(NVARCHAR, fecha, 103) + ']')" & vbCrLf)
-                    sqlbr.Append("FROM (SELECT DISTINCT fecha FROM tb_empleado_asistencia) PV  " & vbCrLf)
+                    sqlbr.Append("FROM (SELECT DISTINCT cast(fecha as date) as fecha FROM tb_empleado_asistencia) PV  " & vbCrLf)
                     sqlbr.Append("where fecha between '" & Format(vfecini, "yyyyMMdd") & "' and '" & Format(vfecfin, "yyyyMMdd") & "'" & vbCrLf)
                     sqlbr.Append("ORDER BY fecha" & vbCrLf)
                     sqlbr.Append("SET @query1 = '" & vbCrLf)
@@ -409,7 +409,7 @@ Partial Class App_RH_RH_Pro_Calculonomina
                 sql += "desc:'" & dt.Rows(x)("empleado") & "'}" & vbCrLf
             Next
         End If
-        sql = "]"
+        sql += "]"
         Return sql
     End Function
 

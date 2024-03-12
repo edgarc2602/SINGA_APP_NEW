@@ -1,9 +1,6 @@
-﻿Imports System
-Imports System.Data
+﻿Imports System.Data
 Imports System.Data.SqlClient
-Imports System.Text
 Imports System.Xml
-Imports Microsoft.VisualBasic
 Partial Class App_Finanzas_Fin_Pro_Solicitudrecurso
     Inherits System.Web.UI.Page
 
@@ -16,8 +13,7 @@ Partial Class App_Finanzas_Fin_Pro_Solicitudrecurso
         Dim sqlbr As New StringBuilder
         Dim sql As String = ""
 
-        'sqlbr.Append("select id_empresa, nombre + '  ' + case when clase = 1 then '(NOMINAS)' ELSE '(PROVEEDORES)' End as nombre from tb_empresa where id_estatus = 1 and clase in(1,2) order by nombre")
-        sqlbr.Append("select id_empresa, nombre + '(PROVEEDORES)' as nombre from tb_empresa where id_estatus = 1 order by nombre")
+        sqlbr.Append("select id_empresa, nombre + '  ' + case when clase = 1 then '(NOMINAS)' ELSE '(PROVEEDORES)' End as nombre from tb_empresa where id_estatus = 1 and clase in(1,2) order by nombre")
         Dim da As New SqlDataAdapter(sqlbr.ToString, myConnection)
         Dim dt As New DataTable
         da.Fill(dt)
@@ -148,13 +144,18 @@ Partial Class App_Finanzas_Fin_Pro_Solicitudrecurso
     End Function
 
     <Web.Services.WebMethod()>
-    Public Shared Function empleado(ByVal id As String) As String
+    Public Shared Function empleado(ByVal id As String, ByVal tipo As Integer) As String
         Dim myConnection As New SqlConnection((New Conexion).StrConexion)
         Dim sqlbr As New StringBuilder
         Dim sql As String = ""
 
         sqlbr.Append("select id_empleado, a.nombre + ' ' + paterno + ' ' + materno as nombre, b.nombre as empresa, a.id_empresa as idemp from tb_empleado a inner join tb_empresa b on a.id_empresa = b.id_empresa ")
-        sqlbr.Append("where id_status =2 and id_empleado = " & id & "")
+        If tipo <> 8 Then
+            sqlbr.Append("where id_status =2 ")
+        Else
+            sqlbr.Append("where id_status in(2,3) ")
+        End If
+        sqlbr.Append("and id_empleado = " & id & "")
         Dim da As New SqlDataAdapter(sqlbr.ToString, myConnection)
         Dim dt As New DataTable
         da.Fill(dt)
@@ -167,11 +168,16 @@ Partial Class App_Finanzas_Fin_Pro_Solicitudrecurso
     End Function
 
     <Web.Services.WebMethod()>
-    Public Shared Function empleadolista(ByVal campo As String, ByVal valor As String) As String
+    Public Shared Function empleadolista(ByVal campo As String, ByVal valor As String, ByVal tipo As Integer) As String
         Dim myConnection As New SqlConnection((New Conexion).StrConexion)
         Dim sqlbr As New StringBuilder
         sqlbr.Append("select id_empleado as 'td','', paterno + ' ' + rtrim(materno) + ' ' + a.nombre as 'td','', b.nombre as 'td','', a.id_empresa as 'td'" & vbCrLf)
-        sqlbr.Append("from tb_empleado a inner join tb_empresa b on a.id_empresa = b.id_empresa where id_status = 2" & vbCrLf)
+        sqlbr.Append("from tb_empleado a inner join tb_empresa b on a.id_empresa = b.id_empresa " & vbCrLf)
+        If tipo <> 8 Then
+            sqlbr.Append("where id_status =2 " & vbCrLf)
+        Else
+            sqlbr.Append("where id_status in(2,3) " & vbCrLf)
+        End If
         sqlbr.Append(" and " & campo & " like '%" & valor & "%'")
         sqlbr.Append("order by paterno, materno, a.nombre for xml path('tr'), root('tbody')")
         Dim mycommand As New SqlCommand(sqlbr.ToString(), myConnection)
@@ -212,7 +218,7 @@ Partial Class App_Finanzas_Fin_Pro_Solicitudrecurso
         Dim sqlbr As New StringBuilder
         sqlbr.Append("select id_provision as 'td','', factura as 'td','', convert(varchar(19), ffactura, 103) as 'td','', " & vbCrLf)
         sqlbr.Append("cast(total - Pago as numeric(12,2)) As 'td','', " & vbCrLf)
-        sqlbr.Append("(select 'form-control text-right tbeditar' as '@class', cast(total - Pago as numeric(12,2)) as '@value' for xml path('input'),root('td'),type),''," & vbCrLf)
+        sqlbr.Append("(select 'form-control text-right tbeditar' as '@class', cast(total - Pago as numeric(12,2)) as '@value' for xml path('input'),root('td'),type), ''," & vbCrLf)
         sqlbr.Append("(select 'symbol1 icono1 tbaplica' as '@class', 'checkbox' as '@type' for xml path('input'),root('td'),type)" & vbCrLf)
         sqlbr.Append("from tb_provision where id_proveedor = " & proveedor & " and total - Pago != 0 order by ffactura for xml path('tr'), root('tbody')")
         Dim mycommand As New SqlCommand(sqlbr.ToString(), myConnection)
@@ -301,7 +307,7 @@ Partial Class App_Finanzas_Fin_Pro_Solicitudrecurso
 
         'If folio = 0 Then
         Dim generacorreo As New correofinanzas()
-        'generacorreo.solicitudrecurso(folio)
+        generacorreo.solicitudrecurso(folio)
         'End If
 
         Return folio
@@ -315,7 +321,7 @@ Partial Class App_Finanzas_Fin_Pro_Solicitudrecurso
         Dim sql As String = ""
         sqlbr.Append("select id_solicitud, a.id_empresa, solicita, id_tipo, areaautoriza, a.formapago, a.id_empleado, id_proveedor, convert(varchar(12), falta, 103) as falta, " & vbCrLf)
         sqlbr.Append("subtotal, iva, total, concepto, piva, tipopago, b.nombre + ' ' + b.paterno + ' ' + rtrim(b.materno) as empleado, a.id_cliente, " & vbCrLf)
-        sqlbr.Append("c.nombre + ' ' + c.paterno + ' ' + c.materno as jornalero, a.id_jornalero, a.id_inmueble, id_lineanegocio, iguala" & vbCrLf)
+        sqlbr.Append("c.nombre + ' ' + c.paterno + ' ' + c.materno as jornalero, a.id_jornalero, a.id_inmueble, id_lineanegocio, iguala, id_clavecm, id_servicioespecial" & vbCrLf)
         sqlbr.Append("from tb_solicitudrecurso a left outer join tb_empleado b on a.id_empleado = b.id_empleado " & vbCrLf)
         sqlbr.Append("left outer join tb_jornalero c on a.id_jornalero = c.id_jornalero" & vbCrLf)
         sqlbr.Append("where id_solicitud= " & folio & "")
@@ -328,7 +334,8 @@ Partial Class App_Finanzas_Fin_Pro_Solicitudrecurso
             sql += " idempleado: '" & dt.Rows(0)("id_empleado") & "', idproveedor: '" & dt.Rows(0)("id_proveedor") & "', falta:'" & dt.Rows(0)("falta") & "',  subtotal:'" & Format(dt.Rows(0)("subtotal"), "#0.00") & "', iva:'" & Format(dt.Rows(0)("iva"), "#0.00") & "',"
             sql += " total:'" & Format(dt.Rows(0)("total"), "#0.00") & "',concepto:'" & dt.Rows(0)("concepto") & "',"
             sql += " piva:'" & dt.Rows(0)("piva") & "', tipopago:'" & dt.Rows(0)("tipopago") & "', empleado:'" & dt.Rows(0)("empleado") & "', cliente:'" & dt.Rows(0)("id_cliente") & "', "
-            sql += " idjornalero: '" & dt.Rows(0)("id_jornalero") & "', jornalero:'" & dt.Rows(0)("jornalero") & "', inmueble:'" & dt.Rows(0)("id_inmueble") & "', linea:'" & dt.Rows(0)("id_lineanegocio") & "', iguala:'" & dt.Rows(0)("iguala") & "' }"
+            sql += " idjornalero: '" & dt.Rows(0)("id_jornalero") & "', jornalero:'" & dt.Rows(0)("jornalero") & "', inmueble:'" & dt.Rows(0)("id_inmueble") & "', linea:'" & dt.Rows(0)("id_lineanegocio") & "', iguala:'" & dt.Rows(0)("iguala") & "',"
+            sql += " cm: '" & dt.Rows(0)("id_clavecm") & "', se:'" & dt.Rows(0)("id_servicioespecial") & "'}"
         End If
         Return sql
     End Function
@@ -377,12 +384,34 @@ Partial Class App_Finanzas_Fin_Pro_Solicitudrecurso
         sql += "]"
         Return sql
     End Function
+
+    <Web.Services.WebMethod()>
+    Public Shared Function cargaservicioespecial(ByVal folio As Integer, ByVal solicitud As Integer) As String
+
+        Dim myConnection As New SqlConnection((New Conexion).StrConexion)
+        Dim sqlbr As New StringBuilder
+        Dim sql As String = ""
+        sqlbr.Append("select id_servicio, fregistro, concepto, costodirecto, indirectop, indirectom, utilidadp, utilidadm, presupuesto," & vbCrLf)
+        sqlbr.Append("id_cliente, id_inmueble, id_trabajo, b.descripcion as estatus" & vbCrLf)
+        sqlbr.Append("from tb_servicioespecial a inner join tb_statuscm b on a.id_status = b.id_status where id_servicio = " & folio & "")
+        sqlbr.Append("select isnull(sum(subtotal),0) as solicitado from tb_solicitudrecurso where id_servicioespecial =" & folio & " and id_status != 6 and id_solicitud != " & solicitud & "")
+        Dim da As New SqlDataAdapter(sqlbr.ToString, myConnection)
+        Dim dt As New DataSet
+        da.Fill(dt)
+        If dt.Tables(0).Rows.Count > 0 Then
+            sql += "{cliente:'" & dt.Tables(0).Rows(0)("id_cliente") & "', inmueble:'" & dt.Tables(0).Rows(0)("id_inmueble") & "', costodirecto:'" & dt.Tables(0).Rows(0)("costodirecto") & "', solicitado:'" & dt.Tables(1).Rows(0)("solicitado") & "'}"
+        End If
+        Return sql
+
+    End Function
     Protected Sub Page_Load(sender As Object, e As EventArgs) Handles Me.Load
         Dim usuario As HttpCookie
         'Dim userid As Integer
 
         usuario = Request.Cookies("Usuario")
         idsol.Value = Request("folio")
+        seresp.Value = Request("seresp")
+
         If usuario Is Nothing Then
             Response.Redirect("/login.aspx")
         Else

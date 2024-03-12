@@ -25,8 +25,6 @@
             $('#nomusr').text('<%=minombre%>');
             var d = new Date();
             $('#txanio').val(d.getFullYear());
-            $('#dvjarceria').hide();
-            $('#dvvalidalista').hide();
             $("#loadingScreen").dialog({
                 autoOpen: false,    // set this to false so we can manually open it
                 dialogClass: "loadingScreenWindow",
@@ -67,74 +65,55 @@
                 var tot = parseFloat($('#txcantidad').val()) * parseFloat($('#txprecio').val())
                 $('#txtotal').val(tot.toFixed(2));
             })
-            $('#btgenera').click(function () {
+            $('#btguarda').click(function () {
                 if (valida()) {
-                    //if ($('#dltipo').val() == 3) {
-                        PageMethods.validacomp($('#dlsucursal').val(), $('#dlmes').val(), $('#txanio').val(), $('#dltipo').val(), function (res) {
-                            var datos = eval('(' + res + ')');
-                            if (datos.id != 0) {
-                                alert('Ya existe un listado complementario para el punto de atención en el mes y año elegidos, no puede continuar');
-                            } else {
-                                waitingDialog({});
-                                var xmlgraba = '<listado id= "0" tipo ="' + $('#dltipo').val() + '" cliente= "' + $('#dlcliente').val() + '" inmueble="' + $('#dlsucursal').val() + '" mes= "' + $('#dlmes').val() + '" mesa ="0" anio= "' + $('#txanio').val() + '"';
-                                xmlgraba += ' usuario= "' + $('#idusuario').val() + '" opcion = "1" />';
-                                //alert(xmlgraba);
-                                PageMethods.guarda(xmlgraba, function (res) {
-                                    closeWaitingDialog();
-                                    $('#txfolio').val(res)
-                                    $('#dvjarceria').show();
-                                    if ($('#dltipo').val() == 3) {
-                                        PageMethods.listadomes($('#dlcliente').val(), $('#dltipo').val(), $('#dlmes').val(), $('#txanio').val(), function (detalle) {
-                                            var datos = eval('(' + detalle + ')');
-                                            //$('#txlistado').val(datos.id);
-                                            $('#txptto').val(datos.ptto);
-                                            $('#txusado').val(datos.usado);
-                                            $('#txdisponible').val(parseFloat(datos.ptto - datos.usado).toFixed(2));
-                                        }, iferror);
-                                    } else if ($('#dltipo').val() == 4) {
-                                        PageMethods.listadoesp($('#dlcliente').val(), $('#dlmes').val(), $('#txanio').val(), function (detalle) {
-                                            var datos = eval('(' + detalle + ')');
-                                            if (datos.ptto != 0) {
-                                                $('#txptto1').val(datos.ptto);
-                                                $('#txusado1').val(datos.usado);
-                                                $('#txdisponible1').val(datos.disp);
-                                            } else {
-                                                $('#txptto1').val(0);
-                                                $('#txusado1').val(0);
-                                                $('#txdisponible1').val(0);
-                                            }
-                                        }, iferror);
-                                    }
-                                    
-                                }, iferror);
-                            }
+                    var resp = true;
+                    if ($('#dltipo').val() == 2) {
+                        resp = confirm('Cuando se genera un listado de materiales adicionales, este se enviara al área de facturación para que se cobre al cliente, ¿esta seguro de continuar')
+                    }                     
+                    if (resp == true) {
+                        waitingDialog({});
+                        var xmlgraba = '<listado id="' + $('#txfolio').val() + '" tipo ="' + $('#dltipo').val() + '" cliente= "' + $('#dlcliente').val() + '" inmueble="' + $('#dlsucursal').val() + '" mes= "' + $('#dlmes').val() + '" mesa ="0" anio= "' + $('#txanio').val() + '"';
+                        xmlgraba += ' usuario= "' + $('#idusuario').val() + '" opcion = "1" />';
+                        $('#tblistaj tbody tr').each(function () {
+                            xmlgraba += '<partida clave="' + $(this).closest('tr').find('td').eq(0).text() + '" cantidad="' + parseFloat($(this).closest('tr').find("input:eq(0)").val()) + '"';
+                            xmlgraba += ' precio="' + parseFloat($(this).closest('tr').find("input:eq(1)").val()) + '" total="' + parseFloat($(this).closest('tr').find("input:eq(2)").val()) + '"/>'
+                        });
+                        PageMethods.guarda(xmlgraba, function (res) {
+                            closeWaitingDialog();
+                            $('#txfolio').val(res);
+                            alert('Registro completado');
                         })
-                   // }
+                    }            
                 }
             })
             $('#btagrega').click(function () {
                 if (validamat()) {
-                    waitingDialog({});
-                    PageMethods.guardalinea($('#txfolio').val(), $('#txclave').val(), $('#txcantidad').val(), $('#txprecio').val(), function () {
-                        limpiaproducto();
-                        cargadetalle($('#txfolio').val());
+                    var linea = '<tr><td>' + $('#txclave').val() + '</td><td></td><td>' + $('#txdesc').val() + '</td><td>' + $('#txunidad').val() + '</td><td><input class="form-control text-right tbeditar" value=' + $('#txcantidad').val() + ' /></td><td>'
+                    linea += '<input disabled="disabled" class="form-control text-right tbeditar" value=' + $('#txprecio').val() + ' /></td><td><input disabled="disabled" class="form-control text-right tbeditar" value=' + $('#txtotal').val() + ' /></td><td><input type="button" value="Quitar" class="btn btn-danger btquita"/></td></tr>';
+                    $('#tblistaj tbody').append(linea);
+                    subtotal();
+                    $('#tblistaj tbody tr').change('.tbeditar', function () {
+                        var totren = parseFloat($(this).closest('tr').find("input:eq(0)").val()) * parseFloat($(this).closest('tr').find("input:eq(1)").val());
+                        $(this).closest('tr').find("input:eq(2)").val(totren.toFixed(2));
                         subtotal();
-                        closeWaitingDialog();
-                    }, iferror);
+                       
+                    });
+                    limpiaproducto();
                 }
             })
             $('#dltipo').change(function () {
-                if ($('#dltipo').val() == 3) {
-                    $('#dvvalidalista1').hide();
-                    $('#dvvalidalista').show();
-                } else {
-                    if ($('#dltipo').val() == 4) {
-                        $('#dvvalidalista').hide();
-                        $('#dvvalidalista1').show();
-                    } else {
-                        $('#dvvalidalista').hide();
-                        $('#dvvalidalista1').hide();
-                    }
+                switch ($('#dltipo').val()) {
+                    case '3':
+                    case '4':
+                        $('#dvvalidalista').show();
+                        cargaptto();
+                        break
+                    default:
+                        $('#txptto').val(0);
+                        $('#txusado').val(0);
+                        $('#txdisponible').val(0);
+                        break
                 }
             })
             $('#btbuscap').click(function () {
@@ -155,6 +134,17 @@
                 location.reload();
             })
         })
+        function cargaptto() {
+            if ($('#dlcliente').val() != 0 && $('#dltipo').val() != 0 && $('#dlmes').val() != 0 && $('#txanio').val() != '') {
+                PageMethods.listadomes($('#dlcliente').val(), $('#dltipo').val(), $('#dlmes').val(), $('#txanio').val(), function (detalle) {
+                    var datos = eval('(' + detalle + ')');
+                    $('#txptto').val(datos.ptto);
+                    $('#txusado').val(datos.usado);
+                    var disp = parseFloat(datos.ptto) - parseFloat(datos.usado)
+                    $('#txdisponible').val(disp.toFixed(2));
+                }, iferror);
+            }            
+        }
         function valida() {
             if ($('#dlcliente').val() == 0) {
                 alert('Debe elegir un Cliente');
@@ -171,52 +161,41 @@
             if ($('#dlmes').val() == 0) {
                 alert('Debe elegir el mes');
                 return false;
-            }
-            if ($('#txfolio').val() != 0) {
-                alert('El listado ya esta creado, si necesita generar otro debe hacer clic en el botón nuevo');
+            }           
+            if ($('#tblistaj tbody tr').length == 0) {
+                alert('Debe capturar al menos un material');
                 return false;
+            }
+            if ($('#dltipo').val() != 2) {
+                if (parseFloat($('#txsolicitado').val()) > parseFloat($('#txdisponible').val())) {
+                    alert('El monto del listado supera el presupuesto disponible, no puede continuar');
+                    return false;
+                }
             }
             return true;
         }
         function cargadetalle() {
-            /*PageMethods.listado($('#idinmueble').val(), $('#dlmes').val(), $('#txanio').val(), function (detalle) {
-                var datos = eval('(' + detalle + ')');
-                if (datos.id == 0) {
-                    $("#divmodal").dialog('option', 'title', 'Acción');
-                    dialog.dialog('open');
-                } else {
-                    $('#txfolio').val(datos.id);
-                    $('#txestatus').val(datos.estatus);
-                    $('#txptto').val(datos.ptto);*/
-                    PageMethods.listadod($('#txfolio').val(), function (res) {
-                        var ren1 = $.parseHTML(res);
-                        $('#tblistaj tbody').remove();
-                        $('#tblistaj').append(ren1);
-                        $('#tblistaj tbody tr').change('.tbeditar', function () {
-                            $(this).closest('tr').find('td').eq(6).text($(this).closest('tr').find("input:eq(0)").val() * $(this).closest('tr').find('td').eq(5).text());
-                            subtotal();
-                        });
-                        $('#tblistaj').delegate("tr .btquita", "click", function () {
-                            PageMethods.eliminalinea($('#txfolio').val(), $(this).closest('tr').find('td').eq(0).text(), function () {
-                            }, iferror);
-                            $(this).parent().eq(0).parent().eq(0).remove();
-                            subtotal();
-                        });
-                        subtotal();
-                    });
-            /*
-                    if (datos.estatus != 'Abierto') {
-                        $("#dvjarceria").addClass("disabledbutton");
-                    } else {
-                        $("#dvjarceria").removeClass("disabledbutton");
-                    }
-                }*/
-           // }, iferror);
+            PageMethods.listadod($('#txfolio').val(), function (res) {
+                var ren1 = $.parseHTML(res);
+                $('#tblistaj tbody').remove();
+                $('#tblistaj').append(ren1);
+                $('#tblistaj tbody tr').change('.tbeditar', function () {
+                    $(this).closest('tr').find('td').eq(6).text($(this).closest('tr').find("input:eq(0)").val() * $(this).closest('tr').find('td').eq(5).text());
+                    subtotal();
+                });
+                $('#tblistaj').delegate("tr .btquita", "click", function () {
+                    PageMethods.eliminalinea($('#txfolio').val(), $(this).closest('tr').find('td').eq(0).text(), function () {
+                    }, iferror);
+                    $(this).parent().eq(0).parent().eq(0).remove();
+                    subtotal();
+                });
+                subtotal();
+            });
         }
-        function subtotal() {
+        function subtotal() {            
             var total = 0;
             $('#tblistaj tbody tr').each(function () {
-                total += parseFloat($(this).closest('tr').find('td').eq(6).text());
+                total += parseFloat($(this).closest('tr').find("input:eq(2)").val());
             });
             $('#txsolicitado').val(total.toFixed(2));
         }
@@ -235,15 +214,9 @@
                     return false;
                 }
             }
-            if ($('#dltipo').val() == 3) {
+            if ($('#dltipo').val() != 2) {
                 if (parseFloat($('#txsolicitado').val()) + parseFloat($('#txtotal').val()) > parseFloat($('#txdisponible').val())) {
                     alert('Al agregar este material supera el importe disponible, en un listado complementario no puede superar el disponible');
-                    return false;
-                }
-            }
-            if ($('#dltipo').val() == 4) {
-                if (parseFloat($('#txsolicitado').val()) + parseFloat($('#txtotal').val()) > parseFloat($('#txdisponible1').val())) {
-                    alert('Al agregar este material supera el importe disponible, en materiales para pulido, no puede continuar');
                     return false;
                 }
             }
@@ -260,6 +233,7 @@
                 $('#dlcliente').append(lista);
                 $('#dlcliente').change(function () {
                     cargainmueble($('#dlcliente').val());
+                    cargaptto();
                 });
             }, iferror);
         }
@@ -272,6 +246,9 @@
                 };
                 $('#dlmes').append(inicial);
                 $('#dlmes').append(lista);
+                $('#dlmes').change(function () {                    
+                    cargaptto();
+                });
             }, iferror);
         }
         function cargainmueble(idcte) {
@@ -380,7 +357,7 @@
             </div>
             <div class="content-wrapper">
                 <div class="content-header">
-                    <h1>Listados de materiales<small>Operaciones</small></h1>
+                    <h1>Listados de materiales adicionales<small>Operaciones</small></h1>
                     <ol class="breadcrumb">
                         <li><a href="../Home.aspx"><i class="fa fa-dashboard"></i>Home</a></li>
                         <li><a>Operaciones</a></li>
@@ -397,40 +374,25 @@
                                     <label for="txfolio">Folio:</label>
                                 </div>
                                 <div class="col-lg-2">
-                                    <input type="text" id="txfolio" class="form-control" disabled="disabled" />
+                                    <input type="text" id="txfolio" class="form-control" disabled="disabled" value="0" />
                                 </div>
                             </div>
                             <div class="row">
-                                <div class="col-lg-2 text-right">
+                                <div class="col-lg-1 text-right">
                                     <label for="dlcliente">Cliente:</label>
                                 </div>
                                 <div class="col-lg-3">
                                     <select id="dlcliente" class="form-control"></select>
                                 </div>
-                            </div>
-                            <div class="row">
                                 <div class="col-lg-2 text-right">
                                     <label for="dlsucursal">Punto de atencion:</label>
                                 </div>
-                                <div class="col-lg-4">
+                                <div class="col-lg-3">
                                     <select id="dlsucursal" class="form-control"></select>
                                 </div>
                             </div>
                             <div class="row">
-                                <div class="col-lg-2 text-right">
-                                    <label for="dltipo">Tipo de listado:</label>
-                                </div>
-                                <div class="col-lg-2">
-                                    <select id="dltipo" class="form-control">
-                                        <option value="0">Seleccione...</option>
-                                        <option value="2">Adicionales</option>
-                                        <option value="3">Complemento de la iguala</option>
-                                        <option value="4">Material para pulido</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-lg-2 text-right">
+                                <div class="col-lg-1 text-right">
                                     <label for="txanio">Año:</label>
                                 </div>
                                 <div class="col-lg-1">
@@ -442,14 +404,18 @@
                                 <div class="col-lg-2">
                                     <select id="dlmes" class="form-control"></select>
                                 </div>
-                                <div class="col-lg-1">
-                                    <input type="button" class="btn btn-primary" value="Generar" id="btgenera" />
+                                <div class="col-lg-1 text-right">
+                                    <label for="dltipo">Tipo:</label>
                                 </div>
-                                <div class="col-lg-1">
-                                    <input type="button" class="btn btn-info" value="Nuevo" id="btnuevo" />
-                                </div>
-                            </div>
-                            <hr />  
+                                <div class="col-lg-2">
+                                    <select id="dltipo" class="form-control">
+                                        <option value="0">Seleccione...</option>
+                                        <option value="2">Adicionales</option>
+                                        <option value="3">Complemento de la iguala</option>
+                                        <option value="4">Material para pulido</option>
+                                    </select>
+                                </div>                                                           
+                            </div>                            
                             <div class="row" id="dvvalidalista">
                                 <div class="col-lg-1 ">
                                     <label for="txptto">Presupuesto:</label>
@@ -470,37 +436,9 @@
                                     <input type="text" id="txdisponible" class="form-control text-right" disabled="disabled" />
                                 </div>
                             </div>
-                            <div class="row" id="dvvalidalista1">
-                                <div class="col-lg-1 ">
-                                    <label for="txptto">Presupuesto:</label>
-                                </div>
-                                <div class="col-lg-2">
-                                    <input type="text" id="txptto1" class="form-control text-right" disabled="disabled" />
-                                </div>
-                                <div class="col-lg-1">
-                                    <label for="txusado">Utilizado:</label>
-                                </div>
-                                <div class="col-lg-2">
-                                    <input type="text" id="txusado1" class="form-control text-right" disabled="disabled" />
-                                </div>
-                                <div class="col-lg-1">
-                                    <label for="txdisponible">Disponible:</label>
-                                </div>
-                                <div class="col-lg-2">
-                                    <input type="text" id="txdisponible1" class="form-control text-right" disabled="disabled" />
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-lg-9 text-right">
-                                    <label for="txsolicitado">Total del listado:</label>
-                                </div>
-                                <div class="col-lg-2">
-                                    <input type="text" id="txsolicitado" class="form-control text-right" disabled="disabled" value="0" />
-                                </div>
-                            </div>
                         </div>
                     </div>
-                    <div id="dvjarceria" class="row tbheader" style="height: 400px; overflow-y: scroll;">
+                    <div id="dvjarceria" class="row tbheader" style="height: 350px; overflow-y: scroll;">
                         <table class=" table table-condensed h6" id="tblistaj">
                             <thead>
                                 <tr>
@@ -542,27 +480,44 @@
                             <tbody></tbody>
                         </table>
                     </div>
+                    <div class="row">
+                        <div class="col-lg-9 text-right">
+                            <label for="txsolicitado">Total del listado:</label>
+                        </div>
+                        <div class="col-lg-2">
+                            <input type="text" id="txsolicitado" class="form-control text-right" disabled="disabled" value="0" />
+                        </div>
+                    </div>
+                    <ol class="breadcrumb">
+                        <li id="btnuevo" class="puntero"><a><i class="fa fa-edit"></i>Nuevo</a></li>
+                        <li id="btguarda" class="puntero"><a><i class="fa fa-save"></i>Guardar</a></li>                        
+                    </ol>
                     <div id="divmodal1">
+                        <div class="row">
                             <div class="row">
-                                <div class="row">
-                                    <div class="col-lg-2 text-right"><label for="txbusca">Buscar</label></div>
-                                    <div class="col-lg-5"><input type="text" class=" form-control" id="txbusca" placeholder="Ingresa texto de busqueda" />    </div>                                    
-                                    <div class="col-lg-1"><input type="button" class="btn btn-primary" value="Buscar" id="btbuscap"/>  </div>
+                                <div class="col-lg-2 text-right">
+                                    <label for="txbusca">Buscar</label></div>
+                                <div class="col-lg-5">
+                                    <input type="text" class=" form-control" id="txbusca" placeholder="Ingresa texto de busqueda" />
                                 </div>
-                                <div class="tbheader">
-                                    <table class="table table-condensed" id="tbbusca">
-                                        <thead>
-                                            <tr>
-                                                <th class="bg-navy"><span>Clave</span></th>
-                                                <th class="bg-navy"><span>Producto</span></th>
-                                                <th class="bg-navy"><span>Unidad</span></th>
-                                                <th class="bg-navy"><span>Precio</span></th>
-                                            </tr>
-                                        </thead>
-                                    </table>
+                                <div class="col-lg-1">
+                                    <input type="button" class="btn btn-primary" value="Buscar" id="btbuscap" />
                                 </div>
                             </div>
+                            <div class="tbheader">
+                                <table class="table table-condensed" id="tbbusca">
+                                    <thead>
+                                        <tr>
+                                            <th class="bg-navy"><span>Clave</span></th>
+                                            <th class="bg-navy"><span>Producto</span></th>
+                                            <th class="bg-navy"><span>Unidad</span></th>
+                                            <th class="bg-navy"><span>Precio</span></th>
+                                        </tr>
+                                    </thead>
+                                </table>
+                            </div>
                         </div>
+                    </div>
                 </div>
             </div>
         </div>

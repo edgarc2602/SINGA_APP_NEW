@@ -1,9 +1,7 @@
-﻿Imports System
-Imports System.Data
+﻿Imports System.Data
 Imports System.Data.SqlClient
-Imports System.Text
+Imports System.Net
 Imports System.Xml
-Imports Microsoft.VisualBasic
 Partial Class Ventas_App_Ven_Cat_Cliente_N
     Inherits System.Web.UI.Page
 
@@ -44,7 +42,7 @@ Partial Class Ventas_App_Ven_Cat_Cliente_N
         sqlbr.Append("isnull(a.contacto,'') as contacto, isnull(a.puesto,'') as puesto, isnull(telefono1,'') as telefono, case when c.id_cliente is null then 'Activo' else 'Programado para baja' end as estatus " & vbCrLf)
         sqlbr.Append("From tb_cliente a inner join tb_empleado b on a.id_ejecutivo = b.id_empleado  " & vbCrLf)
 
-        If Not idpersonal = 1 And Not idpersonal = 42 And Not idpersonal = 10290 And Not idpersonal = 27 And Not idpersonal = 20553 And Not idpersonal = 20431 Then
+        If Not idpersonal = 1 And Not idpersonal = 10291 And Not idpersonal = 27 And Not idpersonal = 20553 And Not idpersonal = 20431 Then
             sqlbr.Append("join personal p on p.id_empleado = a.id_ejecutivo and IdPersonal = " & idpersonal & vbCrLf)
         End If
 
@@ -100,7 +98,7 @@ Partial Class Ventas_App_Ven_Cat_Cliente_N
         Dim sqlbr As New StringBuilder
         Dim sql As String = ""
 
-        sqlbr.Append("select e.id_empleado,nombre + ' '+ paterno + ' ' + materno as empleado from tb_empleado e" & vbCrLf)
+        sqlbr.Append("select e.id_empleado,nombre + ' ' + paterno + ' ' + materno as empleado from tb_empleado e" & vbCrLf)
 
         'If Not idpersonal = 42 And tipo = "esejecutivo" Then
         'sqlbr.Append("join personal p on p.id_empleado = e.id_empleado and IdPersonal = " & idpersonal & vbCrLf)
@@ -146,12 +144,13 @@ Partial Class Ventas_App_Ven_Cat_Cliente_N
     End Function
 
     <Web.Services.WebMethod()>
-    Public Shared Function guarda(ByVal registro As String) As String
+    Public Shared Function guarda(ByVal registro As String, ByVal log As String) As String
 
         Dim myConnection As New SqlConnection((New Conexion).StrConexion)
         Dim mycommand As New SqlCommand("sp_cliente", myConnection)
         mycommand.CommandType = CommandType.StoredProcedure
         mycommand.Parameters.AddWithValue("@Cabecero", registro)
+        mycommand.Parameters.AddWithValue("CabeceroLog", log)
         Dim prmR As New SqlParameter("@Id", "0")
         prmR.Size = 10
         prmR.Direction = ParameterDirection.Output
@@ -164,22 +163,16 @@ Partial Class Ventas_App_Ven_Cat_Cliente_N
     End Function
 
     <Web.Services.WebMethod()>
-    Public Shared Function elimina(ByVal cliente As Integer, ByVal clienten As String, ByVal fecha As String, ByVal motivo As String, ByVal ejecutivo As Integer, ByVal gerente As Integer) As String
+    Public Shared Function elimina(ByVal xml As String, ByVal log As String) As String
 
-        Dim vfec1 As Date = fecha
-
-        Dim vfecr As Date = Date.Today()
-
-        Dim sql As String = "insert into tb_cliente_baja (id_cliente, fprogramada, comentario)  values (" & cliente & ",'" & Format(vfec1, "yyyyMMdd") & "', '" & motivo & "');"
         Dim myConnection As New SqlConnection((New Conexion).StrConexion)
-        Dim mycommand As New SqlCommand(sql, myConnection)
+        Dim mycommand As New SqlCommand("sp_cliente_baja", myConnection)
+        mycommand.CommandType = CommandType.StoredProcedure
+        mycommand.Parameters.AddWithValue("@Cabecero", xml)
+        mycommand.Parameters.AddWithValue("@CabeceroLog", log)
         myConnection.Open()
         mycommand.ExecuteNonQuery()
         myConnection.Close()
-        myConnection = Nothing
-
-        Dim generacorreo As New correoventas()
-        generacorreo.bajacliente(vfecr, "Programación de baja de cliente", clienten, vfec1, motivo, ejecutivo, gerente)
 
         Return ""
 
@@ -194,6 +187,30 @@ Partial Class Ventas_App_Ven_Cat_Cliente_N
         'Cookieidcliente.Expires = Now.AddDays(1)
         HttpContext.Current.Response.Cookies.Add(Cookieidcliente)
         Return ""
+    End Function
+
+    Public Shared Function GetIPAddress() As String
+
+        Dim sb As New StringBuilder()
+        Dim ipAddresses As String
+
+        Try
+            Dim hostName = Dns.GetHostName()
+            Dim addresses As IPAddress() = Dns.GetHostAddresses(hostName)
+
+            For Each address As IPAddress In addresses
+                Dim addressString As String = address.ToString() + ", "
+                sb.Append(addressString)
+            Next
+
+            ipAddresses = sb.ToString().Split(", ")(1)
+
+        Catch ex As Exception
+            ipAddresses = "A ocurrido un error: " & ex.Message
+        End Try
+
+        Return ipAddresses
+
     End Function
 
     Protected Sub Page_Load(sender As Object, e As EventArgs) Handles Me.Load

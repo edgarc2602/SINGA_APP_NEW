@@ -70,7 +70,7 @@ Imports System.Xml
         Dim myConnection As New SqlConnection((New Conexion).StrConexion)
         Dim sqlbr As New StringBuilder
 
-        sqlbr.Append("select case when b.seccion = 1 then 'Personal' when b.seccion =2 then 'Materiales' when b.seccion= 3 then 'Recorrido' when b.seccion=5 then 'Evaluación' end  as 'td','',(select '../Doctos/supervision/F' + convert(varchar(6), a.fechaini,112) +'/'+ b.archivo as '@src', '100' as '@width', '100' as '@height' for xml path('img'), type) as 'td' " & vbCrLf)
+        sqlbr.Append("select case when b.seccion = 1 then 'Personal' when b.seccion =2 then 'Materiales' when b.seccion= 3 then 'Recorrido' when b.seccion=5 then 'Evaluación' end  as 'td','',(select '../Doctos/supervision/F' + convert(varchar(4),fecha, 112) +'_' + convert(varchar(2),fecha,110) +'/' + b.archivo as '@src', '100' as '@width', '100' as '@height' for xml path('img'), type) as 'td' " & vbCrLf)
         sqlbr.Append("from tb_supervision a inner join tb_supervision_foto b on a.id_supervision = b.id_supervision " & vbCrLf)
         sqlbr.Append("where a.id_supervision = " & folio & " for xml path('tr'), root('tbody')")
         Dim mycommand As New SqlCommand(sqlbr.ToString(), myConnection)

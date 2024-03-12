@@ -70,7 +70,7 @@
                 }
             })
             $('#btguarda').click(function () {
-                waitingDialog({});
+                //waitingDialog({});
                 var fecha = $('#txfecha').val().split('/');
                 var finicio = fecha[2] + fecha[1] + fecha[0];
                 var periodo = $('#dlperiodo option:selected').text();
@@ -172,7 +172,7 @@
 
             if (dateval < dateini || dateval > datefin) {
                 $('#txfecha').val('');
-                alert('La Fecha seleccionada esta fuera del rando del período, verifique');
+                alert('La Fecha seleccionada esta fuera del rango del período, verifique');
                 return false;
             }
             if ($('#dlcliente').val() == 0) {

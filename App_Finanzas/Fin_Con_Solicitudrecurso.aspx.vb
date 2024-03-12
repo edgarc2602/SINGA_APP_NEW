@@ -1,9 +1,6 @@
-﻿Imports System
-Imports System.Data
+﻿Imports System.Data
 Imports System.Data.SqlClient
-Imports System.Text
 Imports System.Xml
-Imports Microsoft.VisualBasic
 Partial Class App_Finanzas_Fin_Con_Solicitudrecurso
     Inherits System.Web.UI.Page
 
@@ -49,7 +46,7 @@ Partial Class App_Finanzas_Fin_Con_Solicitudrecurso
                 If x > 0 Then sql += ","
                 sql += "{id:'" & dt.Rows(x)("id_status") & "'," & vbCrLf
                 sql += "desc:'" & dt.Rows(x)("descripcion") & "'}" & vbCrLf
-            Next
+        Next
         End If
         sql += "]"
         Return sql
@@ -101,7 +98,8 @@ Partial Class App_Finanzas_Fin_Con_Solicitudrecurso
 
         sqlbr.Append("select id_solicitud as 'td','', tipo as 'td','', isnull(empleado,'') as 'td','', empresa as 'td','', gasto as 'td','', " & vbCrLf)
         sqlbr.Append("fecha as 'td','', estatus as 'td','', total as 'td','',isnull(banco,'') as 'td','', isnull(clabe,'') as 'td','', isnull(cuenta,'') as 'td',''," & vbCrLf)
-        sqlbr.Append("area as 'td','', concepto as 'td','',")
+        sqlbr.Append("area as 'td','', concepto as 'td','', case when id_clavecm != 0 then 'Correctivo' when id_servicioespecial != 0 then 'Servicio especial' else 'Dentro de iguala' end as 'td','',")
+        sqlbr.Append("")
         sqlbr.Append("(select 'btn btn-primary btdetalle' as '@class', 'Detalles' as '@value', 'button' as '@type' for xml path('input'),root('td'),type),''," & vbCrLf)
         sqlbr.Append("(select 'btn btn-primary btedita' as '@class', 'Editar' as '@value', 'button' as '@type' for xml path('input'),root('td'),type),''," & vbCrLf)
         sqlbr.Append("case when estatus ='alta' then " & vbCrLf)
@@ -112,6 +110,12 @@ Partial Class App_Finanzas_Fin_Con_Solicitudrecurso
         sqlbr.Append("(select 'btn btn-primary btautoriza' as '@class', 'Autorizar/Rechazar' as '@value', 'button' as '@type' for xml path('input'),root('td'),type)" & vbCrLf)
         sqlbr.Append("when estatus = 'Autorizado' then " & vbCrLf)
         sqlbr.Append("(select 'btn btn-primary btpagado' as '@class', 'Pagado' as '@value', 'button' as '@type' for xml path('input'),root('td'),type)" & vbCrLf)
+        sqlbr.Append("when estatus = 'Pagado' then " & vbCrLf)
+        sqlbr.Append("(select 'btn btn-primary btcomprueba' as '@class', 'Comprobación' as '@value', 'button' as '@type' for xml path('input'),root('td'),type)" & vbCrLf)
+        sqlbr.Append("when estatus = 'Comprobado' then " & vbCrLf)
+        sqlbr.Append("(select 'btn btn-primary btcomprueba' as '@class', 'Comprobación' as '@value', 'button' as '@type' for xml path('input'),root('td'),type)" & vbCrLf)
+        sqlbr.Append("when estatus = 'Verificado' then " & vbCrLf)
+        sqlbr.Append("(select 'btn btn-primary btcomprueba' as '@class', 'Comprobación' as '@value', 'button' as '@type' for xml path('input'),root('td'),type)" & vbCrLf)
         sqlbr.Append("end" & vbCrLf)
         sqlbr.Append("")
         sqlbr.Append("from ( select ROW_NUMBER() over (order by a.id_solicitud) as rownum , id_solicitud, case when a.id_tipo = 5 then d.razonsocial when a.id_tipo = 3 then  k.nombre + ' ' + k.paterno + ' ' + k.materno else b.nombre + ' ' + b.paterno + ' ' + trim(b.materno) end as empleado, c.nombre as empresa," & vbCrLf)
@@ -120,7 +124,7 @@ Partial Class App_Finanzas_Fin_Con_Solicitudrecurso
         sqlbr.Append("case when a.id_empleado != 0 then h.descripcion when a.id_jornalero != 0 then l.descripcion else i.descripcion end as banco," & vbCrLf)
         sqlbr.Append("case when a.id_empleado != 0 then b.clabe when a.id_jornalero != 0 then k.cuenta else d.clabe end as clabe," & vbCrLf)
         sqlbr.Append("case when a.id_empleado != 0 then b.cuenta when a.id_jornalero != 0 then '' else d.cuenta end as cuenta," & vbCrLf)
-        sqlbr.Append("a.concepto, j.Ar_Descripcion as area" & vbCrLf)
+        sqlbr.Append("a.concepto, j.Ar_Descripcion as area, a.id_clavecm, a.id_servicioespecial" & vbCrLf)
         sqlbr.Append("from tb_solicitudrecurso a left outer join tb_empleado b on a.id_empleado = b.id_empleado" & vbCrLf)
         sqlbr.Append("inner join tb_empresa c on a.id_empresa = c.id_empresa" & vbCrLf)
         sqlbr.Append("left outer join tb_proveedor d on a.id_proveedor = d. id_proveedor" & vbCrLf)
@@ -313,29 +317,7 @@ Partial Class App_Finanzas_Fin_Con_Solicitudrecurso
         sql += "]"
         Return sql
     End Function
-    'Public Shared Function provisionpago(ByVal idsolicitud As Integer) As String
 
-    '    Dim sql As String = "insert into tb_provisionpago (id_provision, pago, fpago) " &
-    '                        "select id_provision,monto, GETDATE() " &
-    '                        "From tb_solicitudrecursof where id_solicitud =" & idsolicitud & "; "
-    '    Dim myConnection As New SqlConnection((New Conexion).StrConexion)
-    '    Dim mycommand As New SqlCommand(sql, myConnection)
-    '    myConnection.Open()
-    '    mycommand.ExecuteNonQuery()
-
-    '    Dim sqlu As String = "UPDATE tb_provision SET Pago = ISNULL((SELECT SUM(Pago) " &
-    '                        "FROM tb_provisionpago INNER JOIN tb_solicitudrecursof sof on sof.id_provision = tb_provisionpago.id_provision " &
-    '                        "WHERE tb_provisionpago.id_provision = tb_provision.id_provision " &
-    '                        "AND sof.id_solicitud = " & idsolicitud & " ), 0) " &
-    '                        "WHERE id_provision IN (select id_provision from tb_provisionpago)"
-
-    '    Dim mycommand2 As New SqlCommand(sqlu, myConnection)
-    '    mycommand2.ExecuteNonQuery()
-
-    '    myConnection.Close()
-    '    myConnection = Nothing
-    '    Return ""
-    'End Function
     Protected Sub Page_Load(sender As Object, e As EventArgs) Handles Me.Load
         Dim usuario As HttpCookie
         Dim userid As Integer

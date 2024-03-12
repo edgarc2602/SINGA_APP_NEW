@@ -265,7 +265,10 @@ Public Class correodir
         sqlbr.Append("</body>" & vbCrLf)
         sqlbr.Append("</html>" & vbCrLf)
 
-        envia(sqlbr.ToString, destinos)
+        'envia(sqlbr.ToString, destinos)
+        Dim enviartodo As New enviacorreo()
+        Dim notificacion As String = "NOTIFICACION DE SINGA"
+        enviartodo.envia(sqlbr.ToString, destinos, notificacion)
 
         Return ""
     End Function
@@ -530,7 +533,10 @@ Public Class correodir
         sqlbr.Append("</body>" & vbCrLf)
         sqlbr.Append("</html>" & vbCrLf)
 
-        envia(sqlbr.ToString, destinos)
+        'envia(sqlbr.ToString, destinos)
+        Dim enviartodo As New enviacorreo()
+        Dim notificacion As String = "NOTIFICACION DE SINGA"
+        enviartodo.envia(sqlbr.ToString, destinos, notificacion)
 
         Return ""
     End Function
@@ -846,7 +852,10 @@ Public Class correodir
         sqlbr.Append("</body>" & vbCrLf)
         sqlbr.Append("</html>" & vbCrLf)
 
-        envia(sqlbr.ToString, destinos)
+        'envia(sqlbr.ToString, destinos)
+        Dim enviartodo As New enviacorreo()
+        Dim notificacion As String = "NOTIFICACION DE SINGA"
+        enviartodo.envia(sqlbr.ToString, destinos, notificacion)
 
         Return ""
     End Function
@@ -1187,7 +1196,10 @@ Public Class correodir
         sqlbr.Append("</body>" & vbCrLf)
         sqlbr.Append("</html>" & vbCrLf)
 
-        envia(sqlbr.ToString, destinos)
+        'envia(sqlbr.ToString, destinos)
+        Dim enviartodo As New enviacorreo()
+        Dim notificacion As String = "NOTIFICACION DE SINGA"
+        enviartodo.envia(sqlbr.ToString, destinos, notificacion)
 
         Return ""
     End Function
@@ -1528,7 +1540,10 @@ Public Class correodir
         sqlbr.Append("</body>" & vbCrLf)
         sqlbr.Append("</html>" & vbCrLf)
 
-        envia(sqlbr.ToString, destinos)
+        'envia(sqlbr.ToString, destinos)
+        Dim enviartodo As New enviacorreo()
+        Dim notificacion As String = "NOTIFICACION DE SINGA"
+        enviartodo.envia(sqlbr.ToString, destinos, notificacion)
 
         Return ""
     End Function
@@ -1872,7 +1887,10 @@ Public Class correodir
         sqlbr.Append("</body>" & vbCrLf)
         sqlbr.Append("</html>" & vbCrLf)
 
-        envia(sqlbr.ToString, destinos)
+        'envia(sqlbr.ToString, destinos)
+        Dim enviartodo As New enviacorreo()
+        Dim notificacion As String = "NOTIFICACION DE SINGA"
+        enviartodo.envia(sqlbr.ToString, destinos, notificacion)
 
         Return ""
     End Function
@@ -2172,7 +2190,10 @@ Public Class correodir
         sqlbr.Append("</body>" & vbCrLf)
         sqlbr.Append("</html>" & vbCrLf)
 
-        envia(sqlbr.ToString, destinos)
+        'envia(sqlbr.ToString, destinos)
+        Dim enviartodo As New enviacorreo()
+        Dim notificacion As String = "NOTIFICACION DE SINGA"
+        enviartodo.envia(sqlbr.ToString, destinos, notificacion)
 
         Return ""
     End Function
@@ -2200,7 +2221,7 @@ Public Class correodir
         'mailClient.Credentials = basicAuthenticationInfo
         'mailClient.Port = 587
 
-        Dim pass As String = "Ad*Gb1001"
+        Dim pass As String = "Ad*Gb6584"
         Dim mailClient As New SmtpClient()
         Dim basicAuthenticationInfo As New NetworkCredential("adminsinga@grupobatia.com.mx", "" & pass & "")
         mailClient.Host = "smtp.office365.com"

@@ -41,7 +41,7 @@ Partial Class App_RH_RH_Con_Vacante
         If ffin <> "" Then vfecfin = ffin
 
         sqlbr.Append("select " & vbCrLf)
-        If usuario <> 1 Then
+        If usuario <> 1 And usuario <> 100 And usuario <> 85 Then
             If revisa = 0 Then 'ESTA VALIDACION ES PARA COLOCAR LOS CONTROLES DE EDICION DE RECURSOS HUMANOS
                 sqlbr.Append("'' as 'td','', '' as 'td','',")
                 sqlbr.Append("(select 'symbol1 icono1 tbliberar' as '@class', 'Registrar Candidato' as '@title' for xml path('span'),root('td'),type),''," & vbCrLf)
@@ -375,7 +375,7 @@ Partial Class App_RH_RH_Con_Vacante
         Dim myConnection As New SqlConnection((New Conexion).StrConexion)
         Dim sqlbr As New StringBuilder
         sqlbr.Append("select id_empleado as 'td','', paterno + ' ' + rtrim(materno) + ' ' + nombre as 'td','', rfc as 'td','', curp as 'td'" & vbCrLf)
-        sqlbr.Append("from tb_empleado where id_status = 3 " & vbCrLf)
+        sqlbr.Append("from tb_empleado where id_status in(3,4) " & vbCrLf)
         sqlbr.Append(" and " & campo & " like '%" & valor & "%'")
         sqlbr.Append("order by paterno, materno, nombre for xml path('tr'), root('tbody')")
         'sqlbr.Append(") as result" & vbCrLf)

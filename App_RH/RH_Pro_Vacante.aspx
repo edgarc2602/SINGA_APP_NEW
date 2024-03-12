@@ -187,7 +187,7 @@
                         cargainmueble($('#dlcliente').val());
                         cargaempleado($('#dlcliente').val());
                     } else {
-                        if ($('#idusuario').val() == 84 || $('#idusuario').val() == 1) {
+                        if ($('#idusuario').val() == 84 || $('#idusuario').val() == 1 || $('#idusuario').val() == 100) {
                             cargainmueble($('#dlcliente').val());
                             cargaempleado($('#dlcliente').val());
                         }

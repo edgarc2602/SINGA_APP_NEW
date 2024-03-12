@@ -101,7 +101,7 @@
                                     <th class="bg-navy"><span>Clave cliente</span></th>
                                     <th class="bg-navy"><span>Línea de negocio</span></th>
                                     <th class="bg-navy"><span>Aplica</span></th>
-                                    <th class="bg-navy"><span>Monto</span></th>
+                                    <th class="bg-navy"><span>Monto de la iguala</span></th>
                                 </tr>
                             </thead>
                         </table>

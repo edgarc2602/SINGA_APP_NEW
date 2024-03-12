@@ -56,11 +56,11 @@ Partial Class App_RH_RH_Act_Vacante
 
         sqlbr.Append("SELECT (select 'symbol1 icono1 tbeditar' as '@class', 'Confirmar Ingreso' as '@title' for xml path('span'),root('td'),type),''," & vbCrLf)
         sqlbr.Append("(select 'symbol1 icono1 tbrechaza' as '@class', 'No Ingreso' as '@title' for xml path('span'),root('td'),type),'',")
-        sqlbr.Append("id_empleado as 'td','', a.id_vacante as 'td','', case a.completar when 1 then 'INCOMPLETO' when 0 then 'COMPLETO' when null then 'COMPLETO' end as 'td', '', b.nombre as 'td','', c.nombre as 'td','', " & vbCrLf)
+        sqlbr.Append("id_empleado as 'td','', a.id_vacante as 'td','', b.nombre as 'td','', c.nombre as 'td','', " & vbCrLf)
         sqlbr.Append("RTrim(a.paterno) + ' ' + rtrim(a.materno) + ' ' + a.nombre as 'td','',  rfc as 'td','', curp as 'td','', ss as 'td',''," & vbCrLf)
         sqlbr.Append("isnull(convert(varchar(10),f.fechaalta,103),'') as 'td','', isnull(convert(varchar(10),a.fregistro,103),'') as 'td','',")
         sqlbr.Append("d.descripcion as 'td','', e.descripcion as 'td','',a.jornal as 'td','',  isnull(convert(varchar(10),a.fingreso,103),'') as 'td',''," & vbCrLf)
-        sqlbr.Append("isnull(g.descripcion,'')  as 'td','', isnull(a.cuenta,'') as 'td','', isnull(a.tarjeta,'') as 'td','', 'Cubierta por confirmar'as 'td'" & vbCrLf)
+        sqlbr.Append("isnull(g.descripcion,'')  as 'td','',  isnull(a.clabe,'') as 'td','', isnull(a.cuenta,'') as 'td','', a.tel1 as 'td'" & vbCrLf)
         sqlbr.Append("From tb_empleado a inner join tb_cliente b on a.id_cliente = b.id_cliente" & vbCrLf)
         sqlbr.Append("inner join tb_cliente_inmueble c on a.id_inmueble = c.id_inmueble" & vbCrLf)
         sqlbr.Append("inner join tb_puesto d on a.id_puesto = d.id_puesto" & vbCrLf)

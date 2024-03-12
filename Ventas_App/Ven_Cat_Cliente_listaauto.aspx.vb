@@ -73,12 +73,12 @@ Partial Class Ventas_App_Ven_Cat_Cliente_listaauto
 
 
     <Web.Services.WebMethod()>
-    Public Shared Function productol(ByVal desc As String) As String
+    Public Shared Function productol(ByVal desc As String, ByVal cliente As Integer) As String
         Dim myConnection As New SqlConnection((New Conexion).StrConexion)
         Dim sqlbr As New StringBuilder
         sqlbr.Append("select clave as 'td','', a.descripcion as 'td','', b.descripcion as 'td','', 10 as 'td' " & vbCrLf)
         sqlbr.Append("from tb_producto a inner join tb_unidadmedida b on a.id_unidad = b.id_unidad  " & vbCrLf)
-        sqlbr.Append("where tipo = 1 and id_status = 1 and id_cliente = 0 and a.descripcion like '%" & desc & "%' for xml path('tr'), root('tbody')")
+        sqlbr.Append("where tipo = 1 and id_status = 1 and (id_cliente = 0 or id_cliente=" & cliente & ") and a.descripcion like '%" & desc & "%' for xml path('tr'), root('tbody')")
 
         Dim mycommand As New SqlCommand(sqlbr.ToString(), myConnection)
         myConnection.Open()

@@ -75,7 +75,7 @@ Partial Class App_Operaciones_Ope_Con_listadogeneral
                 sqlbr.Append("and tipo =" & tipo & ";")
         End Select
         sqlbr.Append("select COUNT(id_inmueble) as totinm from tb_cliente_inmueble where id_cliente = " & cliente & " and id_status = 1;" & vbCrLf)
-        sqlbr.Append("select ISNULL(COUNT(id_listado),0) as totlis from tb_listadomaterial where id_cliente = " & cliente & " and mes = " & mes & " and anio =" & anio & ";" & vbCrLf)
+        sqlbr.Append("select ISNULL(COUNT(id_listado),0) as totlis from tb_listadomaterial where id_cliente = " & cliente & " and mes = " & mes & " and anio =" & anio & " and tipo = " & tipo & ";" & vbCrLf)
 
         'sqlbr.Append("select SUM(presupuestol) as totptto, COUNT(id_inmueble) as totinm from tb_cliente_inmueble where id_cliente = " & cliente & " and id_status = 1;" & vbCrLf)
 
@@ -97,12 +97,17 @@ Partial Class App_Operaciones_Ope_Con_listadogeneral
     End Function
 
     <Web.Services.WebMethod()>
-    Public Shared Function contarlistados(ByVal cliente As Integer, ByVal mes As Integer, ByVal anio As Integer, ByVal tipo As Integer) As String
+    Public Shared Function contarlistados(ByVal cliente As Integer, ByVal mes As Integer, ByVal anio As Integer, ByVal tipo As Integer, ByVal folio As Integer) As String
 
         Dim sqlbr As New StringBuilder
         Dim sql As String = ""
-        sqlbr.Append("SELECT COUNT(*)/50 + 1 as Filas, COUNT(*) % 50 as Residuos FROM tb_cliente_inmueble a left outer join tb_listadomaterial b on a.id_inmueble = b.id_inmueble and mes = " & mes & " and anio = " & anio & "")
-        sqlbr.Append("where a.id_status = 1 and a.id_cliente = " & cliente & "")
+        sqlbr.Append("SELECT COUNT(*)/50 + 1 as Filas, COUNT(*) % 50 as Residuos FROM tb_cliente_inmueble a left outer join tb_listadomaterial b on a.id_inmueble = b.id_inmueble ")
+        If folio <> 0 Then
+            sqlbr.Append("where b.id_listado = " & folio & "" & vbCrLf)
+        Else
+            sqlbr.Append("where a.id_cliente = " & cliente & " and a.id_status = 1 and b.mes = " & mes & " and b.anio = " & anio & "" & vbCrLf)
+        End If
+        'sqlbr.Append("where a.id_status = 1 and a.id_cliente = " & cliente & " and b.mes = " & mes & " and b.anio = " & anio & "")
         If tipo <> 0 Then sqlbr.Append(" and b.tipo = " & tipo & "" & vbCrLf)
 
         Dim ds As New DataTable
@@ -121,25 +126,27 @@ Partial Class App_Operaciones_Ope_Con_listadogeneral
     End Function
 
     <Web.Services.WebMethod()>
-    Public Shared Function listados(ByVal cliente As Integer, ByVal mes As Integer, ByVal anio As Integer, ByVal pagina As Integer, ByVal tipo As Integer) As String
+    Public Shared Function listados(ByVal cliente As Integer, ByVal mes As Integer, ByVal anio As Integer, ByVal pagina As Integer, ByVal tipo As Integer, ByVal folio As Integer) As String
         Dim myConnection As New SqlConnection((New Conexion).StrConexion)
         Dim sqlbr As New StringBuilder
-        sqlbr.Append("select id_inmueble as'td','', nombre as'td','', id_listado as'td','', tipo as 'td','', estatus as'td','', falta as'td','', total as'td',''," & vbCrLf)
+        sqlbr.Append("select id_inmueble as'td','', nombre as'td','', id_listado as'td','', tipo as 'td','', estatus as'td','', isnull(falta,'') as'td','', total as'td',''," & vbCrLf)
         sqlbr.Append("(select 'btn btn-primary btver' as '@class', 'Ver' as '@value', 'button' as '@type' for xml path('input'),root('td'),type),''," & vbCrLf)
-        sqlbr.Append("(select 'btn btn-primary btacuse' as '@class', 'Acuse' as '@value', 'button' as '@type' for xml path('input'),root('td'),type),''," & vbCrLf)
         sqlbr.Append("(select 'btn btn-primary btcancela' as '@class', 'Cancelar' as '@value', 'button' as '@type' for xml path('input'),root('td'),type),''," & vbCrLf)
-        sqlbr.Append("(select 'btn btn-primary btauto' as '@class', case when estatus ='Alta' then 'Autoriza' else 'Sin acción' end  as '@value', 'button' as '@type' for xml path('input'),root('td'),type)" & vbCrLf)
+        sqlbr.Append("(select 'btn btn-primary btauto' as '@class', case when estatus ='Alta' then 'Aprobar' when estatus ='Aprobado' then 'Liberar' end  as '@value', 'button' as '@type' for xml path('input'),root('td'),type)" & vbCrLf)
         sqlbr.Append("from (" & vbCrLf)
-        sqlbr.Append("select  ROW_NUMBER()Over(Order by a.nombre) As RowNum, a.id_inmueble, a.nombre, isnull(b.id_listado,0) as id_listado, isnull(d.descripcion,'') as tipo, case when b.id_status = 1 Then 'Alta' when b.id_status = 2 then  " & vbCrLf)
-        sqlbr.Append("'Aprobado' when b.id_status = 3 then 'Despachado' when b.id_status = 4 then 'Entregado' when b.id_status = 5 then 'Cancelado' else 'No existe' end as estatus," & vbCrLf)
-        sqlbr.Append("convert(varchar(12), falta, 103) as falta," & vbCrLf)
+        sqlbr.Append("select  ROW_NUMBER()Over(Order by a.nombre) As RowNum, a.id_inmueble, a.nombre, isnull(b.id_listado,0) as id_listado, isnull(d.descripcion,'') as tipo, e.descripcion as estatus," & vbCrLf)
+        sqlbr.Append("isnull(convert(varchar(12), falta, 103),'') as falta," & vbCrLf)
         sqlbr.Append("cast(isnull(SUM(c.cantidad * c.precio),0) as numeric(12,2)) as total" & vbCrLf)
-        sqlbr.Append("from tb_cliente_inmueble a left outer join tb_listadomaterial b on a.id_inmueble = b.id_inmueble and mes = " & mes & " and anio = " & anio & "" & vbCrLf)
+        sqlbr.Append("from tb_cliente_inmueble a left outer join tb_listadomaterial b on a.id_inmueble = b.id_inmueble " & vbCrLf)
         sqlbr.Append("left outer join tb_listadomateriald c on b.id_listado = c.id_listado left outer join tb_tipolistado d on b.tipo = d.id_tipo" & vbCrLf)
-        sqlbr.Append("where a.id_cliente = " & cliente & " and a.id_status = 1 " & vbCrLf)
-
+        sqlbr.Append("inner join tb_statusl e on b.id_status = e.id_status" & vbCrLf)
+        If folio <> 0 Then
+            sqlbr.Append("where b.id_listado = " & folio & "" & vbCrLf)
+        Else
+            sqlbr.Append("where a.id_cliente = " & cliente & " and a.id_status = 1 and b.mes = " & mes & " and b.anio = " & anio & "" & vbCrLf)
+        End If
         If tipo <> 0 Then sqlbr.Append(" and b.tipo = " & tipo & "" & vbCrLf)
-        sqlbr.Append("group by a.id_inmueble, a.nombre, b.falta, b.id_listado, b.id_status, d.descripcion" & vbCrLf)
+        sqlbr.Append("group by a.id_inmueble, a.nombre, b.falta, b.id_listado, b.id_status, d.descripcion, e.descripcion" & vbCrLf)
         sqlbr.Append(") as result where RowNum BETWEEN ((" & pagina & " - 1) * 50) + (" & pagina & " - 1) And " & pagina & " * 50 order by nombre for xml path('tr'), root('tbody')")
 
         Dim mycommand As New SqlCommand(sqlbr.ToString(), myConnection)
@@ -178,9 +185,12 @@ Partial Class App_Operaciones_Ope_Con_listadogeneral
     End Function
 
     <Web.Services.WebMethod()>
-    Public Shared Function autoriza(ByVal cliente As String, ByVal mes As Integer, ByVal anio As Integer, ByVal estatus As Integer) As String
+    Public Shared Function autoriza(ByVal cliente As String, ByVal mes As Integer, ByVal anio As Integer, ByVal tipo As Integer, ByVal estatus As Integer) As String
 
-        Dim sql As String = "Update tb_listadomaterial set id_status = " & estatus & " where id_cliente =" & cliente & " and mes =" & mes & " and anio =" & anio & ";"
+        Dim sql As String = "Update tb_listadomaterial set id_status = " & estatus & " where id_cliente =" & cliente & " and mes =" & mes & " and anio =" & anio & " and id_status not in (3,4,5)"
+        If tipo <> 0 Then
+            sql += " and tipo =" & tipo & " "
+        End If
         Dim myConnection As New SqlConnection((New Conexion).StrConexion)
         Dim mycommand As New SqlCommand(sql, myConnection)
         myConnection.Open()

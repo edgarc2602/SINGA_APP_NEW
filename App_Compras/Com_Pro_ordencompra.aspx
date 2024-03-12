@@ -807,6 +807,7 @@
                         </div>
                         <div class="col-lg-2">
                             <select id="dliva" class="form-control">
+                                <option value="0.0">0 </option>
                                 <option value="0.08">8 %</option>
                                 <option value="0.16" selected="selected">16 %</option>
                             </select>

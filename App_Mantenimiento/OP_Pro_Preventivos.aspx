@@ -8,7 +8,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta charset="utf-8" />
     <link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css" />
-    <link href="App.Mantenimiento.css" rel="stylesheet" />
+    <link href="../Content/form/css/App.Mantenimiento.css" rel="stylesheet" />
     <link href="../Content/form/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
     <link href="../Content/form/css/AdminLTE.min.css" rel="stylesheet" type="text/css" />
     <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet" type="text/css" />
@@ -18,10 +18,49 @@
     <link href="../Content/form/css/_all-skins.min.css" rel="stylesheet" type="text/css" />
     <script src="https://code.jquery.com/ui/1.11.4/jquery-ui.min.js" type="text/javascript"></script>
 
+    <style>
+    /* Estilos para el menú contextual */
+    #contextMenu {
+      display: none;
+      position: absolute;
+      background-color: #f9f9f9;
+      min-width: 120px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+      z-index: 9999;
+    }
+    #contextMenu a {
+      color: black;
+      padding: 8px 12px;
+      text-decoration: none;
+      display: block;
+    }
+    #contextMenu a:hover {
+      background-color: #f1f1f1;
+    }
+    .deshabilita {
+            pointer-events: none;
+            opacity: 0.4; /* Cambia la opacidad para dar una apariencia de deshabilitado */
+        }
+    .IconoGris{color: #888;}
+    .IconoAzul{color:Highlight;}
+    .IconoVerde{color:green;}
+            /* Estilo para filas pares */
+        tr:nth-child(even) {
+          background-color: #f2f2f2;
+        }
+
+        /* Estilo para filas impares */
+        tr:nth-child(odd) {
+          background-color: #ffffff;
+        }
+  </style>
+
     <script type="text/javascript">
         var dialog, dialog1, dialog2;
         var inicial = '<option value=0>Seleccione...</option>';
         var vbusca, vdeta, objots = [];
+        var idOt = 0; //variable que guarda el id de la OT, para las opciones del menu
+
         $(function () {
             $('#hdpagpro').val(1);
             $('#dvgeneral').hide();
@@ -53,6 +92,15 @@
                 }
             }, 50);
 
+            dialog = $('#divmodal').dialog({
+                autoOpen: false,
+                height: 400,
+                width: 700,
+                modal: true,
+                close: function () {
+                }
+            });
+
             $('#dlcliente').append(inicial);
             $('#dltipo').append(inicial);
             $('#dltecnico').append(inicial);
@@ -62,6 +110,10 @@
             cuentapreventivos();
             cargatecnico();
             llenarSelect();
+                        
+            $('#txbuscaTec').keypress(function (event) { if (event.which === 13) cargatecnicoDialog(); });
+            $('#btbuscaTec').click(function () { cargatecnicoDialog(); });
+
 
             $('#btguarda').click(function () {
                 if ($('#hdprograma').val() == '0') {
@@ -159,7 +211,6 @@
                 //alert("busca");
                 cuentapreventivos();
                 asignapagina(1)
-                //cargalista();
             });
             $('#btnuevo').click(function () {
                 limnuevo();
@@ -194,6 +245,22 @@
                 window.open('../RptForAll.aspx?v_nomRpt=preventivos.rpt&v_formula=' + formula, '', 'width=850, height=600, left=80, top=120, resizable=no, scrollbars=no');
             });
         });
+
+        function cargatecnicoDialog() {
+            PageMethods.Buscatecnico($('#txbuscaTec').val(), $('input[name="optTecnico"]:checked').val(), function (res) {
+                var ren = $.parseHTML(res);
+                $('#tbbuscaTec tbody').remove();
+                $('#tbbuscaTec').append(ren);
+                $('#tbbuscaTec tbody tr').click(function () {
+                    PageMethods.asignatecnico($(this).find("td").first().text(), $("#hdordenseleccionada").val(), $('input[name="optTecnico"]:checked').val(), function (res) {
+                        dialog.dialog('close');
+                        if (res == 'Ok') alert("Se asigno al Técnico correctamente")
+                        else console.log(res);
+                    }, iferror);
+                });
+            }, iferror);
+        }
+                
         function cargacliente() {
             PageMethods.cliente(function (opcion) {
                 var opt = eval('(' + opcion + ')');
@@ -224,17 +291,24 @@
             }, iferror);
         }
         function cargatecnico() {
-            PageMethods.tecnico(function (opcion) {
-                var opt = eval('(' + opcion + ')');
-                var lista = '';
-                for (var list = 0; list < opt.length; list++) {
-                    lista += '<option value="' + opt[list].id + '">' + opt[list].desc + '</option>';
-                }
-                //alert(lista);
-                $('#dltecnico').empty();
-                $('#dltecnico').append(inicial);
-                $('#dltecnico').append(lista);
-            }, iferror);
+
+            try {
+                PageMethods.Tecnico2(function (opcion) {
+                    var opt = eval('(' + opcion + ')');
+                    var lista = '';
+                    for (var list = 0; list < opt.length; list++) {
+                        lista += '<option value="' + opt[list].id + '">' + opt[list].desc + '</option>';
+                    }
+                    //alert(lista);
+                    $('#dltecnico').empty();
+                    $('#dltecnico').append(inicial);
+                    $('#dltecnico').append(lista);
+                }, iferror);
+            }
+            catch (error) {
+                alert('Se produjo un error:', error.message);
+            }
+
         }
         function cargasupervisor() {
             PageMethods.gtProyecto($('#dlcliente').val(), function (opcion) {
@@ -476,16 +550,7 @@
                 });
             }
         });
-        $(document).ready(function () {
-            $('td').hover(function () {
-                var colIndex = $(this).index();
-                var rowIndex = $(this).parent().index();
-                $('td').filter(':nth-child(' + (colIndex + 1) + ')').addClass('highlight-column');
-                $('tr').eq(rowIndex).find('td').addClass('highlight-row');
-            }, function () {
-                $('td, tr').removeClass('highlight-column highlight-row');
-            });
-        });
+
         function muestra() {
             $('#othead tr').remove();
             $('#otbody tr').remove();
@@ -493,12 +558,8 @@
             var prm = '<Param prg="' + $('#hdprograma').val() + '" pro="' + $('#dlcliente').val() + '" ser="' + $('#dltipo').val() + '"';
             prm += ' pgn="' + $('#hdpagina').val() + '" user="' + $('#idusuario').val() + '" estr="' + $('#dlestructura').val() + '" anyo="' + $('#dlanyo').val() + '"';
             prm += ' per="0" fec="' + $('#hdfec').val() + '" sup="' + $('#dltecnico').val() + '" />';
-            //alert("hola1");
             PageMethods.gtPreventivo(prm, function (res) {
                 var nw = eval('(' + res + ')');
-                //$('#lbfec').text($('#fecha').val());
-                //alert(res);
-                // console.log(res);
                 if (nw.cmd) {
                     var algo = '';
                     $("#btgenera").hide();
@@ -526,8 +587,8 @@
                         $("#dvanyo").show();
                         $("#anyolbl").show();
                         algo = '<tr> ';
-                        algo += '<th class="bg-light-blue-gradient sticky-col"rowspan="2"style="min-width: 150px;"><span>Proyecto</span></th>';
-                        algo += '<th class="bg-light-blue-gradient sticky-col"rowspan="2" style=" min-width: 200px;" ><span>Inmueble</span></th>';
+                        algo += '<th class="bg-light-blue-gradient sticky-col" rowspan="2"style="min-width: 150px;"><span>Proyecto</span></th>';
+                        algo += '<th class="bg-light-blue-gradient sticky-col" rowspan="2" style=" min-width: 200px;" ><span>Inmueble</span></th>';
                         for (var x = 0; x < nw.dias.length; x++) {
                             algo += '<th class="bg-light-blue-gradient" style="text-align:center; min-width: 60px;" title=" Del ' + nw.dias[x].Fec.slice(0, 10) + ' al ' + nw.dias[x].FecFin.slice(0, 10) + '" ><span>' + nw.dias[x].Mes + '</span></th>';
                         }
@@ -570,16 +631,87 @@
                     algo += '</ul>';
                     $('#divpagot').append(algo);
                     $('#divpagot li').eq(parseInt($('#hdpagina').val())).addClass('selec');
-                    //se ponen las cantidades de preventivos en las celdas
+                    //se ponen las Ordenes de trabajo de preventivos en las celdas
                     for (var x = 0; x < nw.ots.length; x++) {
-                        $('#otbody').children('tr').eq(nw.ots[x].ren - 1).children('td').eq(nw.ots[x].col + 1).html('<i class="fa fa-flag" onclick="elimina(' + nw.ots[x].numot + ')" ></i>');
+
+                        $('#otbody').children('tr').eq(nw.ots[x].ren - 1).children('td').eq(nw.ots[x].col + 1).html('<i class="fa fa-flag ' + (nw.ots[x].id_status == 1 ? 'IconoVerde' : nw.ots[x].id_status == 2 ? 'IconoAzul' : nw.ots[x].id_status == 3 ? 'IconoGris' : '') + '"></i>');
+
                         $('#otbody').children('tr').eq(nw.ots[x].ren - 1).children('td').eq(nw.ots[x].col + 1).attr('title', 'OT ' + nw.ots[x].numot);
+                        $('#otbody').children('tr').eq(nw.ots[x].ren - 1).children('td').eq(nw.ots[x].col + 1).attr('id_status', nw.ots[x].id_status);
+                        $('#otbody').children('tr').eq(nw.ots[x].ren - 1).children('td').eq(nw.ots[x].col + 1).attr('id', nw.ots[x].numot);
+                        
+                        $('#otbody').children('tr').eq(nw.ots[x].ren - 1).children('td').eq(nw.ots[x].col + 1).removeClass('seleccion');//se quita la clase seleccion para poder anclar el menu
+                        $('#otbody').children('tr').eq(nw.ots[x].ren - 1).children('td').eq(nw.ots[x].col + 1).addClass('SubMenuComand');//se agrega la clase SubMenuComand para mostrar el menu
+                        
                     }
+
+                    $('.SubMenuComand').on('click', function (event) {
+                        idOt = $(this).attr('id');
+                        id_status = $(this).attr('id_status');
+
+                        var celdaAncho = $(this).outerWidth();
+                        var celdaAlto = $(this).outerHeight();
+
+                        var x = event.pageX - celdaAncho;
+                        var y = event.pageY - celdaAlto - 100;
+
+                        if (id_status == 1) {
+                            $('#contextMenu').css({ top: y, left: x }).show();
+                        } else if (id_status == 2) {//estatus ejecutado; //Cancelar-->deshabilitado, solo se puede cancelar si esta en estatus de alta
+                            $('#MnuCancelar').addClass('deshabilita');
+                            $('#MnuCancelar').off('click');
+                            $('#contextMenu').css({ top: y, left: x }).show();// Mostrar el menú contextual en la posición del clic
+                        }
+                        else if (id_status == 3) $('#MnuDetalle').click();//cerrado, por default se va al detalle
+
+                    });
+
+                    $('#MnuDetalle').on('click', function () {
+                        window.open('OP_PR_OrdenTrabajo.aspx?folio=' + idOt, '_blank');
+                        $('#contextMenu').hide();
+                        idOt = 0;
+                        $('.SubMenuComand').addClass('seleccion');
+                    });
+
+                    $('#MnuCancelar').on('click', function () {
+                        var resp = confirm('Deseas cancelar la Orden de Trabajo ' + idOt + ' ');
+                        if (resp) {
+                            PageMethods.cancelaot(idOt, function (res) {
+                                bots();
+                            }, iferror);
+                        }
+                        $('#contextMenu').hide();
+                        idOt = 0;
+                        $('.SubMenuComand').addClass('seleccion');
+                    });
+
+                    $('#MnuAsignaTec').on('click', function () {
+                        //alert('Desea asignar tecnico a la Orden de Trabajo : ' + idOt);
+
+                        $("#hdordenseleccionada").val(idOt);
+
+                        $("#divmodal").dialog('option', 'title', 'Buscar Técnico');
+                        $('#tbbuscaTec tbody').remove();
+                        $('#txbuscaTec').val('');
+                        dialog.dialog('open');
+
+
+                        $('#contextMenu').hide();
+                        idOt = 0;
+                        $('.SubMenuComand').addClass('seleccion');
+                    });
+
                     $('.seleccion').hover(function () {
+                        idOt = 0;
+
+                        if ($('#contextMenu').is(':visible')) $('#contextMenu').hide();
+                        //if (!$('#contextMenu').hasClass('seleccion')) $('.SubMenuComand').addClass('seleccion');
+                        
                         $('.seleccion').removeClass('highlight-column');
-                        var index = $(this).index(); //
+                        var index = $(this).index(); 
                         $('td').filter(':nth-child(' + (index + 1) + ')').addClass('highlight-column');
                     });
+
                     $('#otbody td').click(function () {
                         try {
                             var inm = $(this).parent().children('td').eq(0).children('input').val();
@@ -642,26 +774,7 @@
                 }
             }, iferror);
         }
-        $(document).ready(function () {
-            $('td').hover(function () {
-                var colIndex = $(this).index(); // Obtener el índice de la columna
-                var rowIndex = $(this).parent().index(); // Obtener el índice de la fila
-                $('td').filter(':nth-child(' + (colIndex + 1) + ')').addClass('highlight-column');
-                $('tr').eq(rowIndex).find('td').addClass('highlight-row');
-            }, function () {
-                $('td, tr').removeClass('highlight-column highlight-row');
-            });
-        });
-        function elimina(id) {
-            //alert(id);
-            var resp = confirm('Deseas cancelar la Orden de Trabajo ' + id + ' ');
-            if (resp) {
-                //alert(resp);
-                PageMethods.cancelaot(id, function (res) {
-                    bots();
-                }, iferror);
-            }
-        }
+               
         function graba() {
             var prm = '<prm  nor="NOR" user="' + $('#idusuario').val() + '"';
             prm += ' idserv="' + $('#dltipo').val() + '"';
@@ -819,6 +932,9 @@
                 </div>
                 <!-- /.sidebar -->
             </div>
+
+          
+
             <div class="content-wrapper">
                 <div class="content-header">
                     <h1>Preventivos<small>Mantenimiento</small></h1>
@@ -887,6 +1003,11 @@
                         <div class="box box-info">
                             <div class="box-header">
                             </div>
+                              <div id="contextMenu">
+                                  <a href="#" id="MnuDetalle">Ir al Detalle</a>
+                                  <a href="#" id="MnuCancelar">Cancelar OT</a>
+                                  <a href="#" id="MnuAsignaTec">Asignar técnico</a>
+                                </div>
                             <div class="row">
                                 <div class="col-lg-2 text-right">
                                     <label for="hdprograma">No. Programa</label>
@@ -991,6 +1112,39 @@
                 </div>
             </div>
         </div>
+        <!-- Menú contextual -->
+         <div id="divmodal">
+                <input type="hidden" id="hdordenseleccionada" />
+                <table><tr style="height:40px;">
+                    <td>
+                        <table style="width:100%"><tr ><td>
+                            <label class="form-check-label">
+                                <input type="radio" class="form-check-input" name="optTecnico" checked="checked" value="I"/> Interno
+                            </label>
+                        </td><td>
+                            <label class="form-check-label">
+                                <input type="radio" class="form-check-input" name="optTecnico" value="P"/> Proveedor
+                            </label>
+                        </td></tr></table>
+                    </td>
+                    <td><input type="text" class=" form-control" id="txbuscaTec" placeholder="Ingresa texto de busqueda" style="width:98%"/> </td>
+                    <td><input type="button" class="btn btn-primary" value="Mostrar" id="btbuscaTec"/></td>
+                       </tr></table>
+
+                            <div class="tbheader">
+                                <table class="table table-condensed" id="tbbuscaTec">
+                                    <thead>
+                                        <tr>
+                                            <th class="bg-navy"><span>Id</span></th>
+                                            <th class="bg-navy"><span>Nombre</span></th>                            
+                                            <th class="bg-navy"><span>Puesto</span></th>                           
+
+                                        </tr>
+                                    </thead>
+                                </table>
+                            </div>
+            </div>
+
         <script src="../Content/form/js/app.min.js" type="text/javascript"></script>
         <div id="loadingScreen"></div>
     </form>

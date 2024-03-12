@@ -1,0 +1,1296 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Mapa de Sitio</title>
+    <link href="../Content/form/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
+    <style>
+        .colorexp {
+            color: #117A65;
+        }
+    </style>
+</head>
+<body>
+    <ul class="sidebar-menu">
+        <li class="treeview">
+            <a>
+                <i class="fa fa-circle-o"> </i>
+                <span>Home</span>
+                <i class="fa fa-angle-left pull-right"> </i>
+            </a>
+            <ul class="treeview-menu">
+                <li>
+                    <a href="#">
+                        <i class="fa fa-chevron-circle-down"> </i>Procesos
+                    </a>
+                    <ul class="treeview-menu">
+                        <li>
+                            <a href="#">
+                                <i class="fa fa-arrow-circle-right"> </i>Ayuda
+                            </a>
+                            <dd class="colorexp">Se eliminara si se acepta el modelo el mapa de sitio</dd>
+                        </li>
+                        <li>
+                            <a href="/home1.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Dashboard
+                            </a>
+                            <dd class="colorexp">Muestra indicaciones generales de la empresa</dd>
+                        </li>
+                        <li>
+                            <a href="/Login.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Salir
+                            </a>
+                            <dd class="colorexp">Cierra la sesión del usuario</dd>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </li>
+        <li class="treeview">
+            <a>
+                <i class="fa fa-bar-chart"> </i>
+                <span>Ventas</span>
+                <i class="fa fa-angle-left pull-right"> </i>
+            </a>
+            <ul class="treeview-menu">
+                <li>
+                    <a href="#">
+                        <i class="fa fa-chevron-circle-down"> </i>Catalogos
+                    </a>
+                    <ul class="treeview-menu">
+                        <li>
+                            <a href="/Ventas_App/Ven_Cat_Cliente_N.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Clientes
+                            </a>
+                            <dd class="colorexp">Maneja toda la información de los clientes, puntos, de atención, plantillas, igualas, presupuestos, etc.</dd>
+                        </li>
+                    </ul>
+                </li>
+                <li>
+                    <a href="#">
+                        <i class="fa fa-chevron-circle-down"> </i>Procesos
+                    </a>
+                    <ul class="treeview-menu">
+                        <li>
+                            <a href="/Ventas_App/Ven_Cat_Cliente_encargado.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Asignar Encargados a Clientes
+                            </a>
+                            <dd class="colorexp">Permite asignar a los responsables de atender al cliente: operaciones, compras y otras áreas</dd>
+                        </li>
+                        <li>
+                            <a href="http://singa.com.mx:8084/">
+                                <i class="fa fa-arrow-circle-right"> </i>COTIZADOR
+                            </a><span class="colorrojo">!! Nuevo !!</span>
+                            <dd class="colorexp">Permite generar cotizaciones para prospectos y clientes existentes</dd>
+                        </li>
+                    </ul>
+                </li>
+                <li>
+                    <a href="#">
+                        <i class="fa fa-chevron-circle-down"> </i>Consultas
+                    </a>
+                    <ul class="treeview-menu">
+                        <li>
+                            <a href="/Ventas_App/Ven_Con_Cliente_Cedula.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Cédula de Clientes
+                            </a>
+                            <dd class="colorexp">Muestra la estructura completa del cliente y analisis de rantabilidad en función de la iguala y costos directos</dd>
+                        </li>
+                        <li>
+                            <a href="/Ventas_App/Ven_Con_Cliente_ubicacion.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Ubicaciones de Clientes
+                            </a> <span class="colorrojo">!! Nuevo !!</span>
+                            <dd class="colorexp">Muestra la ubicación geográfica de los puntos de atención de un cliente y toda la información relativa a los mismos</dd>
+                        </li>
+                    </ul>
+                </li>
+                <li>
+                    <a href="#">
+                        <i class="fa fa-chevron-circle-down"> </i>Reportes
+                    </a>
+                    <ul class="treeview-menu">
+                        <li>
+                            <a href="/Ventas_App/Ven_Rep_Plantilladetalle.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Detalle de Plantillas
+                            </a>
+                            <dd class="colorexp">Muestra la estructura de plantillas que se tienen en cada punto de atención de un cliente</dd>
+                        </li>
+                        <li>
+                            <a href="/Ventas_App/Ven_Rep_iguala.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Igualas por Cliente
+                            </a>
+                            <dd class="colorexp">Muestra la iguala registrada por cliente</dd>
+                        </li>
+                        <li>
+                            <a href="/Ventas_App/Ven_Rep_Plantilla.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Plantillas por Cliente
+                            </a>
+                            <dd class="colorexp">Muestra la estructura de plantillas que se tienen en cada punto de atención de un cliente incluyendo horarios de servicio</dd>
+                        </li>
+                        <li>
+                            <a href="/Ventas_App/Ven_Rep_presupuestocliente.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Presupuesto por cliente
+                            </a>
+                            <dd class="colorexp">Muestra el presupuesto por línea de negocio de un cliente</dd>
+                        </li>
+                        <li>
+                            <a href="/Ventas_App/Ven_Rep_Inmuebles.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Puntos de atención por Cliente
+                            </a>
+                            <dd class="colorexp">Muestra las direcciones de los puntos de atención de un cliente incluyendo su posición geográfica</dd>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </li>
+        <li class="treeview">
+            <a>
+                <i class="fa fa-archive "> </i>
+                <span>Almacen</span>
+                <i class="fa fa-angle-left pull-right"> </i>
+            </a>
+            <ul class="treeview-menu">
+                <li>
+                    <a href="#">
+                        <i class="fa fa-chevron-circle-down"> </i>Catalogos
+                    </a>
+                    <ul class="treeview-menu">
+                        <li>
+                            <a href="/App_Almacen/Alm_Cat_Almacen.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Almacenes
+                            </a>
+                            <dd class="colorexp">Maneja el catálogo de almacenes para el control de inventarios</dd>
+                        </li>
+                        <li>
+                            <a href="/App_Almacen/Alm_Pro_Rutaasigna.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Asignación de rutas
+                            </a>
+                            <dd class="colorexp">Maneja la asignación de rutas a los choferes, esto aplica solo para choferes de Batia</dd>
+                        </li>
+                        <li>
+                            <a href="/App_Almacen/Alm_Pro_Ruta.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Rutas
+                            </a>
+                            <dd class="colorexp">Maneja el catálogo de rutas, se define el nombre de la ruta y las sucursales de los diferentes clientes que la integran</dd>
+                        </li>
+                    </ul>
+                </li>
+                <li>
+                    <a href="#">
+                        <i class="fa fa-chevron-circle-down"> </i>Procesos
+                    </a>
+                    <ul class="treeview-menu">
+                        <li>
+                            <a href="/App_Almacen/Alm_Pro_Despacholistado.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Despacho de listados
+                            </a>
+                            <dd class="colorexp">Maneja la descarga de materiales de cada listado entregado que sale de los almacenes de Grupo Batia</dd>
+                        </li>
+                        <li>
+                            <a href="/App_Almacen/Alm_Pro_Devolucion.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Devolución de materiales
+                            </a>
+                            <dd class="colorexp">Maneja la devolución de materiales de cada listado entregado que sale de los almacenes de Grupo Batia</dd>
+                        </li>
+                        <li>
+                            <a href="/App_Almacen/Alm_Pro_Conversion.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Dilución de materiales
+                            </a>
+                            <dd class="colorexp">Maneja la dilución de los quimicos, los productos que se fabrican concentrados, en esta pantalla se realiza la dilusión correspondiente</dd>
+                        </li>
+                        <li>
+                            <a href="/App_Almacen/Alm_Pro_Inventariofisico.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Inventario Físico
+                            </a>
+                            <dd class="colorexp">Maneja el control de los inventarios físicos de todos los almacenes de Batia</dd>
+                        </li>
+                        <li>
+                            <a href="/App_Almacen/Alm_Pro_Solicitudmaterial.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Solicitudes de material
+                            </a>
+                            <dd class="colorexp">Permite generar solicitudes de material a los almacenes para algun servicio que lo requiera tanto interno como externo</dd>
+                        </li>
+                    </ul>
+                </li>
+                <li>
+                    <a href="#">
+                        <i class="fa fa-chevron-circle-down"> </i>Consultas
+                    </a>
+                    <ul class="treeview-menu">
+                        <li>
+                            <a href="/App_Almacen/Alm_Pro_kardex.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Kardex de material
+                            </a>
+                            <dd class="colorexp">Permite consultar todos los movimientos de entradas/salidas que ha tenido un material en un período de tiempo</dd>
+                        </li>
+                        <li>
+                            <a href="/App_Almacen/Alm_Con_Solicitudmaterial.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Solicitudes de material
+                            </a>
+                            <dd class="colorexp">Permite consultar las solicitudes de materiales existentes para despachar o rechazar en caso de que no aplique</dd>
+                        </li>
+                    </ul>
+                </li>
+                <li>
+                    <a href="#">
+                        <i class="fa fa-chevron-circle-down"> </i>Reportes
+                    </a>
+                    <ul class="treeview-menu">
+                        <li>
+                            <a href="/App_Almacen/Alm_Rep_Inventario.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Inventario de Almacèn
+                            </a>
+                            <dd class="colorexp">Muestra el inventario actual del almacén seleccionado</dd>
+                        </li>
+                        <li>
+                            <a href="/App_Almacen/Alm_Rep_listadoporruta.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Listados por ruta
+                            </a>
+                            <dd class="colorexp">Muestra los pedidos de materiales que se tienen en una ruta para un mes en particular</dd>
+                        </li>
+                        <li>
+                            <a href="/App_Almacen/Alm_Rep_listadosindespacho.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Listados sin despacho
+                            </a>
+                            <dd class="colorexp">Muestra los pedidos que aun no se han descargado del inventario del almacén</dd>
+                        </li>
+                        <li>
+                            <a href="/App_Almacen/Alm_Rep_Rutas.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Rutas
+                            </a>
+                            <dd class="colorexp">Muestra todas las rutas existentes</dd>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </li>
+        <li class="treeview">
+            <a>
+                <i class="fa fa-shopping-cart "> </i>
+                <span>Compras</span>
+                <i class="fa fa-angle-left pull-right"> </i>
+            </a>
+            <ul class="treeview-menu">
+                <li>
+                    <a href="#">
+                        <i class="fa fa-chevron-circle-down"> </i>Catalogos
+                    </a>
+                    <ul class="treeview-menu">
+                        <li>
+                            <a href="/App_Compras/Com_Cat_familia.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Familias
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/App_Compras/Com_Cat_Producto.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Productos
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/App_Compras/Com_Cat_Proveedor.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Proveedores
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+                <li>
+                    <a href="#">
+                        <i class="fa fa-chevron-circle-down"> </i>Procesos
+                    </a>
+                    <ul class="treeview-menu">
+                        <li>
+                            <a href="/App_Compras/Com_Pro_Actualizaprecio.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Actualización masiva de precios
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/App_Compras/Com_Pro_proveedorinmueble.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Asignar Proveedor a sucursales
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/App_Compras/Com_Pro_Regionentrega.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Asignar Regiones para entregas
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/App_Compras/Com_Pro_EvaluaProveedor.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Evaluación de proveedores
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/App_Compras/Com_Pro_ordencompra.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Orden de compra Materiales
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/App_Compras/Com_Pro_ordencompraservicio.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Orden de compra Servicios
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/App_Compras/Com_Cat_productoprecio.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Precios de productos
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/App_Compras/Com_Cat_productoprecio1.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Precios de productos por Proveedor
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/App_Compras/Com_Pro_requisicion.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Requisición de compra
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/App_Compras/Com_Pro_Solicitudmaterial.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Solicitud de Materiales Mantenimiento
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/App_Compras/Com_Pro_validapreciolistado.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Validar precios para Requisición
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+                <li>
+                    <a href="#">
+                        <i class="fa fa-chevron-circle-down"> </i>Consultas
+                    </a>
+                    <ul class="treeview-menu">
+                        <li>
+                            <a href="/App_Compras/Com_Con_compptto.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Comparativo de materiales
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/App_Compras/Com_Con_listadodetalle.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Detalle de listados por proveedor
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/App_Compras/Com_Con_EvaluaProveedor.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Evaluación de proveedores
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/App_Compras/Com_Con_listadogeneral.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Listados de materiales
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/App_Compras/Com_Con_listadomatriz.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Listados generados matriz
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/App_Compras/Com_Con_listadocreado.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Listados generados por comprador
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/App_Compras/Com_Con_ordencompra.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Ordenes de compra
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/App_Compras/Com_Con_requisicion.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Requisciones de compra
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/App_Compras/Com_Con_Solicitudmaterial.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Solicitudes de Materiales Mantenimiento
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+                <li>
+                    <a href="#">
+                        <i class="fa fa-chevron-circle-down"> </i>Reportes
+                    </a>
+                    <ul class="treeview-menu">
+                        <li>
+                            <a href="/App_Compras/Com_Rep_Analiticaprecio.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Analítica de precios
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/App_Compras/Com_Rep_avanceEntrega.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Avance de entregas
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/App_Compras/Com_Rep_materialconcentrado.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Concentrado de materiales
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/App_Compras/Com_Rep_direcciones.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Direcciones de sucursales
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/App_Compras/Com_Rep_inventariobanio.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Inventario de baños
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/App_Compras/Com_Rep_Listadoporproveedor.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Listados agrupados por proveedor
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/App_Compras/Com_Rep_mensualmaterial.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Mensual de materiales
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/App_Compras/Com_Rep_precioproveedor.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Precios por proveedor
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </li>
+        <li class="treeview">
+            <a>
+                <i class="fa fa-crosshairs"> </i>
+                <span>Operaciones</span>
+                <i class="fa fa-angle-left pull-right"> </i>
+            </a>
+            <ul class="treeview-menu">
+                <li>
+                    <a href="#">
+                        <i class="fa fa-chevron-circle-down"> </i>Catalogos
+                    </a>
+                    <ul class="treeview-menu">
+                        <li>
+                            <a href="/App_Operaciones/Ope_Pro_Asignacoordina.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Asigna Coordinador a Gerente
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+                <li>
+                    <a href="#">
+                        <i class="fa fa-chevron-circle-down"> </i>Procesos
+                    </a>
+                    <ul class="treeview-menu">
+                        <li>
+                            <a href="/App_RH/RH_Cat_Empleado_Inmueble.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Asignar Empleados a Sucursales
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/App_RH/RH_Pro_Empleado_Baja.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Baja de Empleado
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/App_RH/RH_Pro_Empleado_Conftrans.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Confirmar Transferencia de Empleado
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/App_Operaciones/Ope_Con_listadogeneral.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Libera Entregas Material
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/App_Operaciones/Ope_Pro_Listadomaterial.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Listados de materiales
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/App_Operaciones/Ope_Pro_listadomateriala.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Listados de materiales adicionales
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/App_Operaciones/Ope_Pro_listadogeneral.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Listados de materiales masivo
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/App_RH/RH_Pro_Empleado_Permuta.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Permuta de empleados
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/App_Operaciones/Op_Pro_VisitasSupervision.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Programa de supervisión
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/App_Operaciones/Ope_Pro_servicioespecial.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Registrar servicio especial
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/App_RH/RH_Pro_Vacante.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Registro de vacantes
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/App_RH/RH_Pro_Empleado_Transfiere.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Transferencia de Empleado
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+                <li>
+                    <a href="#">
+                        <i class="fa fa-chevron-circle-down"> </i>Consultas
+                    </a>
+                    <ul class="treeview-menu">
+                        <li>
+                            <a href="/App_Finanzas/Fin_Con_listadomaterial.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Entregas de materiales
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/App_Operaciones/Ope_Con_listadocreado.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Listados generados por Gerente
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/App_Operaciones/Ope_Con_Servicioespecial.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Servicio especial
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/App_Movil/Mov_Con_Supervision.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Supervisiones
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/App_RH/RH_Con_Vacante.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Vacantes
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+                <li>
+                    <a href="#">
+                        <i class="fa fa-chevron-circle-down"> </i>Reportes
+                    </a>
+                    <ul class="treeview-menu">
+                        <li>
+                            <a href="/App_Operaciones/Ope_Rep_servicioespecial.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Servicios Especiales
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </li>
+        <li class="treeview">
+            <a>
+                <i class="fa fa-users"> </i>
+                <span>Recursos Humanos</span>
+                <i class="fa fa-angle-left pull-right"> </i>
+            </a>
+            <ul class="treeview-menu">
+                <li>
+                    <a href="#">
+                        <i class="fa fa-chevron-circle-down"> </i>Catalogos
+                    </a>
+                    <ul class="treeview-menu">
+                        <li>
+                            <a href="/App_RH/RH_Cat_Empleado.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Empleados
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/App_RH/RH_Cat_Incidencia.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Incidencias
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/App_RH/RH_Cat_Periodonomina.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Períodos de nomina
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/App_RH/RH_Cat_Puesto.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Puestos
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/App_RH/RH_Cat_Turno.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Turnos
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+                <li>
+                    <a href="#">
+                        <i class="fa fa-chevron-circle-down"> </i>Procesos
+                    </a>
+                    <ul class="treeview-menu">
+                        <li>
+                            <a href="/App_RH/RH_Pro_AsignaCoordina.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Asignar Reclutadores a Coordinador
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/App_Finanzas/Fin_Pro_Empleado_Baja.aspx?tipo=2">
+                                <i class="fa fa-arrow-circle-right"> </i>Baja de Empleados
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/App_RH/RH_Pro_empleadoexpediente.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Carga de expedientes
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/App_RH/RH_Con_Empleado_Curso.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Consulta de candidatos
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/App_RH/RH_Pro_Candidato.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Registro de Candidato
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+                <li>
+                    <a href="#">
+                        <i class="fa fa-chevron-circle-down"> </i>Consultas
+                    </a>
+                    <ul class="treeview-menu">
+                        <li>
+                            <a href="/App_RH/RH_Con_Empleado.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Catálogo de empleados
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/App_RH/RH_Con_empleadobaja.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Empleados en baja
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/">
+                                <i class="fa fa-arrow-circle-right"> </i>Plantilla
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/App_RH/RH_Con_Vacante.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Vacantes
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+                <li>
+                    <a href="#">
+                        <i class="fa fa-chevron-circle-down"> </i>Reportes
+                    </a>
+                    <ul class="treeview-menu">
+                        <li>
+                            <a href="/App_RH/RH_Rep_Contrato.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Contrato de empleados
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/App_RH/RH_Con_empleado_completo.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Empleados completo
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/App_RH/RH_Rep_Empleadosxreclutador.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Empleados por Reclutador
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/App_RH/RH_Rep_Plantillavsempleado.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Plantilla vs Empleados
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </li>
+        <li class="treeview">
+            <a>
+                <i class="fa fa-university"> </i>
+                <span>Administracion</span>
+                <i class="fa fa-angle-left pull-right"> </i>
+            </a>
+            <ul class="treeview-menu">
+                <li>
+                    <a href="#">
+                        <i class="fa fa-chevron-circle-down"> </i>Procesos
+                    </a>
+                    <ul class="treeview-menu">
+                        <li>
+                            <a href="/App_Admin/Adm_Perfiles.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Grupo de Usuarios
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/App_Admin/RH_Con_Aguinaldo.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Liberación de aguinaldo
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/App_dashboard/Dash_Nominas.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Liberación de nómina
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/App_Admin/Adm_Usuario_N.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Usuarios
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </li>
+        <li class="treeview">
+            <a>
+                <i class="fa fa-book"> </i>
+                <span>Finanzas</span>
+                <i class="fa fa-angle-left pull-right"> </i>
+            </a>
+            <ul class="treeview-menu">
+                <li>
+                    <a href="#">
+                        <i class="fa fa-chevron-circle-down"> </i>Catalogos
+                    </a>
+                    <ul class="treeview-menu">
+                        <li>
+                            <a href="/App_Finanzas/Fin_Cat_Empresa.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Empresas
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/App_Finanzas/Fin_Rep_Razonsocial.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>RFC de clientes
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+                <li>
+                    <a href="#">
+                        <i class="fa fa-chevron-circle-down"> </i>Procesos
+                    </a>
+                    <ul class="treeview-menu">
+                        <li>
+                            <a href="/App_Finanzas/Fin_Pro_Empleado_act.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Alta de Empleados IMSS
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/App_Finanzas/Fin_Pro_Aplicapago.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Aplicación de pagos a proveedor
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/App_Finanzas/Ven_Pro_Fact_PendPago.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Aplicación de pagos de clientes
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/App_Finanzas/Fin_Pro_Empleado_Baja.aspx?tipo=1">
+                                <i class="fa fa-arrow-circle-right"> </i>Baja de Empleados
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/App_Finanzas/Fin_Pro_Cancelafacturas.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Cancelación de SPF
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/App_Finanzas/Fin_Pro_Provisionfactura.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Provisión automática de facturas
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/App_Finanzas/Fin_Pro_Solicitudrecurso.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Solicitud de recursos
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+                <li>
+                    <a href="#">
+                        <i class="fa fa-chevron-circle-down"> </i>Consultas
+                    </a>
+                    <ul class="treeview-menu">
+                        <li>
+                            <a href="/App_Admin/RH_Con_Aguinaldo.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Consulta de aguinaldo
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/App_Finanzas/Fin_Con_Nomina.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Consulta de nómina
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/App_Finanzas/Fin_Con_listadomaterial.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Entregas de materiales
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/App_Finanzas/Ven_Rep_PendFacturar.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Pendiente de facturar
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/App_Finanzas/Fin_Con_Solicitudrecurso.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Solicitud de recursos
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+                <li>
+                    <a href="#">
+                        <i class="fa fa-chevron-circle-down"> </i>Reportes
+                    </a>
+                    <ul class="treeview-menu">
+                        <li>
+                            <a href="/App_Finanzas/Fin_Rep_cxcantiguedad.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Antiguedad saldos Cliente
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/App_Finanzas/Fin_Rep_cxpantiguedad.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Antiguedad saldos Proveedor
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/App_Finanzas/Fin_Rep_Asistencia.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Asistencia por mes
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/App_Finanzas/Fin_rep_Empleadobanco.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Empleados-bancos
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/App_Finanzas/Fin_Rep_facturacion.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Facturación
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/App_Finanzas/Ven_Rep_PagoFacturacion.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Pagos por Cliente
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/App_Finanzas/Fin_rep_Solicitudrecurso.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Solicitudes de recursus
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </li>
+        <li class="treeview">
+            <a>
+                <i class="fa fa-tasks"> </i>
+                <span>CGO</span>
+                <i class="fa fa-angle-left pull-right"> </i>
+            </a>
+            <ul class="treeview-menu">
+                <li>
+                    <a href="#">
+                        <i class="fa fa-chevron-circle-down"> </i>Catalogos
+                    </a>
+                    <ul class="treeview-menu">
+                        <li>
+                            <a href="/App_CGO/CGO_Cat_Clienteejecutivo.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Asignar Ejecutivos a Clientes
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/App_CGO/CGO_Pro_Contactoinmueble.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Contactos de puntos de atención
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/App_CGO/CGO_Pro_Jornalero.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Jornaleros
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+                <li>
+                    <a href="#">
+                        <i class="fa fa-chevron-circle-down"> </i>Procesos
+                    </a>
+                    <ul class="treeview-menu">
+                        <li>
+                            <a href="/App_RH/RH_Act_Vacante.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Activar Empleado
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/App_CGO/CGO_Pro_cambionomina.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Actualizar forma de pago
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/App_CGO/CGO_Pro_Ajustaasistencia.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Ajuste de asistencias
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/App_CGO/CGO_Pro_asistenciaapp.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Asistencia APP
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/App_CGO/CGO_Pro_cargaasistencia.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Asistencia biométrico
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/App_CGO/CGO_Pro_Asistenciajornalero.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Asistencia Jornaleros
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/App_CGO/CGO_Pro_Asistenciasangoma.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Asistencia telefónica
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/App_RH/RH_Pro_Aguinaldo.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Cálculo de Aguinaldo
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/App_RH/RH_Pro_Calculonomina.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Cálculo de Nómina
+                            </a>
+                            <dd class="colorexp">Permite realizar el calculo de nómina por período y tipo de nómina <a href="http://singa.com.mx:8083/manuales/Calculodenominas.pdf" target="_blank">Ver manual...</a></dd>
+                            
+                        </li>
+                        <li>
+                            <a href="/App_CGO/CGO_Pro_Calculonominajornalero.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Cálculo de nómina jornaler
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/App_CGO/CGO_Pro_Cargavacaciones.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Carga de vacaciones
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/App_RH/RH_Pro_Coberturafalta.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Cobertura de faltas
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/App_RH/RH_Con_Incidencia.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Eliminar incidencia
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/App_RH/RH_Pro_Asistencia.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Incidencias diarias
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/App_RH/RH_Pro_Incidencia.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Incidencias individuales
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/App_RH/RH_Pro_IncidenciaM.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Incidencias por grupo
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/App_CGO/CGO_Pro_Evaluacion.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Registro de Encuesta
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/App_CGO/Ope_Pro_Ticket.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Registro de Ticket
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+                <li>
+                    <a href="#">
+                        <i class="fa fa-chevron-circle-down"> </i>Consultas
+                    </a>
+                    <ul class="treeview-menu">
+                        <li>
+                            <a href="/App_RH/RH_Con_Asistencia.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Consulta de asistencias
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/App_CGO/CGO_Con_Asistencia_Op.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Consulta de asistencias Automática
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/App_CGO/CGO_Con_Evaluacion.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Consulta de Encuesta
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/App_CGO/Ope_Con_Ticket.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Consulta de Ticket
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+                <li>
+                    <a href="#">
+                        <i class="fa fa-chevron-circle-down"> </i>Reportes
+                    </a>
+                    <ul class="treeview-menu">
+                        <li>
+                            <a href="/App_CGO/Cgo_Rep_asistenciacliente.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Asistencia para Clientes
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/App_CGO/Cgo_Rep_coberturavacante.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Cobertura de vacantes
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/App_CGO/Cgo_Rep_controlasistencia.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Control de asistencia
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/App_CGO/CGO_Pro_validaasistencia.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Revisión de asistencia autómatica
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </li>
+        <li class="treeview">
+            <a>
+                <i class="fa fa-tachometer"> </i>
+                <span>Clientes</span>
+                <i class="fa fa-angle-left pull-right"> </i>
+            </a>
+            <ul class="treeview-menu">
+                <li>
+                    <a href="#">
+                        <i class="fa fa-chevron-circle-down"> </i>Procesos
+                    </a>
+                    <ul class="treeview-menu">
+                        <li>
+                            <a href="/App_dashboard/Dash_Cliente.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Dashboard Cliente
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </li>
+        <li class="treeview">
+            <a>
+                <i class="fa fa-money"> </i>
+                <span>Banfuturo</span>
+                <i class="fa fa-angle-left pull-right"> </i>
+            </a>
+            <ul class="treeview-menu">
+                <li>
+                    <a href="#">
+                        <i class="fa fa-chevron-circle-down"> </i>Procesos
+                    </a>
+                    <ul class="treeview-menu">
+                        <li>
+                            <a href="/App_Banfuturo/Ban_Pro_aplicadescuento.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Aplicación de descuentos
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/App_Banfuturo/Ban_Pro_Solicitud.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Solicitud de prestamo
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+                <li>
+                    <a href="#">
+                        <i class="fa fa-chevron-circle-down"> </i>Consultas
+                    </a>
+                    <ul class="treeview-menu">
+                        <li>
+                            <a href="/App_Banfuturo/Ban_Con_Solicitud.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Solicitudes de prestamo
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+                <li>
+                    <a href="#">
+                        <i class="fa fa-chevron-circle-down"> </i>Reportes
+                    </a>
+                    <ul class="treeview-menu">
+                        <li>
+                            <a href="/App_Banfuturo/Ban_Rep_detallepago.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Detalle de pagos
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/App_Banfuturo/Ban_Rep_pagomes.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Resumen para facturación
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </li>
+        <li class="treeview">
+            <a>
+                <i class="fa fa-wrench"> </i>
+                <span>Mantenimiento</span>
+                <i class="fa fa-angle-left pull-right"> </i>
+            </a>
+            <ul class="treeview-menu">
+                <li>
+                    <a href="#">
+                        <i class="fa fa-chevron-circle-down"> </i>Catalogos
+                    </a>
+                    <ul class="treeview-menu">
+                        <li>
+                            <a href="/App_Mantenimiento/Man_Cat_AreasRevisionPreventivo.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Áreas Revisión
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/App_Mantenimiento/Man_Cat_FormatosPreventivo.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Formatos Preventivo
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/App_Mantenimiento/Man_Cat_PuntosRevisionPreventivo.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Puntos Revisión
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/App_Mantenimiento/Man_Cat_TrabajosPreventivo.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Trabajos
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+                <li>
+                    <a href="#">
+                        <i class="fa fa-chevron-circle-down"> </i>Procesos
+                    </a>
+                    <ul class="treeview-menu">
+                        <li>
+                            <a href="/App_Mantenimiento/OP_Pro_Preventivos.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Alta Preventivos
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/App_Mantenimiento/Man_Pro_CorrectivoMayor.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Correctivo Mayor
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/App_Mantenimiento/OP_PR_OrdenTrabajo.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Orden de Trabajo
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/App_Mantenimiento/Com_Pro_RequisicionMtto.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Requisicion de compras
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/App_Mantenimiento/Alm_Pro_SolicitudmaterialMantto.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Solicitud materiales
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+                <li>
+                    <a href="#">
+                        <i class="fa fa-chevron-circle-down"> </i>Consultas
+                    </a>
+                    <ul class="treeview-menu">
+                        <li>
+                            <a href="/App_Mantenimiento/OP_Con_OrdenTrabajo.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Consulta Orden de Trabajo
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/App_Mantenimiento/OP_Con_CorrectivoMayor.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Correctivo Mayor
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/App_Mantenimiento/Alm_Con_Solicitudmaterialmanto.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Solicitud materiales
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+                <li>
+                    <a href="#">
+                        <i class="fa fa-chevron-circle-down"> </i>Reportes
+                    </a>
+                    <ul class="treeview-menu">
+                        <li>
+                            <a href="/App_Mantenimiento/OP_Rep_catalogomaterial.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Catálogo de materiales
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/App_Mantenimiento/OP_Rep_correctivomayor.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Reporte de Correctivo mayor
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/App_Mantenimiento/Man_Rep_Estimacion.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Reporte Estimación
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/App_Mantenimiento/Man_Rep_OrdenTrabajo.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Reporte Preventivos
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </li>
+        <li class="treeview">
+            <a>
+                <i class="fa fa-gavel"> </i>
+                <span>Legal</span>
+                <i class="fa fa-angle-left pull-right"> </i>
+            </a>
+            <ul class="treeview-menu">
+                <li>
+                    <a href="#">
+                        <i class="fa fa-chevron-circle-down"> </i>Procesos
+                    </a>
+                    <ul class="treeview-menu">
+                        <li>
+                            <a href="/App_legal/LEG_Pro_cuentaempleado.aspx">
+                                <i class="fa fa-arrow-circle-right"> </i>Cuentas de personal inactivo
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </li>
+    </ul>
+</body>
+</html>

@@ -33,10 +33,11 @@
             $('#txfinfonavit').prop("disabled", true);
             $('#dltipo1').prop("disabled", true);
             $('#txmonto').prop("disabled", true);
+            
             dialog = $('#dvcarga').dialog({
                 autoOpen: false,
-                height: 400,
-                width: 800,
+                height: 450,
+                width: 900,
                 modal: true,
                 close: function () {
                 }
@@ -153,6 +154,7 @@
                 alert('Para registrar personal nuevo, es necesario seleccionar primero una vacante de personal');
                 //limpia();
             })
+            /*
             $('#btelimina').on('click', function () {
                 if ($('#idusuario').val() == 1) {
                     if ($('#txid').val() != '0') {
@@ -165,7 +167,7 @@
                         }, iferror);
                     } else { alert('Antes de eliminar debe elegir un Empleado'); }
                 } else { alert('Ustede no tiene permiso de ejecutar esta acción');}
-            })
+            })*/
             $('#btguarda').click(function () {
                 calculaRFC();
                 var pensionado = 0
@@ -329,6 +331,16 @@
                 $('#txarchivo').val('');
                 cargadoctos($('#txid').val());
                 dialog.dialog('open');
+                //alert($('#confirmaexp').val());
+                if ($('#confirmaexp').val() == 'True') {
+                    $('#lbconfirma').text('Expediente confirmado')
+                    $('#lbconfirma').removeClass("text-red")
+                    $('#lbconfirma').addClass("text-green")
+                } else {
+                    $('#lbconfirma').text('Expediente no confirmado')
+                    $('#lbconfirma').removeClass("text-green")
+                    $('#lbconfirma').addClass("text-red")
+                }                
             })
             /*
             $("#txclabe").keydown(function (e) {
@@ -375,6 +387,13 @@
                     $('#dltipo1').val(0);
                     $('#txmonto').val(0);
                 }
+            })
+            $('#btconfirma').click(function () {
+                PageMethods.confirma($('#txid').val(), function () {
+                    alert('Registro actualizado')
+                    $('#lbconfirma').text('Expediente confirmado')
+                    $('#lbconfirma').addClass("text-green")
+                })
             })
         });
         function bloqueavacante() {
@@ -487,11 +506,13 @@
         }
         function datosempleado() {
             PageMethods.detalle($('#txid').val(), function (detalle) {
+               
                 var datos = eval('(' + detalle + ')');
                 $('#dltipo').val(datos.tipo);
                 if (datos.tipo == 1 || datos.tipo == 2 ) {
                     $('#dvcliente').show();
                 }
+                
                 $('#dlcliente').val(datos.cliente);
                 $('#idcliente').val(datos.cliente);
                 $('#idempresa').val(datos.empresa);
@@ -560,13 +581,12 @@
                     $('#cbinfonavit').prop("checked", false)
                     //$('#txss').prop("disabled", false);
                 }
-
                 $('#txfinfonavit').val(datos.fcredito);
                 $('#dltipo1').val(datos.tipocredito);
                 $('#txmonto').val(datos.montocredito);
                 $('#confirmado').val(datos.confirma);
-                if (datos.confirma == 1) {
-                    if ($('#idusuario').val() == 1 || $('#idusuario').val() == 84 || $('#idusuario').val() == 183) {
+                //if (datos.confirma == 1) {                    
+                    if ($('#idusuario').val() == 1 || $('#idusuario').val() == 84 || $('#idusuario').val() == 20639) {
                         $('#dlbanco').prop("disabled", false);
                         $('#txclabe').prop("disabled", false);
                         $('#txcuenta').prop("disabled", false);
@@ -577,12 +597,12 @@
                         $('#txcuenta').prop("disabled", true);
                         $('#txtarjeta').prop("disabled", true);
                     }
-                } else {
-                    $('#dlbanco').prop("disabled", false);
-                    $('#txclabe').prop("disabled", false);
-                    $('#txcuenta').prop("disabled", false);
-                    $('#txtarjeta').prop("disabled", false);
-                }
+                /*} else {
+                    $('#dlbanco').prop("disabled", true);
+                    $('#txclabe').prop("disabled", true);
+                    $('#txcuenta').prop("disabled", true);
+                    $('#txtarjeta').prop("disabled", true);
+                }*/
                 $('#sueldo').val(datos.sueldoplantilla);
                 $('#txcallef').val(datos.callef);
                 $('#txcoloniaf').val(datos.coloniaf);
@@ -590,7 +610,7 @@
                 $('#txmunicipiof').val(datos.municipiof);
                 $('#idestadof').val(datos.estadof);
                 cargaestado();
-
+                $('#confirmaexp').val(datos.confirmaexp);
             }, iferror);
         }
         function limpia() {
@@ -1073,18 +1093,13 @@
                 $('#tblistaa tbody').remove();
                 $('#tblistaa').append(ren1);
                 $('#tblistaa tbody tr').on('click', '.btver', function () {
-                    //alert($(this).closest('tr').find('td').eq(1).text());
                     var carpeta = emp;
                     var arc = $(this).closest('tr').find('td').eq(2).text();
                     window.open('../Doctos/RH/Candidatos/' + carpeta + '/' + arc, '_blank', 'width=650, height=600, left=80, top=120, resizable=no, scrollbars=no ');
                 });
                 $('#tblistaa tbody tr').on('click', '.btquita', function () {
                     PageMethods.eliminaa($('#txid').val(), $(this).closest('tr').find('td').eq(0).text(), function () {
-                        //alert('El listado se ha marcado como entregado');
-                        //dialog1.dialog('close');
                         cargadoctos($('#txid').val());
-                        //cargalistados();
-                        //closeWaitingDialog();
                     })
                 });
             }, iferror);
@@ -1147,6 +1162,7 @@
         <asp:HiddenField ID="rfccalculado" runat="server" />
         <asp:HiddenField ID="posicion" runat="server" />
         <asp:HiddenField ID="idestadof" runat="server" value="0"/>
+        <asp:HiddenField ID="confirmaexp" runat="server" value="0"/>
         <div class="wrapper">
             <div class="main-header">
                 <!-- Logo -->
@@ -1218,6 +1234,7 @@
                                             <option value="0">Seleccione...</option>
                                             <option value="1">Administrativo</option>
                                             <option value="2">Operativo</option>
+                                            
                                             <!--<option value="3">Jornalero</option>-->
                                         </select>
                                     </div>
@@ -1621,8 +1638,8 @@
                                 <ol class="breadcrumb">
                                     <li id="btnuevo" class="puntero"><a><i class="fa fa-edit"></i>Nuevo</a></li>
                                     <li id="btguarda" class="puntero"><a><i class="fa fa-save"></i>Guardar</a></li>
-                                    <li id="btdocumento" class="puntero"><a><i class="fa fa-save"></i>Subir documentos</a></li>
-                                    <li id="btelimina" class="puntero"><a><i class="fa fa-eraser"></i>Dar de Baja</a></li>
+                                    <li id="btdocumento" class="puntero"><a><i class="fa fa-save"></i>Documentos</a></li>
+                                    <!--<li id="btelimina" class="puntero"><a><i class="fa fa-eraser"></i>Dar de Baja</a></li>-->
                                     <li id="btlista" class="puntero"><a><i class="fa fa-navicon"></i>Ir a Lista de Empleados</a></li>
                                     <li id="btimprime" class="puntero"><a><i class="fa fa-print"></i>Imprimir catálogo</a></li>
                                 </ol>
@@ -1653,7 +1670,7 @@
                             <div class="col-lg-3">
                                 <input type="button" class="btn btn-info" onclick="xmlUpFile()" value="Agregar" id="btacuse" />
                             </div>
-                        </div>
+                        </div>                        
                         <hr />
                         <div class="row">
                             <div class="col-lg-3">
@@ -1673,7 +1690,16 @@
                                 </table>
                             </div>
                         </div>
+                        <div class="row">
+                            <div class="col-lg-5">
+                                <label for="txarchivo" class="text-red" id="lbconfirma">Expediente no confirmado</label>
+                            </div>
+                            <div class="col-lg-3">
+                                <input type="button" class="btn btn-success" value="Confirmar expediente completo" id="btconfirma" />
+                            </div>
+                        </div>
                     </div>
+
                     <div class="row" id="dvtabla">
                         <div class="box box-info">
                             <div class="box-header">

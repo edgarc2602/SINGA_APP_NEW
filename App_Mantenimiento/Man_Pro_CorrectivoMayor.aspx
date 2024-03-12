@@ -5,7 +5,7 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head runat="server">
-  <title>CORRECTIVO MAYOR</title>
+    <title>CORRECTIVO MAYOR</title>
     <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
     <meta charset="utf-8" />
     <link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css" />
@@ -82,6 +82,33 @@
           -ms-transform: rotate(45deg);
           transform: rotate(45deg);
         }
+        .containerFoto {
+            max-width: 1000px; /* Establece un ancho máximo para el contenedor */
+            margin: 0 auto; /* Centra el contenedor en la página */
+
+        }
+        .responsive-image {
+            max-width: 100%; /* Ajusta la imagen al ancho máximo del contenedor */
+            height: auto; /* Permite que la altura se ajuste automáticamente en función de la proporción original de la imagen */
+            display: block; /* Asegura que la imagen no tenga márgenes indeseados */
+            margin: 0 auto; /* Centra la imagen en el contenedor si el ancho de la imagen es menor que el ancho máximo del contenedor */
+
+        }
+
+                /* Estilo para filas pares */
+        tr:nth-child(even) {
+          background-color: #f2f2f2;
+        }
+
+        /* Estilo para filas impares */
+        tr:nth-child(odd) {
+          background-color: #ffffff;
+        }
+        .deshabilita {
+            pointer-events: none;
+            opacity: 0.4; /* Cambia la opacidad para dar una apariencia de deshabilitado */
+        }
+
     </style>
     <script type="text/javascript" src="//code.jquery.com/jquery-1.11.2.js"></script>
     <script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
@@ -92,11 +119,22 @@
             $('#var1').html('<%=listamenu%>');
             $('#nomusr').text('<%=minombre%>');
             $('#txfecha1').datepicker({ dateFormat: 'dd/mm/yy' });
-           setTimeout(function () {
-               if (screen.width > 740) {
-                   $("#menu").click();
-               }
-           }, 50);
+            setTimeout(function () {
+                if (screen.width > 740) {
+                    $("#menu").click();
+                }
+            }, 50);
+            var titulo = '';
+            /*
+            if ($('#tipotrabajo').val() == 1) {
+                titulo = '<h1>Correctivo Mayor<small>Mantenimiento</small></h1>'
+                //$('#lbtipotrabajo').text('Correctivo mayor' +<small>+'Mantenimiento' + </small>)
+
+            } else {
+                //$('#lbtipotrabajo').text('Servicios especiales Limpieza')
+                titulo = '<h1>Servicios especiales<small>Limpieza</small></h1>'
+            }*/
+            $('#lbtipotrabajo').append(titulo);
             $("#loadingScreen").dialog({
                 autoOpen: false,    // set this to false so we can manually open it
                 dialogClass: "loadingScreenWindow",
@@ -180,14 +218,16 @@
             if (mm < 10) {
                 mm = "0" + mm;
             }
+            $('#cnuevo').prop("disabled", true)
             $('#txfecha').val(dd + '/' + mm + '/' + yyyy);
             $('#txfecha').datepicker({ dateFormat: 'dd/mm/yy' });
             $('#txfecejec').datepicker({ dateFormat: 'dd/mm/yy' });
             $('#dvtrabajos').hide();
             $('#dvempleado').hide();
             $('#dvproveedor').hide();
+            $('#btpersonal').hide(),
             cargacliente();
-            cargatrabajo(); 
+            cargatrabajo();
             cargatipo();
             cargaproveedor();
             cargaempresa();
@@ -196,10 +236,11 @@
             cargaalmacen(1);
             cargaalmacen(2);
             cargatecnico();
-
+            
             if ($('#idorden').val() != 0) {
                 cargacm($('#idorden').val());
             }
+
             $('#btbusca').click(function () {
                 $("#divmodal2").dialog('option', 'title', 'Elegir Producto');
                 dialog4.dialog('open');
@@ -227,23 +268,33 @@
                 $("#divmodal1").dialog('option', 'title', 'Buscar empleado');
                 dialog3.dialog('open');
             });
-            $('#txpresupuesto').change(function () {
-                if (isNaN($('#txpresupuesto').val())) {
-                    alert('Debe coloca un valor numerico')
-                    $('#txpresupuesto').val(0)
+            $('#txcostodirecto').change(function () {
+                if (isNaN($('#txcostodirecto').val())) {
+                    alert('Debe coloca un importe')
+                    $('#txcostodirecto').val('')
+                    $('#txcostodirecto').focus();
                 } else {
-                    calculatopegasto();
-                    topegastoppto();
+                    calculatotales();
+                }
+            });
+            $('#txindirecto').change(function () {
+                if (isNaN($('#txindirecto').val())) {
+                    alert('Debe coloca un valor numerico')
+                    $('#txindirecto').val('');
+                    $('#txindirecto').focus();
+                } else {
+                    calculatotales();
                 }
             });
             $('#txutilidad').change(function () {
                 if (isNaN($('#txutilidad').val())) {
                     alert('Debe coloca un valor numerico')
-                    $('#txpresupuesto').val(0)
+                    $('#txutilidad').val('');
+                    $('#txutilidad').focus();
                 } else {
-                    calculatopegasto();
+                    calculatotales();
                 }
-            });
+            })
             $('#txppto').change(function () {
                 if (isNaN($('#txppto').val())) {
                     alert('Debe coloca un valor numerico')
@@ -256,11 +307,18 @@
                 oculta();
                 $('#dvfotos').toggle('slide', { direction: 'down' }, 700);
             });
+
+            $('#btEvidencia').on('click', function () {
+                oculta();
+                $('#dvEviDoc').toggle('slide', { direction: 'down' }, 700);
+            });
+
+
             $('#btsolicitudrecur').on('click', function () {
-                if ($('#txstatus').val() != 'Autorizado') {
+                /*if ($('#txstatus').val() != 'Autorizado') {
                     alert('El estatus actual no permite generar solicitud de recursos ');
                     return false;
-                }
+                }*/
                 if ($('#txutilizado').val() >= $('#txtopegasto').val()) {
                     alert('El tope de gasto fue superado');
                     return false;
@@ -269,11 +327,10 @@
                     limpiasolicitud();
                     oculta();
                     $('#dvsolicitudrecur').toggle('slide', { direction: 'down' }, 700);
-
                 }
             });
             $('#btmateriales').on('click', function () {
-                if ($('#txstatus').val() != 'Autorizado') {
+                if ($('#txstatus').val() != 'Autorizado' && $('#txstatus').val() != 'Alta' && $('#txstatus').val() != 'Cerrado') {
                     alert('El estatus actual no permite generar solicitud de recursos ');
                     return false;
                 }
@@ -284,7 +341,6 @@
                 oculta();
                 $('#dvsolicitudmaterial').toggle('slide', { direction: 'down' }, 700);
             });
-
             $('#btsolicitudrecver').on('click', function () {
                 cargasolicitudesreg();
                 oculta();
@@ -368,9 +424,18 @@
             $('#btguardas1').click(function () {
                 if (valida()) {
                     waitingDialog({});
-                    alert('');
-                    var fecha = $('#txfecha1').val().split('/');
-                    var devolucion = fecha[2] + fecha[1] + fecha[0];
+                    var fecfac = new Date();
+                    var yyyy = fecfac.getFullYear().toString();
+                    var mm = (fecfac.getMonth() + 1).toString();
+                    var dd = fecfac.getDate().toString();
+                    if (dd < 10) {
+                        dd = "0" + dd;
+                    }
+                    if (mm < 10) {
+                        mm = "0" + mm;
+                    }
+                    var devolucion = yyyy + mm + dd;
+                    
                     var xmlgraba = '<movimiento> <solicitud id="' + $('#txfolio2').val() + '" tecnico="' + $('#dltecnico').val() + '" id_servicio="1"';
                     xmlgraba += ' almacen="' + $('#dlalmacen').val() + '" almacen1="' + $('#dlalmacen1').val() + '" cliente="' + $('#dlcliente').val() + '" id_inmueble="' + $('#dlsucursal').val() + '" usuario="' + $('#idusuario').val() + '" observacion="' + $('#txobservacion').val() + '" id_clave_cm="' + $('#txfolio').val() + '"';
                     var herramientas = $("input[name='dltipo']:checked").val();
@@ -378,15 +443,16 @@
                         xmlgraba += ' devolucion="' + devolucion + '" id_tipo="2"' + '/>';
                     }
                     else {
-                        xmlgraba += ' devolucion="' + '" id_tipo="1"' + '/>';
+                        xmlgraba += ' devolucion="' + devolucion + '" id_tipo="1"' + '/>';
                     }
                     $('#tblistaj tbody tr').each(function () {
                         xmlgraba += '<partida clave="' + $(this).closest('tr').find('td').eq(0).text() + '" cantidad="' + parseFloat($(this).closest('tr').find("input:eq(0)").val()) + '"';
                         xmlgraba += ' precio="' + parseFloat($(this).closest('tr').find("input:eq(1)").val()) + '" total="' + parseFloat($(this).closest('tr').find("input:eq(2)").val()) + '"/>'
                     })
                     xmlgraba += '</movimiento>';
-                    //alert(xmlgraba);
+                    
                     PageMethods.guardam(xmlgraba, function (res) {
+                        $('#txutilizado').val(parseFloat($('#txutilizado').val()) + parseFloat($('#txsubtotalm').val()))
                         closeWaitingDialog();
                         $('#txfolio2').val(res);
                         alert('Registro completado');
@@ -399,21 +465,24 @@
                     waitingDialog({});
                     var farr = $('#txfecha').val().split('/');
                     var fregistro = farr[2] + farr[1] + farr[0];
+                    var Aux_estatus = ($('#txstatus').val() == 'Autorizado' ? 2 : $('#txstatus').val() == 'Cerrado' ? 3 : $('#txstatus').val() == 'Cobrado' ? 5 : $('#txstatus').val() == 'Facturado' ? 4 : 1)
+
                     var xmlgraba = '<orden id= "' + $('#txfolio').val() + '" descripcion = "' + $('#txdesc').val() + '"';
-                    xmlgraba += ' fregistro="' + fregistro + '"  ppto="' + $('#txppto').val() + '"  presupuesto="' + $('#txpresupuesto').val() + '"';
-                    xmlgraba += ' utilidad="' + $('#txutilidad').val() + '" tope ="' + $('#txtopegasto').val() + '"';
-                    xmlgraba += ' trabajo="' + $('#dltrabajo').val() + '" status="1"';
+                    xmlgraba += ' fregistro="' + fregistro + '" presupuesto="' + $('#txpresupuesto').val() + '"';
+                    xmlgraba += ' indirecto="' + $('#txindirecto').val() + '" indirectom="' + $('#txindirectom').val() +'"'
+                    xmlgraba += ' utilidad="' + $('#txutilidad').val() + '" utilidadm="' + $('#txutilidadm').val() +'" tope ="' + $('#txcostodirecto').val() + '"';
+                    xmlgraba += ' trabajo="' + $('#dltrabajo').val() + '" status="' + Aux_estatus + '"';
                     xmlgraba += ' usuario="' + $('#idusuario').val() + '"';
                     xmlgraba += ' folioc="' + $('#txfoliocliente').val() + '"';
-                    var cexistente = $("input[name='cliente1']:checked").val();
-                    if (cexistente == 1) {
+                    //var cexistente = $("input[name='cliente1']:checked").val();
+                    //if (cexistente == 1) {
                         xmlgraba += ' inmueble="' + $('#dlsucursal').val() + '" proyecto="' + $('#dlcliente').val() + '" clienten="" inmueblen="" tipo="1"' + '>';
-                    }
+                    /*}
                     else {
                         xmlgraba += ' inmueble="0" proyecto="0" clienten="' + $('#txclienten').val() + '" inmueblen="' + $('#txsucursaln').val() + '" tipo="2"' + '>';
-                    }
+                    }*/
                     xmlgraba += ' </orden> ';
-                    PageMethods.guarda(xmlgraba, function (res) {
+                    PageMethods.guarda(xmlgraba, $('#txfolio').val(), function (res) {
                         closeWaitingDialog();
                         var rsl = eval('(' + res + ')');
                         $('#txfolio').val(res);
@@ -430,27 +499,38 @@
                     var xmlgraba = '<movimiento> <solicitud id="' + $('#txfolio1').val() + '" empleado="' + $('#txnoemp').val() + '"';
                     xmlgraba += ' empresa="' + $('#dlempresa').val() + '" areasolicita="' + $('#txsolicita').val() + '"';
                     xmlgraba += ' proveedor="' + $('#dlproveedor').val() + '" areaautoriza="8" concepto="' + $('#txdesc').val() + '"';
-                    xmlgraba += ' tipogasto="' + $('#dltipo').val() + '" formapago="' + $('#dlforma').val() + '" tipopago="1"' + '"jornalero="0"';
+                    xmlgraba += ' tipogasto="' + $('#dltipo').val() + '" formapago="' + $('#dlforma').val() + '" tipopago="1"';
                     xmlgraba += ' subtot= "' + $('#txsubtotalg').val() + '" iva = "' + $('#txivag').val() + '" total = "' + $('#txtotalg').val() + '"';
-                    xmlgraba += ' usuario ="' + $('#idusuario').val() + '" piva="' + $('#dliva').val() + '" cliente="' + $('#dlcliente').val() + '" cm="' + $('#txfolio').val() + '"/>';
+                    xmlgraba += ' usuario ="' + $('#idusuario').val() + '" piva="' + $('#dliva').val() + '" cliente="' + $('#dlcliente').val() + '" jornalero="0" cm="' + $('#txfolio').val() + '" ';
+                    xmlgraba += ' inmueble ="' + $('#dlsucursal').val() + '" linea = "1" iguala = "2" servicioespecial="0"/>'
+                    
                     $('#tblistac tbody tr').each(function () {
                         xmlgraba += '<partida concepto="' + $(this).closest('tr').find('td').eq(0).text() + '" importe="' + parseFloat($(this).closest('tr').find("input:eq(0)").val()) + '"/>'
-                    });
+                    }); 
                     xmlgraba += '</movimiento>';
+                    //alert(xmlgraba);
                     PageMethods.guardasolicitud(xmlgraba, tipoop, function (res) {
                         closeWaitingDialog();
+                        $('#txutilizado').val(parseFloat($('#txutilizado').val()) + parseFloat($('#txsubtotalg').val()))
                         $('#txfolio1').val(res);
                         alert('Registro completado');
                     }, iferror);
                 }
-                $('#txutilizado').val(parseFloat($('#txutilizado').val()) + parseFloat($('#txsubtotalg').val()))
+                
             })
             $('#btnuevos').click(function () {
                 limpiasolicitud();
             })
+
             $('#btnuevos1').click(function () {
-                limpiasolicitud();
+                limpiasolicitudmat();
+                //limpiasolicitud();
                 limpiaproducto();
+            })
+
+            $('#btnuevo').click(function () {
+                //window.location.reload();
+                window.open("Man_Pro_CorrectivoMayor.aspx", "_self");
             })
 
             $('#txclave').change(function () {
@@ -494,15 +574,16 @@
 
             $('#btagrega').click(function () {
                 if (validamat()) {
-                    var linea = '<tr><td>' + $('#txclave').val() + '</td><td></td><td>' + $('#txdesc').val() + '</td><td>' + $('#txunidad').val() + '</td><td><input class="form-control text-right tbeditar" value=' + $('#txcantidad').val() + ' /></td><td>'
+                    var linea = '<tr><td>' + $('#txclave').val() + '</td><td></td><td>' + $('#txdesc2').val() + '</td><td>' + $('#txunidad').val() + '</td><td><input class="form-control text-right tbeditar" value=' + $('#txcantidad').val() + ' /></td><td>'
                     linea += '<input disabled="disabled" class="form-control text-right tbeditar" value=' + $('#txprecio').val() + ' /></td><td><input disabled="disabled" class="form-control text-right tbeditar" value=' + $('#txtotal').val() + ' /></td><td><input type="button" value="Quitar" class="btn btn-danger btquita"/></td></tr>';
                     $('#tblistaj tbody').append(linea);
+                    
                     $('#tblistaj').delegate("tr .btquita", "click", function () {
                         $(this).parent().eq(0).parent().eq(0).remove();
                         totalm();
                     });
                     $('#tblistaj tbody tr').change('.tbeditar', function () {
-                        alert($(this).closest('tr').find('td').eq(4).text());
+                        
                         if (parseFloat($(this).closest('tr').find("input:eq(0)").val()) > parseFloat($(this).closest('tr').find('td').eq(4).text())) {
                             alert('No puede solicitar cantidad mayor a disponible');
                             $(this).closest('tr').find("input:eq(0)").val(0);
@@ -510,7 +591,7 @@
                         } else {
                             var totren = parseFloat($(this).closest('tr').find("input:eq(0)").val()) * parseFloat($(this).closest('tr').find("input:eq(1)").val());
                             $(this).closest('tr').find("input:eq(2)").val(totren.toFixed(2));
-                            total();
+                            totalm();
                         }
 
                     });
@@ -533,9 +614,22 @@
                 window.open('../RptForAll.aspx?v_nomRpt=solicitudmaterialesmantto.rpt&v_formula={tb_solicitudmaterialmantto.id_solicitud}= ' + idsol  + '', '', 'width=850, height=600, left=80, top=120, resizable=no, scrollbars=no');
 
             });
-
-
+            $('#dliva').change(function () {
+                total();
+            })
         });
+        function limpiasolicitudmat() {
+            $('#txfolio2').val(0);
+            $('#dlalmacen').val(0);
+            $('#dlalmacen1').val(0);
+            $('#btmaterial').ch
+            $('#dltecnico').val(0);
+            $('#tblistaj tbody tr').remove();
+            $('#txsubtotalm').val(0);
+            $('#txobservacion').val('');
+            $('#btmaterial').prop("checked", false);
+            $('#btherramientas').prop("checked", false);
+        }
         function validatopeppto() {
             if ($('#txtotalemp').val() >= $('#txpptotope').val()) {
                 alert('El tope de gasto fue superado');
@@ -547,8 +641,8 @@
         function limpiatipo() {
             $('#txfecha1').val('');
             $('#dlamacen').val(0);
-            $('#dlalmacen1').val(0);
-            $('#dltecnico').val(0);
+            //$('#dlalmacen1').val(0);
+            //$('#dltecnico').val(0);
             $('#txclave').val('');
             $('#txdesc2').val('');
             $('#txunidad').val('');
@@ -603,7 +697,7 @@
         function totalm() {
             var subtotalm = 0;
             $('#tblistaj tbody tr').each(function () {
-                subtotal += parseFloat($(this).closest('tr').find("input:eq(2)").val());
+                subtotalm += parseFloat($(this).closest('tr').find("input:eq(2)").val());
             });
             $('#txsubtotalm').val(subtotalm.toFixed(2));
         }
@@ -721,27 +815,45 @@
                 }
             }, iferror);
         }
-
         function cargacm(idsol) {
             PageMethods.cargacorrectivo(idsol, function (detalle) {
                 var datos = eval('(' + detalle + ')');
                 $('#txfolio').val(datos.id);
                 $('#txfecha').val(datos.fregistro);
                 $('#txstatus').val(datos.estatus);
-                $('#txpresupuesto').val(datos.presupuesto);
-                $('#txppto').val(datos.ppto);
+
+                if ($('#txstatus').val() == 'Autorizado'||  $('#txstatus').val() == 'Cerrado') {
+                    bloqueo();
+                }
+
+                if ($('#txstatus').val() != 'Autorizado' && $('#txstatus').val() != 'Alta' && $('#txstatus').val() != 'Cerrado' && $('#txstatus').val() != 'Cobrado') {
+                    bloqueo();
+                    bloqueoII();
+                }
+
+                if ($('#txstatus').val() == 'Cobrado') {
+                    bloqueo();
+                    bloqueoII();
+                    $('#btguarda').addClass('deshabilita');
+                    $('#btguarda').off('click');
+                }
+
+                $('#txcostodirecto').val(datos.topegasto);
+                $('#txindirecto').val(datos.indirecto);
+                $('#txindirectom').val(datos.indirectom);
                 $('#txutilidad').val(datos.utilidad);
-                $('#txtopegasto').val(datos.topegasto);
+                $('#txutilidadm').val(datos.utilidadm);
+                $('#txpresupuesto').val(datos.presupuesto);
                 if (datos.tipocliente == 1) {
                     $("input[name=cliente1][value='1']").prop("checked", true);
-                    ShowHideDiv();
+                    //ShowHideDiv();
                     $('#idcliente').val(datos.cliente);
                     $('#idinmueble').val(datos.inmueble);
                     cargacliente();
                     cargainmueble(datos.cliente);
                 } else {
                     $("input[name=cliente1][value='2']").prop("checked", true);
-                    ShowHideDiv()
+                    //ShowHideDiv()
                     $('#txclienten').val(datos.clienten);
                     $('#txsucursaln').val(datos.inmueblen);
                 }
@@ -750,8 +862,10 @@
                 $('#txdesc').val(datos.trabajos);
                 $('#dvtrabajos').show();
                 cargacorrectivogasto(datos.id);
+                cargafotos(datos.id);
+                cargaEviDoc(datos.id);
             })
-            bloqueo();
+            
         }
         function cargacorrectivogasto(folio) {
             PageMethods.cargacorrectivogasto(folio, function (detalle) {
@@ -772,25 +886,13 @@
                 alert('Debe elegir un almacén');
                 return false;
             }
-            /*
-            if ($('#dlcliente').val() == 0) {
-                alert('Debe elegir el cliente al que se entrega el material');
-                return false;
-            }
-            /*
-            /*
-            if ($('#dlalmacen').val() == 0) {
-                alert('Debe elegir el almacén');
-                return false;
-            }*/
             if ($('#tblistaj tbody tr').length == 0) {
                 alert('Debe capturar al menos un material');
                 return false;
             }
-            if ((parseFloat($('#txutilizado').val()) + parseFloat($('#txsubtotalm').val())) > parseFloat($('#txtopegasto').val())) {
+            if ((parseFloat($('#txutilizado').val()) + parseFloat($('#txsubtotalm').val())) > parseFloat($('#txcostodirecto').val())) {
                 alert('Al ingresar esta solicitud esta superando el tope de gasto, no puede continuar');
                 return false;
-
             }
             return true;
         }
@@ -827,15 +929,12 @@
                 alert('Debe agregar al menos un concepto de pago');
                 return false;
             }
-            if ((parseFloat($('#txutilizado').val()) + parseFloat($('#txsubtotalg').val())) > parseFloat($('#txtopegasto').val())) {
+            if ((parseFloat($('#txutilizado').val()) + parseFloat($('#txsubtotalg').val())) > parseFloat($('#txcostodirecto').val())) {
                 alert('Al ingresar esta solicitud esta superando el tope de gasto, no puede continuar');
                 return false;
-
             }
-
             return true;
         }
-
         function cargaconcepto() {
             PageMethods.concepto(function (opcion) {
                 var opt = eval('(' + opcion + ')');
@@ -983,11 +1082,11 @@
         function ShowHideDiv1() {
             var herramientas = document.getElementById("btherramientas");
             var materiales = document.getElementById("btmaterial");
-            fentrega.style.display = herramientas.checked ? "block" : "none";
+            //fentrega.style.display = herramientas.checked ? "block" : "none";
             limpiatipo();
             materiales.style.display = materiales.checked ? "block" : "none";
-            limpiatipo();
         }
+        /*
         function ShowHideDiv() {
             var cexistente = document.getElementById("cexistente");
             var cnuevo = document.getElementById("cnuevo");
@@ -995,7 +1094,7 @@
             limpiacliente();
             cliente1.style.display = cnuevo.checked ? "block" : "none";
             limpiacliente();
-        }
+        }*/
         function oculta() {
             $('#dvsolicitudrecur').hide();
             $('#dvsolicitudrecurocarga').hide();
@@ -1003,29 +1102,50 @@
             $('#dvpersonal').hide();
             $('#dvsolicitudmatcarga').hide();
             $('#dvfotos').hide();
+            $('#dvEviDoc').hide();
         }
+
+
+        function bloqueoII() {
+
+            $('#txcostodirecto').prop("disabled", true);
+            $('#txindirecto').prop("disabled", true);
+            $('#txindirectom').prop("disabled", true);
+            $('#txutilidad').prop("disabled", true);
+            $('#txutilidadm').prop("disabled", true);
+            $('#txpresupuesto').prop("disabled", true);
+            $('#txdesc').prop("disabled", true);
+            $('#btguardas1').prop("disabled", true);
+            $('#btagrega').prop("disabled", true);
+            $('#btguardas').prop("disabled", true);
+            $('#btagrega1').prop("disabled", true);
+
+        }
+
         function bloqueo() {
-                $('#txpresupuesto').prop("disabled", true);
-                $('#txutilidad').prop("disabled", true);
-                $('#txppto').prop("disabled", true);
+            $('#cexistente').prop("disabled", true);
+            $('#cnuevo').prop("disabled", true);
+            $('#dlcliente').prop("disabled", true);
+            $('#dlsucursal').prop("disabled", true);
+            $('#dltrabajo').prop("disabled", true);
+            $('#txfoliocliente').prop("disabled", true);
+            $('#txdesc').prop("disabled", true);
         }
-        function calculatopegasto() {
-            var topegasto = 0;
-            var utilidad = 0;
-            var presupuesto = 0;
-            var ppto = 0;
-            if ($('#txpresupuesto').val() != 0) {
-                presupuesto = parseFloat($('#txpresupuesto').val());
+
+        function calculatotales() {
+            var indirecto = 0
+            var utilidadm = 0
+            var ptto = 0
+            if ($('#txcostodirecto').val() != '' && $('#txindirecto').val() != '') {
+                indirecto = parseFloat($('#txcostodirecto').val()) * parseFloat(($('#txindirecto').val() / 100))
+                $('#txindirectom').val(parseFloat(indirecto).toFixed(2))
             }
-            if ($('#txutilidad').val() != 0) {
-                utilidad = parseFloat($('#txutilidad').val());
+            if ($('#txcostodirecto').val() != '' && $('#txutilidad').val() != '') {
+                var utilidadm = parseFloat($('#txcostodirecto').val()) * parseFloat(($('#txutilidad').val() / 100));
+                var ptto = parseFloat($('#txcostodirecto').val()) * parseFloat(1 + ($('#txutilidad').val() / 100));
+                $('#txutilidadm').val(parseFloat(utilidadm).toFixed(2))
+                $('#txpresupuesto').val(parseFloat(ptto).toFixed(2))
             }
-            if ($('#txppto').val() != 0) {
-                ppto = parseFloat($('#txppto').val());
-            }
-            topegasto = presupuesto - (((utilidad+ppto) / 100) * presupuesto)
-            $('#txtopegasto').val(topegasto.toFixed(2));
-           
         }
         function topegastoppto() {
             var ppto = 0;
@@ -1100,29 +1220,36 @@
             $("#loadingScreen").dialog('close');
         }
         function validar() {
-            if ($('#txpresupuesto').val() == 0) {
-                alert('Debe capturar el Presupuesto');
+            if ($('#dlcliente').val() == 0) {
+                alert('Debe elegir un Cliente');
                 return false;
             }
-            if ($('#txutilidad').val() == '') {
-                alert('Debe capturar la Utilidad');
+            if ($('#dlsucursal').val() == 0) {
+                alert('Debe elegir un Punto de atención');
                 return false;
             }
-            if ($('#dltrabajo').val() == '') {
+            if ($('#dltrabajo').val() == 0) {
                 alert('Debe capturar un Trabajo ');
                 return false;
             }
             if ($('#txdesc').val() == '') {
                 alert('Debe capturar la descripcion del trabajo');
                 return false;
-            }           
-            if ($('#dlproyecto').val() == 0) {
-                alert('Debe elegir un Proyecto');
+            }
+            if ($('#txcostodirecto').val() == '') {
+                alert('Debe capturar el importe del costo directo');
                 return false;
             }
-             return true;{}
+            if ($('#txindirecto').val() == '') {
+                alert('Debe capturar el porcentaje de costo indirecto');
+                return false;
+            }
+            if ($('#txutilidad').val() == '') {
+                alert('Debe capturar el porcentaje de utilidad');
+                return false;
+            }
+            return true;
         }
-
         function limpiacliente(){
             $('#dlcliente').val(0);
             $('#dlsucursal').val(0);
@@ -1162,33 +1289,91 @@
                 }
             }, iferror);
         }
+
+        function xmlUpFileEviDoc(res) {
+            if (validaEviDoc()) {
+
+                var fileup = $('#txfileloadEviDoc').get(0);
+                var files = fileup.files;
+                var misArchivos = [];
+
+                var ndt = new FormData();
+                for (var i = 0; i < files.length; i++) {
+                    ndt.append(files[i].name, files[i]);
+                    misArchivos.push(files[i].name);
+                }
+                ndt.append('cm', $('#txfolio').val());
+
+                PageMethods.validaFile(misArchivos, $('#txfolio').val(), function (res) {
+                    if (res != 'Ok') {
+                        alert(res);
+                        return;
+                    }
+                    else {
+
+                        $.ajax({
+                            url: '../GH_Upfacturacm.ashx',
+                            type: 'POST',
+                            data: ndt,
+                            contentType: false,
+                            processData: false,
+                            success: function (res) {
+                                PageMethods.actualiza($('#txfolio').val(), res, $('#txtipoEviDoc').val(), function (res) {
+                                    cargaEviDoc($('#txfolio').val());
+                                    closeWaitingDialog();
+                                }, iferror);
+                            },
+                            error: function (err) {
+                                alert(err.statusText);
+                            }
+                        });
+
+                    }
+                })
+
+            }
+        }
+
         function xmlUpFile(res) {
             if (validaf()) {
 
                 var fileup = $('#txfileload').get(0);
                 var files = fileup.files;
+                var misArchivos = [];
 
                 var ndt = new FormData();
                 for (var i = 0; i < files.length; i++) {
                     ndt.append(files[i].name, files[i]);
+                    misArchivos.push(files[i].name);
                 }
-                ndt.append('nmr', res);
-                $.ajax({
-                    url: '../GH_UpOT.ashx',
-                    type: 'POST',
-                    data: ndt,
-                    contentType: false,
-                    processData: false,
-                    success: function (res) {
-                        PageMethods.actualiza($('#txfolio').val(), res, $('#txtipo').val(), function (res) {
-                            cargafotos($('#txfolio').val());
-                            closeWaitingDialog();
-                        }, iferror);
-                    },
-                    error: function (err) {
-                        alert(err.statusText);
+                ndt.append('cm', $('#txfolio').val());
+
+                PageMethods.validaFile(misArchivos, $('#txfolio').val(), function (res) {
+                    if (res != 'Ok') {
+                        alert(res);
+                        return;
                     }
-                });
+                    else {
+
+                        $.ajax({
+                            url: '../GH_Upfacturacm.ashx',
+                            type: 'POST',
+                            data: ndt,
+                            contentType: false,
+                            processData: false,
+                            success: function (res) {
+                                PageMethods.actualiza($('#txfolio').val(), res, $('#txtipo').val(), function (res) {
+                                    cargafotos($('#txfolio').val());
+                                    closeWaitingDialog();
+                                }, iferror);
+                            },
+                            error: function (err) {
+                                alert(err.statusText);
+                            }
+                        });
+
+                    }
+                })
 
             }
         }
@@ -1200,13 +1385,49 @@
 
             }, iferror);
         }
+
+        function cargaEviDoc(orden) {
+            PageMethods.cargaEviDoc(orden, function (opcion) {
+                var ren = $.parseHTML(opcion);
+                $('#tblistaEviDoc tbody').remove();
+                $('#tblistaEviDoc').append(ren);
+
+                $('#tblistaEviDoc tbody tr').on('click', '.btver', function () {
+                    var arc = $(this).closest('tr').find('td').eq(0).text();
+                    //alert(arc);
+                    window.open('../Doctos/CM/' + orden + '/' + arc, '_blank', 'width=650, height=600, left=80, top=120, resizable=no, scrollbars=no ');
+                });
+
+            }, iferror);
+        }
+
+
         function validaf() {
             if ($('#txfileload').val() == '') {
                 alert('Debe seleccionar una foto antes de continuar');
                 return false;
             }
+            if ($('#txtipo').val() == '0') {
+                alert('Debe seleccionar el Tipo');
+                $('#txtipo').focus();
+                return false;
+            }
             return true;
         }
+
+        function validaEviDoc() {
+            if ($('#txfileloadEviDoc').val() == '') {
+                alert('Debe seleccionar un documento antes de continuar');
+                return false;
+            }
+            if ($('#txtipoEviDoc').val() == '0') {
+                alert('Debe seleccionar el Tipo');
+                $('#txtipoEviDoc').focus();
+                return false;
+            }
+            return true;
+        }
+
     </script>
 </head>
 <body class="skin-blue sidebar-mini">
@@ -1230,6 +1451,7 @@
         <asp:HiddenField ID="idsol" runat="server" Value="0" />
         <asp:HiddenField ID="idsolm" runat="server" Value="0" />
         <asp:HiddenField ID="idtecnico" runat="server" Value="0" />
+        <asp:HiddenField ID="tipotrabajo" runat="server" Value="0" />
         <div class="wrapper">
             <div class="main-header">
                 <!-- Logo -->
@@ -1274,7 +1496,7 @@
                 <!-- /.sidebar -->
             </div>
             <div class="content-wrapper">
-                <div class="content-header">
+                <div class="content-header" id="lbtipotrabajo">
                     <h1>Correctivo Mayor<small>Mantenimiento</small></h1>
                     <ol class="breadcrumb">
                         <li><a href="../Home.aspx"><i class="fa fa-dashboard"></i>Home</a></li>
@@ -1286,33 +1508,7 @@
                     <div class="box box-info">
                         <div class="box-header">
                         </div>
-                        <div id="dvdetalle"> 
-                            <div class="row">
-                                <div class="col-lg-2 text-right">
-                                    <label for="txfecha">Fecha:</label>
-                                </div>
-                                <div class="col-lg-2">
-                                    <input type="text" id="txfecha" class="form-control text-right" disabled="disabled" />
-                                </div>                             
-                                
-                                </div>
-                            <div class="row"> 
-                                 <div class="col-lg-2 text-right">
-                                    <label for="status">Estatus</label>
-                                </div>
-                                <div class="col-lg-2">
-                                    <input type="text" id="txstatus" class="form-control text-right" disabled="disabled" value="Alta" />
-                                </div>
-                                 <div class="col-lg-5 text-right">
-                                    <label for="txmutilidad">Margen Utilidad:</label>
-                                </div>
-                                <div class="col-lg-2">
-                                    <input type="text" id="txmutilidad" class="form-control text-right" disabled="disabled" value="0" />
-                                </div>
-                                <div class="col-lg-1">
-                                    <label for="txmutilidad">%</label>
-                                </div>                    
-                            </div>                           
+                        <div id="dvdetalle">
                             <div class="row">
                                 <div class="col-lg-2 text-right">
                                     <label for="txfolio">Clave CM:</label>
@@ -1320,62 +1516,38 @@
                                 <div class="col-lg-2">
                                     <input type="text" id="txfolio" class="form-control text-right" disabled="disabled" value="0" />
                                 </div>
-                                
-                                
-                            </div>
-                            <div class="row">
-                                <div class="col-lg-2 text-right">
-                                    <label for="txpresupuesto">Presupuesto:</label>
+                                <div class="col-lg-1 text-right">
+                                    <label for="txfecha">Fecha:</label>
                                 </div>
                                 <div class="col-lg-2">
-                                    <input type="text" id="txpresupuesto" class="form-control  text-right" value=""/>
-                                </div>                             
-                                <div class="col-lg-1 text-right">
-                                    <label for="txtopegasto">Tope Gasto:</label>
+                                    <input type="text" id="txfecha" class="form-control" disabled="disabled" />
                                 </div>
-                                <div class="col-lg-2 ">
-                                    <input type="text" id="txtopegasto" class="form-control text-right" disabled="disabled" value="0" />
-                                </div>
+
                                 <div class="col-lg-2 text-right">
-                                    <label for="txtopegasto">Utilizado:</label>
-                                </div>
-                                <div class="col-lg-2 ">
-                                    <input type="text" id="txutilizado" class="form-control text-right" disabled="disabled" value="0" />
-                                </div>
-                                 
-                            </div>
-                             <div class="row">
-                                  <div class="col-lg-2 text-right">
-                                    <label for="txutilidad">Costo Pvd:</label>
+                                    <label for="status">Estatus</label>
                                 </div>
                                 <div class="col-lg-2">
-                                    <input type="text" id="txutilidad" class="form-control text-right" value="" />
+                                    <input type="text" id="txstatus" class="form-control" disabled="disabled" value="Alta" />
                                 </div>
-                                <div class="col-lg-1 text-right">
-                                    <label for="txppto">Costo M.O:</label>
-                                </div>
-                                <div class="col-lg-1">
-                                    <input type="text" id="txppto" class="form-control text-right" value="" />
-                                </div>                                  
-                               
                             </div>
+                            <!--
                             <div class="row">
                                 <div class="col-log-1" style="margin-left: 250px">
+                                     <label class="container">
+                                        Cliente Existente
+                                        <input type="radio" id="cexistente" name="cliente1" onclick="ShowHideDiv()" value="1" />
+                                        <span class="checkmark"></span>  
+                                    </label>
                                     <label class="container">
                                         Cliente Nuevo
                                         <input type="radio" id="cnuevo" name="cliente1" onclick="ShowHideDiv()" value="2" />
                                         <span class="checkmark"></span>
                                     </label>
-                                    <label class="container">
-                                        Cliente Existente
-                                        <input type="radio" id="cexistente" name="cliente1" onclick="ShowHideDiv()" value="1" />
-                                        <span class="checkmark"></span>
-                                    </label>
                                 </div>
-                            </div>
+                            </div>-->
                             <br />
                             <div class="row">
-                                <div id="cliente0" style="display: none">
+                                <div id="cliente0">
                                     <div class="col-lg-2 text-right">
                                         <label for="dlcliente">Cliente:</label>
                                     </div>
@@ -1413,7 +1585,7 @@
                                 <div class="col-lg-2">
                                     <select id="dltrabajo" class="form-control"></select>
                                 </div>
-                                
+
                                 <div class="col-lg-2 text-right">
                                     <label for="txfoliocliente">Folio Cliente:</label>
                                 </div>
@@ -1421,13 +1593,62 @@
                                     <input type="text" id="txfoliocliente" class="form-control" />
                                 </div>
                             </div>
-                           
                             <div class="row">
                                 <div class="col-lg-2 text-right">
                                     <label for="txdesc">Descripcion Trabajo:</label>
                                 </div>
-                                <div class="col-lg-5">
+                                <div class="col-lg-6">
                                     <textarea id="txdesc" class="form-control"></textarea>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-lg-2 text-right">
+                                    <label for="txcostodirecto">Costo directo:</label>
+                                </div>
+                                <div class="col-lg-2">
+                                    <input type="text" id="txcostodirecto" class="form-control text-right" />
+                                </div>
+                                <div class="col-lg-3 text-right">
+                                    <label for="txutilizado">Importe solicitado hasta ahora:</label>
+                                </div>
+                                <div class="col-lg-2">
+                                    <input type="text" id="txutilizado" class="form-control text-right" disabled="disabled"/>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-lg-2 text-right">
+                                    <label for="txindirecto">Costo Indirecto:</label>
+                                </div>
+                                <div class="col-lg-1">
+                                    <input type="text" id="txindirecto" class="form-control text-right" value="" />
+                                </div>
+                                <div class="col-lg-1">
+                                    <label for="txindirecto">%</label>
+                                </div>
+                                <div class="col-lg-2 ">
+                                    <input type="text" id="txindirectom" class="form-control text-right" disabled="disabled" value="0" />
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-lg-2 text-right">
+                                    <label for="txutilidad">Utilidad:</label>
+                                </div>
+                                <div class="col-lg-1">
+                                    <input type="text" id="txutilidad" class="form-control text-right" value="" />
+                                </div>
+                                <div class="col-lg-1">
+                                    <label for="txutilidad">%</label>
+                                </div>
+                                <div class="col-lg-2 ">
+                                    <input type="text" id="txutilidadm" class="form-control text-right" disabled="disabled" value="0" />
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-lg-2 text-right">
+                                    <label for="txpresupuesto">Subtotal (ptto):</label>
+                                </div>
+                                <div class="col-lg-2 ">
+                                    <input type="text" id="txpresupuesto" class="form-control text-right" disabled="disabled" value="0" />
                                 </div>
                             </div>
                         </div>
@@ -1440,8 +1661,9 @@
                                     <li class="list-group-item bg-light-blue-gradient puntero" id="btsolicitudrecver">Ver Recursos solicitados</li>
                                     <li class="list-group-item bg-light-blue-gradient puntero" id="btmateriales">Solicitud materiales</li>
                                     <li class="list-group-item bg-light-blue-gradient puntero" id="btsolicitudmver">Ver Materiales solicitados</li>
-                                    <li class="list-group-item bg-light-blue-gradient puntero" id="btpersonal">Mano de Obra</li>
-                                    <li class="list-group-item bg-light-blue-gradient puntero" id="btfotos">Fotos</li>
+                                    <li class="list-group-item bg-light-blue-gradient puntero" id="btpersonal" >Mano de Obra</li>
+                                    <li class="list-group-item bg-light-blue-gradient puntero" id="btfotos">Evidencia Fotos</li>
+                                    <li class="list-group-item bg-light-blue-gradient puntero" id="btEvidencia">Evidencia Documentos</li>
                                     <!--li class="list-group-item bg-light-blue-gradient puntero" id="btpersonal">Mano de Obra</!--li>
                                     -->
                                 </ul>
@@ -1571,7 +1793,7 @@
                                     <div class="col-lg-2">
                                         <input type="text" class=" form-control text-right" disabled="disabled" id="txivag" />
                                     </div>
-                                    <div class="col-lg-1">
+                                    <div class="col-lg-2">
                                         <select id="dliva" class="form-control">
                                             <option value="0">0 %</option>
                                             <option value="0.08">8 %</option>
@@ -1584,7 +1806,7 @@
                                         <input type="button" class="btn btn-info" value="Nuevo" id="btnuevos" />
                                     </div>
                                     <div class="col-lg-1">
-                                        <input type="button" class="btn btn-info" value="Guardar"  id="btguardas" />
+                                        <input type="button" class="btn btn-info" value="Guardar" id="btguardas" />
                                     </div>
                                     <div class="col-lg-6 text-right">
                                         <label for="txtotalg">Total:</label>
@@ -1600,46 +1822,44 @@
                                         <h1>Solicitudes de Recursos registradas</h1>
                                     </div>
                                     <div class="row tbheader">
-                                    <table class="table table-condensed h6" id="tbsolreg">
-                                        <thead>
-                                            <tr>
-                                                <th class="bg-light-blue-gradient"><span>Folio</span></th>
-                                                <th class="bg-light-blue-gradient"><span>Tipo</span></th>
-                                                <th class="bg-light-blue-gradient"><span>Beneficiario</span></th>
-                                                <th class="bg-light-blue-gradient"><span>Pagadora</span></th>
-                                                <th class="bg-light-blue-gradient"><span>F. Alta</span></th>
-                                                <th class="bg-light-blue-gradient"><span>Estatus</span></th>
-                                                <th class="bg-light-blue-gradient"><span>Importe</span></th>
-                                            </tr>
-                                        </thead>
-                                        <tbody></tbody>
-                                    </table>
-                            </div>
+                                        <table class="table table-condensed h6" id="tbsolreg">
+                                            <thead>
+                                                <tr>
+                                                    <th class="bg-light-blue-gradient"><span>Folio</span></th>
+                                                    <th class="bg-light-blue-gradient"><span>Tipo</span></th>
+                                                    <th class="bg-light-blue-gradient"><span>Beneficiario</span></th>
+                                                    <th class="bg-light-blue-gradient"><span>Pagadora</span></th>
+                                                    <th class="bg-light-blue-gradient"><span>F. Alta</span></th>
+                                                    <th class="bg-light-blue-gradient"><span>Estatus</span></th>
+                                                    <th class="bg-light-blue-gradient"><span>Importe</span></th>
+                                                </tr>
+                                            </thead>
+                                            <tbody></tbody>
+                                        </table>
+                                    </div>
                                 </div>
                             </div>
-                             <div id="dvsolicitudmatcarga" class="tab-content col-md-10">
+                            <div id="dvsolicitudmatcarga" class="tab-content col-md-10">
                                 <div class="row">
                                     <div class="content-header">
                                         <h1>Solicitudes de Material registradas</h1>
                                     </div>
                                     <div class="row tbheader">
-                                    <table class="table table-condensed h6" id="tbsolreg1">
-                                        <thead>
-                                            <tr>
-                                                <th class="bg-light-blue-gradient"><span>Solicitud</span></th>
-                                                <th class="bg-light-blue-gradient"><span>F.Alta</span></th>
-                                                <th class="bg-light-blue-gradient"><span>Almacen Entrada</span></th>
-                                                <th class="bg-light-blue-gradient"><span>Cliente</span></th>
-                                                <th class="bg-light-blue-gradient"><span>P. Atencion</span></th>
-                                                <th class="bg-light-blue-gradient"><span>Estatus</span></th>
-                                                <th class="bg-light-blue-gradient"><span>Importe</span></th>
-                                            </tr>
-                                        </thead>
-                                        <tbody></tbody>
-                                    </table>
-                            </div>
+                                        <table class="table table-condensed h6" id="tbsolreg1">
+                                            <thead>
+                                                <tr>
+                                                    <th class="bg-light-blue-gradient"><span>Solicitud</span></th>
+                                                    <th class="bg-light-blue-gradient"><span>F.Alta</span></th>
+                                                    <th class="bg-light-blue-gradient"><span>Almacen Entrada</span></th>
+                                                    <th class="bg-light-blue-gradient"><span>Estatus</span></th>
+                                                    <th class="bg-light-blue-gradient"><span>Importe</span></th>
+                                                </tr>
+                                            </thead>
+                                            <tbody></tbody>
+                                        </table>
+                                    </div>
                                 </div>
-                            </div>  
+                            </div>
                             <div id="dvsolicitudmaterial" class="tab-content col-md-10">
 
                                 <div class="row">
@@ -1647,21 +1867,21 @@
                                         <h1>Solicitud Materiales Mantenimiento</h1>
                                     </div>
                                     <br />
-                                     <div class="row">
+                                    <div class="row">
                                         <div class="col-lg-2 text-right">
                                             <label for="txfolio2">No. Solicitud:</label>
                                         </div>
                                         <div class="col-lg-2">
                                             <input type="text" id="txfolio2" class="form-control text-right" disabled="disabled" value="0" />
                                         </div>
-                                      
+
                                         <div class="col-lg-2 text-right">
                                             <label for="txestatus">Estatus:</label>
                                         </div>
                                         <div class="col-lg-2">
                                             <input type="text" id="txestatus" class="form-control text-right" disabled="disabled" value="Alta" />
                                         </div>
-                                    </div>                                  
+                                    </div>
                                     <div class="row">
                                         <div class="col-lg-2 text-right">
                                             <label for="dlalmacen">Almacén Salida:</label>
@@ -1676,80 +1896,80 @@
                                             <select id="dlalmacen1" class="form-control"></select>
                                         </div>
                                     </div>
-    
-                                     <div class="row">
+
+                                    <div class="row">
                                         <div class="col-lg-2 text-right">
-                                        <label for="dltecnico">Tecnico:</label>
+                                            <label for="dltecnico">Tecnico:</label>
                                         </div>
                                         <div class="col-lg-3">
-                                        <select id="dltecnico" class="form-control"></select>
+                                            <select id="dltecnico" class="form-control"></select>
                                         </div>
                                     </div>
-                            <div class="row">
-                                <div class="col-log-1" style="margin-left: 250px">
-                                    <label class="container">
-                                        Materiales
-                                        <input type="radio" id="btmaterial" name="dltipos" onclick="ShowHideDiv1()" value="1" />
-                                        <span class="checkmark"></span> 
-                                    </label>
-                                    <label class="container">
-                                        Herramientas
-                                        <input type="radio" id="btherramientas" name="dltipos" onclick="ShowHideDiv1()" value="2" />
-                                        <span class="checkmark"></span>
-                                    </label>
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div id="fentrega" style="display: none">
-                                    <div class="col-lg-2 text-right">
-                                    <label for="txfecha1">Fecha entrega herramienta:</label>
-                                </div>
-                                <div class="col-lg-2">
-                                    <input type="text" id="txfecha1" class="form-control" />
-                                </div>
-                            </div>
-                          </div>     
+                                    <div class="row">
+                                        <div class="col-log-1" style="margin-left: 250px">
+                                            <label class="container">
+                                                Materiales
+                                            <input type="radio" id="btmaterial" name="dltipos" onclick="ShowHideDiv1()" value="1" />
+                                                <span class="checkmark"></span>
+                                            </label>
+                                            <label class="container">
+                                                Herramientas
+                                            <input type="radio" id="btherramientas" name="dltipos" onclick="ShowHideDiv1()" value="2" />
+                                                <span class="checkmark"></span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div id="fentrega" style="display: none">
+                                            <div class="col-lg-2 text-right">
+                                                <label for="txfecha1">Fecha entrega herramienta:</label>
+                                            </div>
+                                            <div class="col-lg-2">
+                                                <input type="text" id="txfecha1" class="form-control" />
+                                            </div>
+                                        </div>
+                                    </div>
 
                                     <div class="row tbheader" style="height: 300px; overflow-y: scroll;">
                                         <table class=" table table-condensed h6" id="tblistaj">
-                                           <thead>
-                                <tr>
-                                    <th class="bg-light-blue-active" colspan="2">Clave</th>
-                                    <th class="bg-light-blue-active">Descripción</th>
-                                    <th class="bg-light-blue-active">Unidad</th>
-                                    <th class="bg-light-blue-active">Cantidad</th>
-                                    <th class="bg-light-blue-active">Precio</th>
-                                    <th class="bg-light-blue-active">total</th>
-                                    <th class="bg-light-blue-active"></th>
-                                </tr>
-                                <tr>
-                                    <td class=" col-xs-1">
-                                        <input type="text" class=" form-control" id="txclave" />
-                                    </td>
-                                    <td class="col-xs-1">
-                                        <input type="button" class="btn btn-primary" value="buscar" id="btbusca" />
-                                    </td>
-                                    <td class="col-xs-2">
-                                        <textarea class="form-control" disabled="disabled" id="txdesc2"></textarea>
-                                    </td>
-                                    <td class="col-xs-1">
-                                        <input type="text" class=" form-control" disabled="disabled" id="txunidad" />
-                                    </td>
-                                    <td class="col-xs-1">
-                                        <input type="text" class=" form-control text-right" id="txcantidad" />
-                                    </td>
-                                    <td class="col-xs-1">
-                                        <input type="text" class=" form-control text-right" id="txprecio" disabled="disabled"/>
-                                    </td>
-                                    <td class="col-xs-1">
-                                        <input type="text" class=" form-control text-right" disabled="disabled" id="txtotal" />
-                                    </td>
-                                    <td class="col-lg-1">
-                                        <input type="button" class="btn btn-success" value="Agregar" id="btagrega" />
-                                    </td>
-                                </tr>
-                            </thead>
-                                <tbody></tbody>
+                                            <thead>
+                                                <tr>
+                                                    <th class="bg-light-blue-active" colspan="2">Clave</th>
+                                                    <th class="bg-light-blue-active">Descripción</th>
+                                                    <th class="bg-light-blue-active">Unidad</th>
+                                                    <th class="bg-light-blue-active">Cantidad</th>
+                                                    <th class="bg-light-blue-active">Precio</th>
+                                                    <th class="bg-light-blue-active">total</th>
+                                                    <th class="bg-light-blue-active"></th>
+                                                </tr>
+                                                <tr>
+                                                    <td class=" col-xs-1">
+                                                        <input type="text" class=" form-control" id="txclave" />
+                                                    </td>
+                                                    <td class="col-xs-1">
+                                                        <input type="button" class="btn btn-primary" value="buscar" id="btbusca" />
+                                                    </td>
+                                                    <td class="col-xs-2">
+                                                        <textarea class="form-control" disabled="disabled" id="txdesc2"></textarea>
+                                                    </td>
+                                                    <td class="col-xs-1">
+                                                        <input type="text" class=" form-control" disabled="disabled" id="txunidad" />
+                                                    </td>
+                                                    <td class="col-xs-1">
+                                                        <input type="text" class=" form-control text-right" id="txcantidad" />
+                                                    </td>
+                                                    <td class="col-xs-1">
+                                                        <input type="text" class=" form-control text-right" id="txprecio" disabled="disabled" />
+                                                    </td>
+                                                    <td class="col-xs-1">
+                                                        <input type="text" class=" form-control text-right" disabled="disabled" id="txtotal" />
+                                                    </td>
+                                                    <td class="col-lg-1">
+                                                        <input type="button" class="btn btn-success" value="Agregar" id="btagrega" />
+                                                    </td>
+                                                </tr>
+                                            </thead>
+                                            <tbody></tbody>
                                         </table>
                                     </div>
                                     <div class="row">
@@ -1761,7 +1981,7 @@
                                         </div>
                                     </div>
                                     <br />
-                                     <div class="row">                                        
+                                    <div class="row">
                                         <div class="col-lg-1 text-right">
                                             <label for="txobservacion">Observaciones:</label>
                                         </div>
@@ -1769,26 +1989,26 @@
                                             <textarea id="txobservacion" class=" form-control"></textarea>
                                         </div>
                                         <div class="col-lg-1">
-                                        <input type="button" class="btn btn-info" value="Nuevo" id="btnuevos1" />
+                                            <input type="button" class="btn btn-info" value="Nuevo" id="btnuevos1" />
                                         </div>
                                         <div class="col-lg-1">
-                                        <input type="button" class="btn btn-info" value="Guardar"  id="btguardas1" />
+                                            <input type="button" class="btn btn-info" value="Guardar" id="btguardas1" />
                                         </div>
                                     </div>
-                                 </div>
                                 </div>
+                            </div>
 
-                             <div id="dvpersonal" class="tab-content col-md-10">
+                            <div id="dvpersonal" class="tab-content col-md-10">
                                 <div class="row">
                                     <div class="content-header">
                                         <h1>Mano de Obra</h1>
-                                    </div>                               
+                                    </div>
                                     <div class="col-lg-8 text-right">
-                                    <label for="txtopegasto">Tope Mano de Obra:</label>
-                                </div>
-                                <div class="col-lg-2 ">
-                                    <input type="text" id="txpptotope" class="form-control text-right" disabled="disabled" value="0" />
-                                </div>
+                                        <label for="txtopegasto">Tope Mano de Obra:</label>
+                                    </div>
+                                    <div class="col-lg-2 ">
+                                        <input type="text" id="txpptotope" class="form-control text-right" disabled="disabled" value="0" />
+                                    </div>
                                 </div>
                                 <hr />
                                 <div class="tbheader">
@@ -1834,7 +2054,7 @@
                                 </div>
                                 <hr />
                                 <div class="row">
-                                  <div class="col-lg-1">
+                                    <div class="col-lg-1">
                                         <label for="txtipo">Tipo Doct</label>
                                     </div>
                                     <div class="col-lg-2">
@@ -1842,7 +2062,7 @@
                                             <option value="0">Seleccione</option>
                                             <option value="1">Presupuesto</option>
                                             <option value="2">Reporte</option>
-                                            <option value="2">Evidencia Foto</option>
+                                            <option value="6">Evidencia Foto</option>
                                             <option value="3">Otro</option>
                                         </select>
                                     </div>
@@ -1850,80 +2070,126 @@
                                         <label for="txfileload">Cargar Fotos</label>
                                     </div>
                                     <div class="col-lg-4">
-                                        <input type="file" id="txfileload" class="form-control" />
+                                        <input type="file" id="txfileload" class="form-control" accept="image/*"/>
                                     </div>
                                     <div class="col-lg-2">
                                         <input type="button" class="form-control btn btn-primary" value="Subir" onclick="xmlUpFile()" />
                                     </div>
                                 </div>
-                                <div class="row" id="dvtabla">                                    
-                                        <div class="col-md-18 tbheader">
-                                            <table class="table table-condensed h6" id="tblistafoto">
-                                                <thead>
-                                                    <tr>                                                        
-                                                        <th class="bg-navy"><span>Fotos</span></th>
-                                                        <th class="bg-navy"></th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                </tbody>
-                                            </table>
-                                        </div>
+                                <div class="row" id="dvtabla">
+                                    <div class="col-md-18 tbheader">
+                                        <table class="table table-condensed h6" id="tblistafoto" style="width:90%">
+                                            <thead>
+                                                <tr>
+                                                    <th class="bg-navy"><span>Fotos</span></th>
+                                                    <th class="bg-navy"></th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                            </tbody>
+                                        </table>
+                                    </div>
                                 </div>
- 
-                            </div>
-                            </div>
 
+                            </div>
+                               <div id="dvEviDoc" class="tab-content col-md-10">
+                                <div class="row">
+                                    <div class="content-header">
+                                        <h1>Evidencia Documentos</h1>
+                                    </div>
+                                </div>
+                                <hr />
+                                <div class="row">
+                                    <div class="col-lg-1">
+                                        <label for="txtipoEviDoc">Tipo Doct</label>
+                                    </div>
+                                    <div class="col-lg-2">
+                                        <select id="txtipoEviDoc" class="form-control">
+                                            <option value="0">Seleccione</option>
+                                            <option value="1">Presupuesto</option>
+                                            <option value="2">Reporte</option>
+                                            <option value="5">Evidencia Doc</option>
+                                            <option value="3">Otro</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-lg-2">
+                                        <label for="txfileloadEvidoc">Cargar Documentos</label>
+                                    </div>
+                                    <div class="col-lg-4">
+                                        <input type="file" id="txfileloadEviDoc" class="form-control" accept=".txt, .pdf, .doc, .docx, .xls, .xlsx"/>
+                                    </div>
+                                    <div class="col-lg-2">
+                                        <input type="button" class="form-control btn btn-primary" value="Subir" onclick="xmlUpFileEviDoc()" />
+                                    </div>
+                                </div>
+                                <div class="row" id="dvtablaEviDoc">
+                                    <div class="col-md-18 tbheader">
+                                        <table class="table table-condensed h6" id="tblistaEviDoc" style="width:90%">
+                                            <thead>
+                                                <tr>
+                                                    <th class="bg-navy"><span>Documento</span></th>
+                                                    <th class="bg-navy"></th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+
+                            </div>
                         </div>
 
-                   <div id="divmodal3">
-                            <div class="row">
-                                <div class="col-lg-4">
-                                    <label>Solicitud:</label>
-                                </div>
-                                <div class="col-lg-2">
-                                    <label id="lbfolio" ></label>
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-lg-4">
-                                    <label>Almacen de Entrada:</label>
-                                </div>
-                                <div class="col-lg-6">
-                                    <label id="lbalmacenent"></label>
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-lg-4">
-                                    <label>Estatus:</label>
-                                </div>
-                                <div class="col-lg-8">
-                                    <label id="lbestatus"></label>
-                                </div>
-                            </div>
+                    </div>
+
+                    <div id="divmodal3">
                         <div class="row">
-                             <div class="col-lg-3">
+                            <div class="col-lg-4">
+                                <label>Solicitud:</label>
+                            </div>
+                            <div class="col-lg-2">
+                                <label id="lbfolio"></label>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-lg-4">
+                                <label>Almacen de Entrada:</label>
+                            </div>
+                            <div class="col-lg-6">
+                                <label id="lbalmacenent"></label>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-lg-4">
+                                <label>Estatus:</label>
+                            </div>
+                            <div class="col-lg-8">
+                                <label id="lbestatus"></label>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-lg-3">
                                 <input type="button" class="btn btn-info" value="Imprimir" id="btimprime1" />
                             </div>
                         </div>
-                            <div class="row" style="height:200px; overflow:scroll;">
-                                <table class="table table-responsive h6" id="tbdetalle">
-                                    <thead>
-                                        <tr>
-                                            <th class="bg-light-blue-gradient"><span>Clave</span></th>
-                                            <th class="bg-light-blue-gradient"><span>Producto</span></th>
-                                            <th class="bg-light-blue-gradient"><span>Unidad</span></th>
-                                            <th class="bg-light-blue-gradient"><span>Cantidad</span></th>
-                                            <th class="bg-light-blue-gradient"><span>Precio</span></th>
-                                            <th class="bg-light-blue-gradient"><span>Total </span></th>
-                                                                              
-                                        </tr>
-                                    </thead>
-                                </table>
-                            </div>
+                        <div class="row" style="height: 200px; overflow: scroll;">
+                            <table class="table table-responsive h6" id="tbdetalle">
+                                <thead>
+                                    <tr>
+                                        <th class="bg-light-blue-gradient"><span>Clave</span></th>
+                                        <th class="bg-light-blue-gradient"><span>Producto</span></th>
+                                        <th class="bg-light-blue-gradient"><span>Unidad</span></th>
+                                        <th class="bg-light-blue-gradient"><span>Cantidad</span></th>
+                                        <th class="bg-light-blue-gradient"><span>Precio</span></th>
+                                        <th class="bg-light-blue-gradient"><span>Total </span></th>
 
+                                    </tr>
+                                </thead>
+                            </table>
                         </div>
-                        
+
+                    </div>
+
 
                     <div id="divmodal2">
                         <div class="row">
@@ -1935,94 +2201,94 @@
                                     <input type="text" class=" form-control" id="txbusca" placeholder="Ingresa texto de busqueda" />
                                 </div>
                                 <div class="col-lg-1">
-                                        <input type="button" class="btn btn-primary" value="Buscar" id="btbuscap" />
-                                    </div>
-                                </div>
-                                <div class="tbheader">
-                                    <table class="table table-condensed" id="tbbusca">
-                                        <thead>
-                                            <tr>
-                                                <th class="bg-navy"><span>Clave</span></th>
-                                                <th class="bg-navy"><span>Producto</span></th>
-                                                <th class="bg-navy"><span>Unidad</span></th>
-                                                <th class="bg-navy"><span>Precio</span></th>                                               
-                                            </tr>
-                                        </thead>
-                                    </table>
+                                    <input type="button" class="btn btn-primary" value="Buscar" id="btbuscap" />
                                 </div>
                             </div>
-                        </div>
-                        <div id="divmodal1">
-                            <div class="row">
-                                <div class="col-lg-2">
-                                    <label for="dlbusca4">Busca por:</label>
-                                </div>
-                                <div class="col-lg-3">
-                                    <select id="dlbusca4" class="form-control">
-                                        <option value="0">Seleccione...</option>
-                                        <option value="id_empleado">No. emp.</option>
-                                        <option value="rfc">RFC</option>
-                                        <option value="curp">CURP</option>
-                                        <option value="paterno+' '+RTRIM(materno)+ ' '+a.nombre">Nombre</option>
-                                    </select>
-                                </div>
-                                <div class="col-lg-5">
-                                    <input type="text" id="txbusca4" class="form-control" />
-                                </div>
-                                <div class="col-lg-1">
-                                    <button type="button" id="btbuscaemp" value="Buscar" class="btn btn-info pull-right">Buscar</button>
-                                </div>
-                            </div>
-                            <div class="row tbheader">
-                                <table class="table table-condensed h6" id="tbllista1">
+                            <div class="tbheader">
+                                <table class="table table-condensed" id="tbbusca">
                                     <thead>
                                         <tr>
-                                            <th class="bg-light-blue-gradient"><span>Id</span></th>
-                                            <th class="bg-light-blue-gradient"><span>Nombre</span></th>
-                                            <th class="bg-light-blue-gradient"><span>Pagadora</span></th>
+                                            <th class="bg-navy"><span>Clave</span></th>
+                                            <th class="bg-navy"><span>Producto</span></th>
+                                            <th class="bg-navy"><span>Unidad</span></th>
+                                            <th class="bg-navy"><span>Precio</span></th>
                                         </tr>
                                     </thead>
-                                    <tbody></tbody>
                                 </table>
                             </div>
                         </div>
+                    </div>
+                    <div id="divmodal1">
+                        <div class="row">
+                            <div class="col-lg-2">
+                                <label for="dlbusca4">Busca por:</label>
+                            </div>
+                            <div class="col-lg-3">
+                                <select id="dlbusca4" class="form-control">
+                                    <option value="0">Seleccione...</option>
+                                    <option value="id_empleado">No. emp.</option>
+                                    <option value="rfc">RFC</option>
+                                    <option value="curp">CURP</option>
+                                    <option value="paterno+' '+RTRIM(materno)+ ' '+a.nombre">Nombre</option>
+                                </select>
+                            </div>
+                            <div class="col-lg-5">
+                                <input type="text" id="txbusca4" class="form-control" />
+                            </div>
+                            <div class="col-lg-1">
+                                <button type="button" id="btbuscaemp" value="Buscar" class="btn btn-info pull-right">Buscar</button>
+                            </div>
+                        </div>
+                        <div class="row tbheader">
+                            <table class="table table-condensed h6" id="tbllista1">
+                                <thead>
+                                    <tr>
+                                        <th class="bg-light-blue-gradient"><span>Id</span></th>
+                                        <th class="bg-light-blue-gradient"><span>Nombre</span></th>
+                                        <th class="bg-light-blue-gradient"><span>Pagadora</span></th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
                     <div id="btbuscaempl">
-                                <div class="row">
-                                    <div class="row">
-                                        <div class="col-lg-2 text-right">
-                                            <label for="txbusca">Buscar</label>
-                                        </div>
-                                        <div class="col-lg-5">
-                                            <input type="text" class=" form-control" id="txbusca5" placeholder="Ingresa texto de busqueda" />
-                                        </div>
-                                        <div class="col-lg-1">
-                                            <input type="button" class="btn btn-primary" value="Buscar" id="btbuscap5" />
-                                        </div>
-                                    </div>
-                                    <div class="tbheader">
-                                        <table class="table table-condensed" id="tbbusca1">
-                                            <thead>
-                                                <tr>
-                                                    <th class="bg-navy"><span>No. Emp</span></th>
-                                                    <th class="bg-navy"><span>Nombre</span></th>
-                                                    <th class="bg-navy"><span>Costo x Hora</span></th>
-                                                </tr>
-                                            </thead>
-                                        </table>
-                                    </div>
+                        <div class="row">
+                            <div class="row">
+                                <div class="col-lg-2 text-right">
+                                    <label for="txbusca">Buscar</label>
+                                </div>
+                                <div class="col-lg-5">
+                                    <input type="text" class=" form-control" id="txbusca5" placeholder="Ingresa texto de busqueda" />
+                                </div>
+                                <div class="col-lg-1">
+                                    <input type="button" class="btn btn-primary" value="Buscar" id="btbuscap5" />
                                 </div>
                             </div>
-
+                            <div class="tbheader">
+                                <table class="table table-condensed" id="tbbusca1">
+                                    <thead>
+                                        <tr>
+                                            <th class="bg-navy"><span>No. Emp</span></th>
+                                            <th class="bg-navy"><span>Nombre</span></th>
+                                            <th class="bg-navy"><span>Costo x Hora</span></th>
+                                        </tr>
+                                    </thead>
+                                </table>
+                            </div>
+                        </div>
                     </div>
-                    <ol class="breadcrumb">
-                        <li id="btnuevo" class="puntero"><a><i class="fa fa-edit"></i>Nuevo</a></li>
-                        <li id="btguarda" class="puntero"><a><i class="fa fa-save"></i>Guardar</a></li>
-                        <!--<li id="btimprime" class="puntero"><a><i class="fa fa-print"></i>Imprimir</a></li>-->
-                    </ol>
+
                 </div>
+                <ol class="breadcrumb">
+                    <li id="btnuevo" class="puntero"><a><i class="fa fa-edit"></i>Nuevo</a></li>
+                    <li id="btguarda" class="puntero"><a><i class="fa fa-save"></i>Guardar</a></li>
+                    <!--<li id="btimprime" class="puntero"><a><i class="fa fa-print"></i>Imprimir</a></li>-->
+                </ol>
             </div>
-            <script src="../Content/form/js/app.min.js" type="text/javascript"></script>
-            <div id="loadingScreen"></div>
+        </div>
+        <script src="../Content/form/js/app.min.js" type="text/javascript"></script>
+        <div id="loadingScreen"></div>
     </form>
 </body>
 </html>

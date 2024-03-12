@@ -43,7 +43,7 @@
             })
         })
         function valida() {
-            if ($('#dlcliente').val() == 136 && ($('#idusuario').val() != 1 && $('#idusuario').val() != 44 && $('#idusuario').val() != 171)) { //
+            if ($('#dlcliente').val() == 136 && ($('#idusuario').val() != 1 && $('#idusuario').val() != 100)) { //
                 alert('Usted no tiene permiso para generar el reporte de este cliente');
                 return false;
             }

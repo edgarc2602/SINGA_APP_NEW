@@ -1,0 +1,45 @@
+﻿/*thead pegajoso para encabezados*/
+.sticky-top {
+    position: -webkit-sticky;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #e9ecef;
+}
+
+/* Color de resaltado de la columna */
+.highlight-column {
+    background-color: #e0ccf4;
+}
+
+
+/* ajustar columna al 100% */
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+/* Remarcado de renglones de la tabla*/
+.td {
+    border: 1px solid #dddddd;
+    text-align: left;
+}
+.td2 {
+    text-align: left;
+    border-bottom: 0.1px solid #dddddd;
+}
+/*thead pegajoso para columnas*/
+.sticky-col {
+    position: sticky;
+    left: 0;
+    z-index: 99;
+    background-color: rgba(248, 249, 250, 0.5);
+    backdrop-filter: blur(10px);
+}
+
+
+    .sticky-col:nth-child(2) {
+        left: 150px;
+    }
+

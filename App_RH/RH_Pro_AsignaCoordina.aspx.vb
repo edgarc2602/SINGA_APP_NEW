@@ -32,7 +32,7 @@ Partial Class App_RH_RH_Pro_AsignaCoordina
         Dim myConnection As New SqlConnection((New Conexion).StrConexion)
         Dim sqlbr As New StringBuilder
         Dim sql As String = ""
-        sqlbr.Append("select id_empleado, nombre + ' ' + rtrim(paterno) + ' ' + rtrim(materno) as nombre from tb_empleado where escoordinador = 1 and id_puesto in (39,40,108,83) and id_status = 2 order by nombre, paterno, materno")
+        sqlbr.Append("select id_empleado, nombre + ' ' + rtrim(paterno) + ' ' + rtrim(materno) as nombre from tb_empleado where escoordinador = 1 and id_puesto in (39,40,108,83,26,116) and id_status = 2 order by nombre, paterno, materno")
         Dim da As New SqlDataAdapter(sqlbr.ToString, myConnection)
         Dim dt As New DataTable
         da.Fill(dt)
@@ -109,7 +109,7 @@ Partial Class App_RH_RH_Pro_AsignaCoordina
         sqlbr.Append("case when id_coordina = " & empleado & " then 'checked' end as '@checked' for xml path('input'), root('td'),type) from (" & vbCrLf)
         sqlbr.Append("select id_empleado, paterno + ' ' + rtrim(materno) + ' ' + nombre as nombre, isnull(b.id_coordinador,0) as id_coordina"&vbCrLf)
         sqlbr.Append("from tb_empleado a left outer join tb_coordina_recluta b on a.id_empleado = b.id_reclutador and b.id_coordinador = " & empleado & "" & vbCrLf)
-        sqlbr.Append("where id_puesto in(26,39) and id_status = 2) as tabla order by nombre for xml path('tr'), root('tbody')")
+        sqlbr.Append("where id_puesto in(26,39,1140,1141,1142) and a.id_status = 2) as tabla order by nombre for xml path('tr'), root('tbody')")
 
         Dim mycommand As New SqlCommand(sqlbr.ToString(), myConnection)
         myConnection.Open()
