@@ -19,7 +19,7 @@
     <script src="https://code.jquery.com/ui/1.11.4/jquery-ui.min.js" type="text/javascript"></script>
  <style type="text/css">
         
-                /* Estilo para filas pares */
+        /* Estilo para filas pares */
         tr:nth-child(even) {
           background-color: #f2f2f2;
         }
@@ -149,6 +149,10 @@
                  alert('Debe colocar un numero de factura o remisión');
                  return false;
              }
+             else if ($('#txarchivo1').val() == '') {
+                 alert('Debe ingresar el archivo');
+                 return false;
+             }
             
              return true;
 
@@ -171,6 +175,7 @@
                      ndt.append(files[i].name, files[i]);
                      misArchivos.push(files[i].name);
                  }
+
                  ndt.append('cm', $('#txfoliocm').val());
 
                  PageMethods.validaFile(misArchivos, $('#txfoliocm').val(), function (res) {

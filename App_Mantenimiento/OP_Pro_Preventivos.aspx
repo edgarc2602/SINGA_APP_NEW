@@ -56,6 +56,7 @@
   </style>
 
     <script type="text/javascript">
+
         var dialog, dialog1, dialog2;
         var inicial = '<option value=0>Seleccione...</option>';
         var vbusca, vdeta, objots = [];

@@ -35,7 +35,9 @@ Partial Class App_Mantenimiento_OP_Rep_correctivomayor
         Dim sqlbr As New StringBuilder
         Dim sql As String = ""
 
-        sqlbr.Append("select distinct a.id_cliente, nombre from tb_cliente_lineanegocio a inner join tb_cliente b on a.id_cliente = b.id_cliente  where a.id_lineanegocio = 1 and  b.id_status = 1 order by nombre")
+        'sqlbr.Append("select distinct a.id_cliente, nombre from tb_cliente_lineanegocio a inner join tb_cliente b on a.id_cliente = b.id_cliente  where a.id_lineanegocio = 1 and  b.id_status = 1 order by nombre")
+        sqlbr.Append("select id_cliente, nombre from tb_cliente where id_status = 1 order by nombre")
+
         Dim da As New SqlDataAdapter(sqlbr.ToString, myConnection)
         Dim dt As New DataTable
         da.Fill(dt)
