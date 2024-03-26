@@ -299,17 +299,40 @@ Partial Class OP_PR_OrdenTrabajo
         Dim myConnection As New SqlConnection((New Conexion).StrConexion)
         Dim sqlbr As New StringBuilder
 
-        sqlbr.Append("SELECT")
+        If (almacen > 0) Then
 
-        If desc = "" Then sqlbr.Append(" TOP 100")
-        sqlbr.Append(" a.clave as 'td','', b.descripcion as 'td','', c.descripcion as 'td','', cast(a.costoultimo as numeric(12,2)) as 'td','', cast(a.existencia as numeric(12))  as 'td' " & vbCrLf)
-        sqlbr.Append(",(select b.id_unidad as '@id_unidad','display: none;' AS '@style' for xml path('td'),type) " & vbCrLf)
-        sqlbr.Append("From tb_inventario a" & vbCrLf)
-        sqlbr.Append("inner join tb_producto b on a.clave=b.clave" & vbCrLf)
-        sqlbr.Append("inner Join tb_unidadmedida c on b.id_unidad=c.id_unidad" & vbCrLf)
-        sqlbr.Append("where id_almacen=" & almacen & vbCrLf)
-        If desc <> "" Then sqlbr.Append("and b.descripcion like '%" & desc & "%'" & vbCrLf)
-        sqlbr.Append(" order by b.descripcion  for xml path('tr'), root('tbody')" & vbCrLf)
+
+            sqlbr.Append("SELECT")
+
+            If desc = "" Then sqlbr.Append(" TOP 100")
+            sqlbr.Append(" a.clave as 'td','', b.descripcion as 'td','', c.descripcion as 'td','', cast(a.costoultimo as numeric(12,2)) as 'td','', cast(a.existencia as numeric(12))  as 'td' " & vbCrLf)
+            sqlbr.Append(",(select b.id_unidad as '@id_unidad','display: none;' AS '@style' for xml path('td'),type) " & vbCrLf)
+            sqlbr.Append("From tb_inventario a" & vbCrLf)
+            sqlbr.Append("inner join tb_producto b on a.clave=b.clave" & vbCrLf)
+            sqlbr.Append("inner Join tb_unidadmedida c on b.id_unidad=c.id_unidad" & vbCrLf)
+            sqlbr.Append("where id_almacen=" & almacen & vbCrLf)
+            'sqlbr.Append("where id_almacen=14" & vbCrLf)
+            If desc <> "" Then sqlbr.Append("and b.descripcion like '%" & desc & "%'" & vbCrLf)
+            sqlbr.Append(" order by b.descripcion  for xml path('tr'), root('tbody')" & vbCrLf)
+
+        Else
+            'Para compra directa
+            sqlbr.Append("SELECT")
+            If desc = "" Then sqlbr.Append(" TOP 100")
+
+            sqlbr.Append(" a.clave as 'td','', a.descripcion as 'td','', b.descripcion as 'td','', cast(a.preciobase as numeric(12,2))  as 'td', '', 0  as 'td'" & vbCrLf)
+            sqlbr.Append(",(select b.id_unidad as '@id_unidad','display: none;' AS '@style' for xml path('td'),type) " & vbCrLf)
+            sqlbr.Append("from tb_producto a inner join tb_unidadmedida b on a.id_unidad = b.id_unidad" & vbCrLf)
+            sqlbr.Append("where tipo in(1,2) and id_status = 1 ")
+
+            If desc <> "" Then sqlbr.Append("and a.descripcion like '%" & desc & "%'" & vbCrLf)
+            sqlbr.Append(" order by b.descripcion  for xml path('tr'), root('tbody')" & vbCrLf)
+
+        End If
+
+
+
+
 
         Dim mycommand As New SqlCommand(sqlbr.ToString(), myConnection)
         myConnection.Open()
@@ -467,10 +490,10 @@ Partial Class OP_PR_OrdenTrabajo
 
         sqlbr.Append("Select RTrim(a.clave) as clave, rtrim(replace(a.Descripcion, '""', '')) as descripcion, cast(Cantidad as numeric(8,2)) as cantidad, " & vbCrLf)
         sqlbr.Append("d.descripcion as unidad, cast(c.costoultimo As numeric(8, 2)) As costo, cast(a.cantidadacobrar As numeric(8,2)) As cantcob, " & vbCrLf)
-        sqlbr.Append("cast(precioventa As numeric(8, 2)) As precio, cast(total As numeric(8,2)) As total " & vbCrLf)
+        sqlbr.Append("cast(precioventa As numeric(8, 2)) As precio, cast(total As numeric(8,2)) As total, cast(a.cantidadUtilizada as numeric(8,2)) cantidadUtilizada " & vbCrLf)
         sqlbr.Append("From tb_ordentrabajo_material a  " & vbCrLf)
         sqlbr.Append("inner join tb_unidadmedida d on a.id_unidad=d.id_unidad " & vbCrLf)
-        sqlbr.Append("left Join tb_inventario c on a.clave=c.clave " & vbCrLf)
+        sqlbr.Append("left Join tb_inventario c on a.clave=c.clave and a.id_almacen=c.id_almacen " & vbCrLf)
         sqlbr.Append("Where a.id_orden = " & prm & " Order By a.clave   " & vbCrLf)
 
 
@@ -488,6 +511,7 @@ Partial Class OP_PR_OrdenTrabajo
                 sql += "costo:'" & dt.Rows(x)("costo") & "',"
                 sql += "cantcob:'" & dt.Rows(x)("cantcob") & "',"
                 sql += "precio:'" & dt.Rows(x)("precio") & "', "
+                sql += "cantidadUtilizada:'" & dt.Rows(x)("cantidadUtilizada") & "',"
                 sql += "total:'" & dt.Rows(x)("total") & "'}"
             Next
         End If
@@ -690,6 +714,115 @@ Partial Class OP_PR_OrdenTrabajo
 
         Return ""
     End Function
+
+    <Web.Services.WebMethod()>
+    Public Shared Function EntradaSalida_Almacen(ByVal xmlgrabamat As String, ByVal xmlEntrada_Almacen As String, ByVal xmlSalida_Almacen As String) As String
+        Dim AuxReturn As String = "Ok"
+        Dim myConnection As New SqlConnection((New Conexion).StrConexion)
+
+        myConnection.Open()
+        Dim trans As SqlTransaction = myConnection.BeginTransaction
+        Try
+
+            Dim mycommand As New SqlCommand("sp_ordentrabajo_material", myConnection, trans)
+            mycommand.CommandType = CommandType.StoredProcedure
+            mycommand.Parameters.AddWithValue("@cabecera", xmlgrabamat)
+            mycommand.ExecuteNonQuery()
+
+            mycommand = New SqlCommand("sp_entradaalmacen", myConnection, trans)
+            mycommand.CommandType = CommandType.StoredProcedure
+            mycommand.Parameters.AddWithValue("@Cabecero", xmlEntrada_Almacen)
+            mycommand.Parameters.AddWithValue("@docto", 3)
+            Dim prm1 As New SqlParameter("@Id", 0)
+            prm1.Size = 10
+            prm1.Direction = ParameterDirection.Output
+            mycommand.Parameters.Add(prm1)
+            mycommand.ExecuteNonQuery()
+
+
+            mycommand = New SqlCommand("sp_salidaalmacen", myConnection, trans)
+            mycommand.CommandType = CommandType.StoredProcedure
+            mycommand.Parameters.AddWithValue("@Cabecero", xmlSalida_Almacen)
+            mycommand.Parameters.AddWithValue("@docto", 2)
+            Dim prmR As New SqlParameter("@Id", "0")
+            prmR.Size = 10
+            prmR.Direction = ParameterDirection.Output
+            mycommand.Parameters.Add(prmR)
+            mycommand.ExecuteNonQuery()
+
+            mycommand = New SqlCommand("sp_kardexsalida", myConnection, trans)
+            mycommand.CommandType = CommandType.StoredProcedure
+            mycommand.Parameters.AddWithValue("@Material", xmlSalida_Almacen)
+            mycommand.Parameters.AddWithValue("@Kdval", prmR.Value)
+            mycommand.ExecuteNonQuery()
+
+            'folio = prmR.Value
+            trans.Commit()
+        Catch ex As Exception
+            trans.Rollback()
+            AuxReturn = ex.Message.ToString()
+        Finally
+            myConnection.Close()
+        End Try
+
+        Return AuxReturn
+
+    End Function
+
+    <Web.Services.WebMethod()>
+    Public Shared Function Elimina_EntradaSalida_Almacen(ByVal xmlgrabamat As String, ByVal xmlEntrada_Almacen As String, ByVal xmlSalida_Almacen As String) As String
+        Dim AuxReturn As String = "Ok"
+        Dim myConnection As New SqlConnection((New Conexion).StrConexion)
+
+        myConnection.Open()
+        Dim trans As SqlTransaction = myConnection.BeginTransaction
+        Try
+
+            Dim mycommand As New SqlCommand("sp_ordentrabajo_material", myConnection, trans)
+            mycommand.CommandType = CommandType.StoredProcedure
+            mycommand.Parameters.AddWithValue("@cabecera", xmlgrabamat)
+            mycommand.ExecuteNonQuery()
+
+            mycommand = New SqlCommand("sp_entradaalmacen", myConnection, trans)
+            mycommand.CommandType = CommandType.StoredProcedure
+            mycommand.Parameters.AddWithValue("@Cabecero", xmlEntrada_Almacen)
+            mycommand.Parameters.AddWithValue("@docto", 3)
+            Dim prm1 As New SqlParameter("@Id", 0)
+            prm1.Size = 10
+            prm1.Direction = ParameterDirection.Output
+            mycommand.Parameters.Add(prm1)
+            mycommand.ExecuteNonQuery()
+
+
+            mycommand = New SqlCommand("sp_salidaalmacen", myConnection, trans)
+            mycommand.CommandType = CommandType.StoredProcedure
+            mycommand.Parameters.AddWithValue("@Cabecero", xmlSalida_Almacen)
+            mycommand.Parameters.AddWithValue("@docto", 2)
+            Dim prmR As New SqlParameter("@Id", "0")
+            prmR.Size = 10
+            prmR.Direction = ParameterDirection.Output
+            mycommand.Parameters.Add(prmR)
+            mycommand.ExecuteNonQuery()
+
+            mycommand = New SqlCommand("sp_kardexsalida", myConnection, trans)
+            mycommand.CommandType = CommandType.StoredProcedure
+            mycommand.Parameters.AddWithValue("@Material", xmlSalida_Almacen)
+            mycommand.Parameters.AddWithValue("@Kdval", prmR.Value)
+            mycommand.ExecuteNonQuery()
+
+            'folio = prmR.Value
+            trans.Commit()
+        Catch ex As Exception
+            trans.Rollback()
+            AuxReturn = ex.Message.ToString()
+        Finally
+            myConnection.Close()
+        End Try
+
+        Return AuxReturn
+
+    End Function
+
     <Web.Services.WebMethod()>
     Public Shared Function guardamat(ByVal emp As String) As String
 
@@ -697,15 +830,55 @@ Partial Class OP_PR_OrdenTrabajo
         Dim mycommand As New SqlCommand("sp_ordentrabajo_material", myConnection)
         mycommand.CommandType = CommandType.StoredProcedure
         mycommand.Parameters.AddWithValue("@cabecera", emp)
-        'Dim prm1 As New SqlParameter("@FolioOT", 0)
-        'prm1.Size = 10
-        'prm1.Direction = ParameterDirection.Output
-        'mycommand.Parameters.Add(prm1)
         myConnection.Open()
         mycommand.ExecuteNonQuery()
         myConnection.Close()
-        'Return prm1.Value
+
         Return 0
+    End Function
+
+    <Web.Services.WebMethod()>
+    Public Shared Function guardaMatSalida(ByVal xmlgrabamat As String, ByVal xmlgrabasalida As String) As String
+        Dim AuxReturn As String = "Ok"
+        Dim myConnection As New SqlConnection((New Conexion).StrConexion)
+
+        myConnection.Open()
+        Dim trans As SqlTransaction = myConnection.BeginTransaction
+        Try
+            Dim mycommand As New SqlCommand("sp_ordentrabajo_material", myConnection, trans)
+            mycommand.CommandType = CommandType.StoredProcedure
+            mycommand.Parameters.AddWithValue("@cabecera", xmlgrabamat)
+            mycommand.ExecuteNonQuery()
+
+            mycommand = New SqlCommand("sp_salidaalmacen", myConnection, trans)
+            mycommand.CommandType = CommandType.StoredProcedure
+            mycommand.Parameters.AddWithValue("@Cabecero", xmlgrabasalida)
+            mycommand.Parameters.AddWithValue("@docto", 2)
+            Dim prmR As New SqlParameter("@Id", "0")
+            prmR.Size = 10
+            prmR.Direction = ParameterDirection.Output
+            mycommand.Parameters.Add(prmR)
+            mycommand.ExecuteNonQuery()
+
+            mycommand = New SqlCommand("sp_kardexsalida", myConnection, trans)
+            mycommand.CommandType = CommandType.StoredProcedure
+            mycommand.Parameters.AddWithValue("@Material", xmlgrabasalida)
+            mycommand.Parameters.AddWithValue("@Kdval", prmR.Value)
+            mycommand.ExecuteNonQuery()
+
+            'folio = prmR.Value
+
+            trans.Commit()
+
+        Catch ex As Exception
+            trans.Rollback()
+            AuxReturn = ex.Message.ToString()
+        Finally
+            myConnection.Close()
+        End Try
+
+        Return AuxReturn
+
     End Function
 
     <Web.Services.WebMethod()>
@@ -751,7 +924,7 @@ Partial Class OP_PR_OrdenTrabajo
     End Function
 
     <Web.Services.WebMethod()>
-    Public Shared Function guardaentrada(ByVal registro As String) As String
+    Public Shared Function guardaentrada(xmlgrabamat As String, ByVal registro As String) As String
         Dim aa As String = ""
         Dim folio As Integer = 0
         Dim myConnection As New SqlConnection((New Conexion).StrConexion)
@@ -759,8 +932,12 @@ Partial Class OP_PR_OrdenTrabajo
         myConnection.Open()
         Dim trans As SqlTransaction = myConnection.BeginTransaction
         Try
+            Dim mycommand As New SqlCommand("sp_ordentrabajo_material", myConnection, trans)
+            mycommand.CommandType = CommandType.StoredProcedure
+            mycommand.Parameters.AddWithValue("@cabecera", xmlgrabamat)
+            mycommand.ExecuteNonQuery()
 
-            Dim mycommand As New SqlCommand("sp_entradaalmacen", myConnection, trans)
+            mycommand = New SqlCommand("sp_entradaalmacen", myConnection, trans)
             mycommand.CommandType = CommandType.StoredProcedure
             mycommand.Parameters.AddWithValue("@Cabecero", registro)
             mycommand.Parameters.AddWithValue("@docto", 2)
@@ -875,18 +1052,6 @@ Partial Class OP_PR_OrdenTrabajo
     <Web.Services.WebMethod()>
     Public Shared Function actualiza(ByVal folio As String, ByVal archivo As String) As String
 
-        'Dim fechaa As Date = Date.Now()
-
-        'Dim vmes As String = fechaa.Month.ToString
-        'If Len(vmes) = 1 Then
-        'vmes = "0" + vmes
-        'End If
-        'Dim vanio As String = fechaa.Year.ToString
-
-        '        Dim vfolder = "F" + vanio + "_" + vmes
-
-        'Dim vcarpeta As String = "c:\Doctos\entrega\"
-
         Dim sql As String = "insert into tb_ordentrabajo_foto (id_orden, archivo, fecha, tamano) values (" & folio & ", '" & archivo & "', getdate(), 0);"
         Dim myConnection As New SqlConnection((New Conexion).StrConexion)
         Dim mycommand As New SqlCommand(sql, myConnection)
@@ -895,6 +1060,28 @@ Partial Class OP_PR_OrdenTrabajo
         myConnection.Close()
         myConnection = Nothing
         Return ""
+
+    End Function
+    <Web.Services.WebMethod()>
+    Public Shared Function validaFile(ByVal Namefiles As String(), ByVal id_clavecm As Integer) As String
+
+        Dim Aux As String = "Ok"
+        Dim rutaArchivo As String = ""
+
+        Try
+            For Each nombreArchivo As String In Namefiles
+                rutaArchivo = "c:\inetpub\wwwroot\SINGA_APP\Doctos\OrdenTrabajo\" + id_clavecm.ToString() + "\" + nombreArchivo '
+                If File.Exists(rutaArchivo) Then
+                    Aux = "El archivo " + nombreArchivo + " ya existe."
+                    Exit For ' Salir del bucle si encuentras un archivo existente
+                End If
+            Next
+
+        Catch ex As Exception
+            Aux = "Error: " & ex.Message
+        End Try
+
+        Return Aux
 
     End Function
 
@@ -922,9 +1109,8 @@ Partial Class OP_PR_OrdenTrabajo
         Dim sqlbr As New StringBuilder
         Dim sql As String = ""
         'sqlbr.Append("select archivo from tb_ordentrabajo_foto where id_orden=" & orden & " order by fecha asc" & vbCrLf)
-        sqlbr.Append("select (select '../Doctos/OrdenTrabajo/F' + convert(varchar(6), b.fecha,112) +'/'+ b.archivo as '@src', '100' as '@width', '100' as '@height' for xml path('img'), type) as 'td' " & vbCrLf)
-        sqlbr.Append("from tb_ordentrabajo a inner join tb_ordentrabajo_foto b on a.id_orden = b.id_orden " & vbCrLf)
-        sqlbr.Append("where a.id_orden = " & orden & " for xml path('tr'), root('tbody')")
+        sqlbr.Append("select (select '../Doctos/OrdenTrabajo/' + cast(id_orden as varchar(120)) +'/'+ archivo as '@src', archivo as '@alt' , '100' as '@width', '100' as '@height' for xml path('img'), type) as 'td' " & vbCrLf)
+        sqlbr.Append("from tb_ordentrabajo_foto where id_orden = " & orden & " for xml path('tr'), root('tbody')")
         Dim mycommand As New SqlCommand(sqlbr.ToString(), myConnection)
         myConnection.Open()
         Dim xdoc1 As New XmlDocument()

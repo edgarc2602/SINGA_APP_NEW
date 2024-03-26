@@ -9,6 +9,8 @@ Public Class GH_UpXML : Implements IHttpHandler
     Public Sub ProcessRequest(ByVal context As HttpContext) Implements IHttpHandler.ProcessRequest
         Dim nm As String = ""
         Dim fecha As Date = Date.Now()
+        Dim ot As Integer = 0
+
         If context.Request.Files.Count > 0 Then
             Dim files As HttpFileCollection = context.Request.Files
             For x As Integer = 0 To files.Count - 1
@@ -22,20 +24,12 @@ Public Class GH_UpXML : Implements IHttpHandler
                     nm = dts(0) & context.Request.Form("nmr") & "." & dts(1)
                 End If
 
-                Dim vmes As String = fecha.Month.ToString
-                If Len(vmes) = 1 Then
-                    vmes = "0" + vmes
-                End If
-                Dim vanio As String = fecha.Year.ToString
+                ot = context.Request.Form("ot")
 
-                Dim vcarpeta As String = "C:\inetpub\wwwroot\SINGA_APP\Doctos\OrdenTrabajo\F" + vanio + vmes + "\"
-                'Dim vcarpeta As String = "C:\Doctos\OrdenTrabajo\F" + vanio + "_" + vmes + "\"
+                Dim vcarpeta As String = "C:\inetpub\wwwroot\SINGA_APP\Doctos\OrdenTrabajo\" + ot.ToString + "\"
 
-                If (Not System.IO.Directory.Exists(vcarpeta)) Then
-                    System.IO.Directory.CreateDirectory(vcarpeta)
-                End If
+                If (Not System.IO.Directory.Exists(vcarpeta)) Then System.IO.Directory.CreateDirectory(vcarpeta)
 
-                'fle.SaveAs("C:\Users\LAP_Sistemas2\Documents\SINGA_APP\Doctos\OrdenTrabajo\" & nm)
                 fle.SaveAs(vcarpeta & nm)
 
             Next

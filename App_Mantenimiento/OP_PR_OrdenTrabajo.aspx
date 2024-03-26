@@ -44,6 +44,7 @@
 
         var dialog, dialog1, dialog2;
         var inicial = '<option value=0>Seleccione...</option>';
+        var Autosuministrado = false;
 
         $(function () {
 
@@ -137,11 +138,10 @@
             });
             $('#btmateriales').on('click', function () {
                 oculta();
-                //$('#dvmaterialesmenu').toggle('slide', { direction: 'down' }, 700);
                 $('#idmat').val(0);
                 $('#dvmaterialesmenu').show();
                 $('#tbmateriales').show();
-                $('#dvmateriales').show();
+
                 $('#tbmaterial thead tr:eq(1)').hide();
                 $('#tbmaterial thead tr:eq(2)').hide();
             });
@@ -170,16 +170,19 @@
 
 
             $('#btsuministradocliente').on('click', function () {
+                Autosuministrado = false;
                 oculta();
                 $('#idmat').val(0);
                 $('#dvmaterialesmenu').show();
                 $('#tbmateriales').show();
-                $('#dvmateriales').show();
+                //$('#dvmateriales').show();
                 $('#tbmaterial thead tr:eq(1)').hide();
                 $('#tbmaterial thead tr:eq(2)').show();
+                $('.CanUso').hide();
             });
 
             $('#btsuministradobatia').on('click', function () {
+                Autosuministrado = false;
                 $('#idmat').val(1);
                 oculta();
                 $('#dvmaterialesmenu').show();
@@ -189,16 +192,29 @@
                 $('#tbmaterial thead tr:eq(2)').hide();
                 $('#txalmacen').prop("disabled", false);
                 $('#btalmacen').prop("disabled", false);
+                $('.CanUso').hide();
+                if ($('#txalmnom').val() == "") $('#btalmacen').show();
+                else $('#btalmacen').hide();
+               
+                
             });
 
             $('#btAutosuministrado').on('click', function () {
-                oculta();
+                Autosuministrado = true;
                 $('#idmat').val(0);
+                oculta();
                 $('#dvmaterialesmenu').show();
                 $('#tbmateriales').show();
-                $('#dvmateriales').show();
-                //$('#tbmaterial thead tr:eq(1)').hide();
-                //$('#tbmaterial thead tr:eq(2)').show();
+                $('#dvmaterialesbatia').show();//almacen donde deben de registrase las compras directas
+                $('#tbmaterial thead tr:eq(1)').show();
+                $('#tbmaterial thead tr:eq(2)').hide();
+                $('#txalmacen').prop("disabled", false);
+                $('#btalmacen').prop("disabled", false);
+                $('.CanUso').show();
+
+                if ($('#txalmnom').val() == "") $('#btalmacen').show();
+                else $('#btalmacen').hide();
+              
             });
 
             $('#txbusca3').keypress(function (event) {
@@ -237,7 +253,7 @@
             $('#idpiso').val(0);
             $('#idstatus').val(0);
             $('#txrepcte').val(0);
-            $('#idcliente').val(0)
+            $('#idcliente').val(0);
 
             cargaservicios();
             cargaunidad();
@@ -303,12 +319,26 @@
                 $('#txbusca2').val('');
                 dialog1.dialog('open');
             });
+
             $('#btmaterial').on('click', function () {
-                $("#modalmaterial").dialog('option', 'title', 'Buscar Material');
+
+                //if (!Autosuministrado) {//Suministrado por almacen
+                    if ($('#idalmacen').val() == '') {
+                        alert('Debe elegir un almacen');
+                        $('#idalmacen').focus();
+                        return;
+                    }
+                //} 
+                var titulo = 'Buscar Material';
+                if (!Autosuministrado) titulo = "Materiales Almacen " + $('#txalmnom').val();
+                else titulo = "Catálogo de Materiales";
+                
+                $("#modalmaterial").dialog('option', 'title', titulo);
                 $('#tbbusca3 tbody tr').remove();
                 $('#txbusca3').val('');
                 dialog2.dialog('open');
             });
+
             $('#btempleado').on('click', function () {
                 $("#btbuscaempl").dialog('option', 'title', 'Buscar Empleado');
                 $('#tbbusca1 tbody tr').remove();
@@ -346,9 +376,11 @@
             $('#txcantmat').change(function () {
                 if ($('#txcantmat').val() != '' && $('#txctomat').val() != '') {
                     var costo = parseFloat($('#txctomat').val()) * parseFloat($('#txcantmat').val());
+                    costo = Math.round(costo * 100) / 100;
 
                     $('#txcancob').val($('#txcantmat').val());
                     $('#txcosto').val(costo);
+                    if (Autosuministrado) $('#txcantmatUso').val($('#txcantmat').val());
 
                 }
                 else {
@@ -364,82 +396,144 @@
                         alert("La cantidad a cobrar no puede ser mayor a la cantidad de material solicitado.");
                         $('#txcancob').val('');
                         $('#txcosto').val('');
-
                     }
                     else {
                         var costo = parseFloat($('#txctomat').val()) * parseFloat($('#txcancob').val());
-
-
                         $('#txcosto').val(costo);
                     }
 
                 }
-                else {
-                    $('#txcosto').val('');
-                }
+                else $('#txcosto').val('');
             });
 
+            $('#txhoraemp').change(function () {calculatotalmo();});
 
-            $('#txhoraemp').change(function () {
-                calculatotalmo();
-            });
             $('#btagrega').on('click', function () {
                 if (validamaterial()) {
-                    var linea = '<tr><td colspan="2">' + $('#txclavemat').val() + '</td><td>' + $('#txdescmat').val() + '</td><td>' + $('#txcantmat').val() + '</td><td>' + $('#txunidad').val() + '</td><td>';
-                    linea += $('#txctomat').val() + '</td><td>' + $('#txcancob').val() + '</td><td>' + $('#txcosto').val() + '</td>';
-                    //linea += '<td>' + ($('#txcancob').val()) * ($('#txctomat').val()) + '</td>';
-                    linea += '<td><td><input type="button" value="Quitar" class="btn btn-danger tbborrar"/></td></a></td></tr>';
-                    $('#tbmatutil tbody').append(linea);
 
-                    xmlgrabamat = '<ListaMaterial><material id="0"  Clave="' + $('#txclavemat').val() + '" Descripcion="' + $('#txdescmat').val() + '" ';
-                    xmlgrabamat += ' Cantidad = "' + $('#txcantmat').val() + '" cancobro = "' + $('#txcancob').val() + '" ';
-                    xmlgrabamat += 'precobro = "' + $('#txctomat').val() + '" total = "' + ($('#txcancob').val()) * ($('#txctomat').val()) + '" ';
-                    xmlgrabamat += ' usuario="' + $('#idusuario').val() + '"  idorden="' + $('#idorden').val() + '" idalmacen="' + $('#idalmacen').val() + '" unidad="' + $('#id_Unidad').val() + '"  /></ListaMaterial> ';
-                    //alert(xmlgrabamat);
-                    xmlgrabasalida = '<Movimiento> <salida documento="8" almacen1="0" factura="0"';
-                    xmlgrabasalida += ' cliente="' + $('#idcliente').val() + '" almacen="' + $('#idalmacen').val() + '"';
-                    xmlgrabasalida += ' orden="' + $('#idorden').val() + '" usuario="' + $('#idusuario').val() + '"/>'
-                    xmlgrabasalida += '<pieza clave="' + $('#txclavemat').val() + '" cantidad="' + $('#txcancob').val() + '"';
-                    xmlgrabasalida += ' precio="' + $('#txctomat').val() + '"/>';
-                    xmlgrabasalida += '</Movimiento>';
-                    //alert(xmlgrabasalida);
-                    PageMethods.guardamat(xmlgrabamat, function (res) {
-                        //alert('guardado');                                
-                        PageMethods.guardasalida(xmlgrabasalida, function (res) {
-                            closeWaitingDialog();
-                            //alert('Registro completo');
-                        }, iferror);
-                    }, iferror);
+                    var xmlgrabamat = '<ListaMaterial><material id="0"  Clave="' + $('#txclavemat').val() + '" Descripcion="' + $('#txdescmat').val() + '"';
+                    xmlgrabamat += ' Cantidad = "' + $('#txcantmat').val() + '" cancobro = "' + $('#txcancob').val() + '"';
+                    xmlgrabamat += ' precobro = "' + $('#txctomat').val() + '" total = "' + ($('#txcancob').val()) * ($('#txctomat').val()) + '" ';
+                    xmlgrabamat += ' usuario="' + $('#idusuario').val() + '"';
+                    xmlgrabamat += ' idorden = "' + $('#idorden').val() + '"';
+                    xmlgrabamat += ' idalmacen = "' + $('#idalmacen').val() + '"';
+                    xmlgrabamat += ' cantidadUtilizada = "' + $('#txcantmatUso').val() + '"';
+                    xmlgrabamat += ' unidad = "' + $('#id_Unidad').val() + '" /></ListaMaterial > ';
+                    
+                   
+                    if (Autosuministrado) {
 
-                    $('#tbmatutil').delegate("tr .tbborrar", "click", function () {
-                        xmlgrabamat = '<ListaMaterial><material id="1" idorden="' + $('#idorden').val() + '" Clave="' + $('#txclavemat').val() + '" Descripcion="' + $(this).closest('tr').find('td').eq(1).text() + '"  /></ListaMaterial>';
-                        var xmlgraba = '<Movimiento> <salida documento="8" almacen1="0" factura= "0"';
-                        xmlgraba += ' cliente="' + $('#idcliente').val() + '" almacen="' + $('#idalmacen').val() + '"';
-                        xmlgraba += ' orden="' + $('#idorden').val() + '" usuario="' + $('#idusuario').val() + '"/>'
-                        xmlgraba += '<pieza clave="' + $(this).closest('tr').find('td').eq(0).text() + '" cantidad="' + parseFloat($(this).closest('tr').find('td').eq(2).text()) + '"';
-                        xmlgraba += ' precio="' + parseFloat($(this).closest('tr').find('td').eq(3).text()) + '"/>';
-                        //xmlgraba += ' reqlinea="' + $(this).closest('tr').find('td').eq(8).text() + '"/>'                       
-                        xmlgraba += '</Movimiento>';
-                        var xmlgrabaentrada = '<Movimiento> <salida documento="8" almacen1="0" factura="0"';
-                        xmlgrabaentrada += ' cliente="' + $('#idcliente').val() + '" almacen="' + $('#idalmacen').val() + '"';
-                        xmlgrabaentrada += ' orden="' + $('#idorden').val() + '" usuario="' + $('#idusuario').val() + '"/>'
-                        xmlgrabaentrada += '<pieza clave="' + $('#txclavemat').val() + '" cantidad="' + $('#txcancob').val() + '"';
-                        xmlgrabaentrada += ' precio="' + $('#txctomat').val() + '"/>';
-                        xmlgrabaentrada += '</Movimiento>';
-                        //alert(xmlgraba);
-                        //alert(xmlgrabaentrada);
-                        PageMethods.guardamat(xmlgrabamat, function (res) {
-                            PageMethods.guardaentrada(xmlgrabaentrada, function (res) {
-                                closeWaitingDialog();
-                                //alert('Registro completo');
-                            }, iferror);
-                            //alert('elimina');
+                        var xmlEntrada_Almacen = '<Movimiento> <salida documento="3" almacen1="0" factura="0"';//documento="3" ENTRADA
+                        xmlEntrada_Almacen += ' cliente="' + $('#idcliente').val() + '" almacen="' + $('#idalmacen').val() + '"';
+                        xmlEntrada_Almacen += ' orden="' + $('#idorden').val() + '" usuario="' + $('#idusuario').val() + '"/>'
+                        xmlEntrada_Almacen += '<pieza clave="' + $('#txclavemat').val() + '"';
+                        xmlEntrada_Almacen += ' cantidad = "' + $('#txcantmat').val() + '"';
+                        xmlEntrada_Almacen += ' precio="' + $('#txctomat').val() + '"/>';
+                        xmlEntrada_Almacen += '</Movimiento>';
+
+                        var xmlSalida_Almacen = '<Movimiento> <salida documento="8" almacen1="0" factura="0"';//documento="8" Salida
+                        xmlSalida_Almacen += ' cliente="' + $('#idcliente').val() + '" almacen="' + $('#idalmacen').val() + '"';
+                        xmlSalida_Almacen += ' orden="' + $('#idorden').val() + '" usuario="' + $('#idusuario').val() + '"/>'
+                        xmlSalida_Almacen += '<pieza clave="' + $('#txclavemat').val() + '"';
+                        xmlSalida_Almacen += ' cantidad = "' + $('#txcantmatUso').val() + '"';//la cantidad utilizada
+                        xmlSalida_Almacen += ' precio="' + $('#txctomat').val() + '"/>';
+                        xmlSalida_Almacen += '</Movimiento>';
+
+                        PageMethods.EntradaSalida_Almacen(xmlgrabamat,xmlEntrada_Almacen,xmlSalida_Almacen, function (res) {
+                            if (res != 'Ok') alert(res);
+                            else SetLineMaterial();
                         }, iferror);
-                        $(this).parent().eq(0).parent().eq(0).remove();
-                    });
-                    limpiapieza();
+
+                    }
+                    else {
+
+                        var xmlgrabasalida = '<Movimiento> <salida documento="8" almacen1="0" factura="0"';//documento="8" SALIDA
+                        xmlgrabasalida += ' cliente="' + $('#idcliente').val() + '" almacen="' + $('#idalmacen').val() + '"';
+                        xmlgrabasalida += ' orden="' + $('#idorden').val() + '" usuario="' + $('#idusuario').val() + '"/>'
+                        xmlgrabasalida += '<pieza clave="' + $('#txclavemat').val() + '" cantidad="' + $('#txcantmat').val() + '"';
+                        xmlgrabasalida += ' precio="' + $('#txctomat').val() + '"/>';
+                        xmlgrabasalida += '</Movimiento>';
+
+                        PageMethods.guardaMatSalida(xmlgrabamat, xmlgrabasalida, function (res) {
+                            if (res != 'Ok') alert(res);
+                            else SetLineMaterial();
+                        }, iferror);
+
+                    }
+                    
                 }
             });
+
+            function SetLineMaterial(){
+                var linea = '<tr><td colspan="2">' + $('#txclavemat').val() + '</td>';
+                linea += '<td>' + $('#txdescmat').val() + '</td>';
+                linea += '<td>' + $('#txcantmat').val() + '</td>';
+                linea += '<td>' + $('#txunidad').val() + '</td>';
+                linea += '<td>' + $('#txctomat').val() + '</td>';
+                linea += '<td>' + $('#txcancob').val() + '</td>';
+                linea += '<td>' + Math.round($('#txcosto').val() * 100) / 100 + '</td>'; //se redondea a dos digitos
+                linea += '<td>' + $('#txcantmatUso').val() + '</td>';
+                linea += '<td><input type="button" value="Quitar" class="btn btn-danger tbborrar"/></td></tr>';
+                $('#tbmatutil tbody').append(linea);
+
+
+                $('.tbborrar').off("click").on("click", function () {
+                /*$('#tbmatutil').delegate("tr .tbborrar", "click", function () {*/
+
+                    xmlgrabamat = '<ListaMaterial><material id="1" idorden="' + $('#idorden').val() + '"';
+                    xmlgrabamat += ' Clave = "' + $(this).closest('tr').find('td').eq(0).text() + '"';
+                    xmlgrabamat += ' Descripcion = "' + $(this).closest('tr').find('td').eq(1).text() + '" />';
+                    xmlgrabamat += ' </ListaMaterial > ';
+
+                    //'Por Almacen'
+                    if ($(this).closest('tr').find('td').eq(0).text() != "" && ($(this).closest('tr').find('td').eq(7).text() == "" || parseFloat($(this).closest('tr').find('td').eq(7).text())===0)) {
+                        var xmlEntrada_Almacen = '<Movimiento> <salida documento="5" almacen1="0" factura= "0"';
+                        xmlEntrada_Almacen += ' cliente="' + $('#idcliente').val() + '"';
+                        xmlEntrada_Almacen += ' almacen = "' + $('#idalmacen').val() + '"';
+                        xmlEntrada_Almacen += ' orden="' + $('#idorden').val() + '"';
+                        xmlEntrada_Almacen += ' usuario="' + $('#idusuario').val() + '"/>'
+                        xmlEntrada_Almacen += '<pieza clave="' + $(this).closest('tr').find('td').eq(0).text() + '"';
+                        xmlEntrada_Almacen += ' cantidad="' + parseFloat($(this).closest('tr').find('td').eq(7).text()) + '"';
+                        xmlEntrada_Almacen += ' precio="' + parseFloat($(this).closest('tr').find('td').eq(4).text()) + '"/>';
+                        xmlEntrada_Almacen += '</Movimiento>';
+                        PageMethods.guardaentrada(xmlgrabamat,xmlgrabaentrada, function (res) { closeWaitingDialog(); }, iferror);
+                    }//Auto suministrado
+                    else if ($(this).closest('tr').find('td').eq(0).text() != "" && $(this).closest('tr').find('td').eq(7).text() != "") {
+
+                        var xmlEntrada_Almacen = '<Movimiento> <salida documento="5" almacen1="0" factura= "0"';
+                        xmlEntrada_Almacen += ' cliente="' + $('#idcliente').val() + '"';
+                        xmlEntrada_Almacen += ' almacen = "' + $('#idalmacen').val() + '"';
+                        xmlEntrada_Almacen += ' orden="' + $('#idorden').val() + '"';
+                        xmlEntrada_Almacen += ' usuario="' + $('#idusuario').val() + '"/>'
+                        xmlEntrada_Almacen += '<pieza clave="' + $(this).closest('tr').find('td').eq(0).text() + '"';
+                        xmlEntrada_Almacen += ' cantidad="' + parseFloat($(this).closest('tr').find('td').eq(7).text()) + '"';
+                        xmlEntrada_Almacen += ' precio="' + parseFloat($(this).closest('tr').find('td').eq(4).text()) + '"/>';
+                        xmlEntrada_Almacen += '</Movimiento>';
+
+                        var xmlSalida_Almacen = '<Movimiento> <salida documento="4" almacen1="0" factura= "0"';
+                        xmlSalida_Almacen += ' cliente="' + $('#idcliente').val() + '"';
+                        xmlSalida_Almacen += ' almacen = "' + $('#idalmacen').val() + '"';
+                        xmlSalida_Almacen += ' orden="' + $('#idorden').val() + '"';
+                        xmlSalida_Almacen += ' usuario="' + $('#idusuario').val() + '"/>'
+                        xmlSalida_Almacen += '<pieza clave="' + $(this).closest('tr').find('td').eq(0).text() + '"';
+                        xmlSalida_Almacen += ' cantidad="' + parseFloat($(this).closest('tr').find('td').eq(2).text()) + '"';
+                        xmlSalida_Almacen += ' precio="' + parseFloat($(this).closest('tr').find('td').eq(4).text()) + '"/>';
+                        xmlSalida_Almacen += '</Movimiento>';
+
+                        PageMethods.Elimina_EntradaSalida_Almacen(xmlgrabamat, xmlEntrada_Almacen, xmlSalida_Almacen, function (res) {
+                            if (res != 'Ok') alert(res);
+                            else closeWaitingDialog();
+                        }, iferror);
+
+                    }//Por Cliente
+                    else PageMethods.guardamat(xmlgrabamat, function (res) { }, iferror);
+
+                    $(this).parent().eq(0).parent().eq(0).remove();
+                });
+
+
+                limpiapieza();
+            }
 
             $('#txfecejec').change(function () {
                // Acción a realizar cuando el valor del campo de texto cambia
@@ -457,34 +551,50 @@
             });
 
             $('#btagregacliente').on('click', function () {
-                
-                if (validamaterialcl()) {
-                    
-                    var linea = '<tr><td colspan="2"></td><td>' + $('#txdescmaterial').val() + '</td> <td>' + $('#txcantidad').val() + '</td><td>' + $('select[name="unidad"] option:selected').text()  + '</td>';
-                    linea += '<td></td><td></td><td></td><td></td>';
-                    linea += '<td><input type="button" value="Quitar" class="btn btn-danger tbborrar"/></td> ';
-                    linea += '</tr > ';
-                    //alert(linea);
-                    $('#tbmatutil tbody').append(linea);
-                    xmlgrabamat = '<ListaMaterial><material id="0"  Clave="" Descripcion="' + $('#txdescmaterial').val() + '" Cantidad = "' + $('#txcantidad').val() + '" ';
-                    xmlgrabamat += '  Costo = "" cancobro = "" precobro = "" total = "" usuario="' + $('#idusuario').val() + '"  unidad="' + $('#dlunidad').val() + '"';
-                    xmlgrabamat += ' idorden = "' + $('#idorden').val() + '" idalmacen = "" /> </ListaMaterial> ';
-                    //alert(xmlgrabamat);
-                    PageMethods.guardamat(xmlgrabamat, function (res) {
-                        //alert('guardado');
 
-                    }, iferror);
+                try {
+                    if (validamaterialcl()) {
 
-                    $('#tbmatutil').delegate("tr .tbborrar", "click", function () {
-                        xmlgrabamat = '<ListaMaterial><material id="1" idorden="' + $('#idorden').val() + '" Clave="' + $('#txclavemat').val() + '" Descripcion="' + $(this).closest('tr').find('td').eq(1).text() + '"  /></ListaMaterial>';
-                        //alert(xmlgrabaemp);
+
+                        var linea = '<tr><td colspan="2"></td>';
+                        /*linea += '<td></td>';//$('#txclavemat').val()*/
+                        linea += '<td>' + $('#txdescmaterial').val() + '</td>';
+                        linea += '<td>' + $('#txcantidad').val() + '</td>'
+
+                        var textoSeleccionado =""
+                        if ($('#dlunidad').val()!="0") textoSeleccionado = $('#dlunidad option:selected').text();
+
+                        linea += '<td> ' + textoSeleccionado + '</td > ';
+
+                        linea += '<td></td>';//' + $('#txctomat').val() + '
+                        linea += '<td></td>';//' + $('#txcancob').val() + '
+                        linea += '<td></td>';//' + $('#txcosto').val() + '
+                        linea += '<td></td>';//' + $('#txcantmatUso').val() + '
+
+                        linea += '<td><input type="button" value="Quitar" class="btn btn-danger tbborrar"/></td> ';
+                        linea += '</tr > ';
+
+                        $('#tbmatutil tbody').append(linea);
+                        xmlgrabamat = '<ListaMaterial><material id="0"  Clave="" Descripcion="' + $('#txdescmaterial').val() + '" Cantidad = "' + $('#txcantidad').val() + '" ';
+                        xmlgrabamat += '  Costo = "" cancobro = "" precobro = "" total = "" usuario="' + $('#idusuario').val() + '"  unidad="' + $('#dlunidad').val() + '"';
+                        xmlgrabamat += ' idorden = "' + $('#idorden').val() + '" idalmacen = "" /> </ListaMaterial> ';
                         PageMethods.guardamat(xmlgrabamat, function (res) {
-                            //alert('elimina');
+                            //alert('guardado');
                         }, iferror);
-                        $(this).parent().eq(0).parent().eq(0).remove();
-                    });
-                    limpiapieza();
+
+                        $('.tbborrar').off("click").on("click", function () {
+                        /*$('#tbmatutil').delegate("tr .tbborrar", "click", function () {*/
+                            xmlgrabamat = '<ListaMaterial><material id="1" idorden="' + $('#idorden').val() + '" Clave="' + $('#txclavemat').val() + '" Descripcion="' + $(this).closest('tr').find('td').eq(1).text() + '"  /></ListaMaterial>';
+                            PageMethods.guardamat(xmlgrabamat, function (res) {
+                            }, iferror);
+                            $(this).parent().eq(0).parent().eq(0).remove();
+                        });
+                        limpiapieza();
+                    }
                 }
+                     catch (err) {
+                        alert(err.message)
+                    }
             });
             
             $('#btagregaemp').on('click', function () {
@@ -569,7 +679,7 @@
                         xmlgraba += ' <alcance idalc="' + $(this).closest('tr').find('td').eq(0).text() + '" />';
                     });
                     xmlgraba += '</orden> ';
-                    alert(xmlgraba);
+                    //alert(xmlgraba);
                     
                     PageMethods.guarda(xmlgraba, '', '', function (res) {
                         closeWaitingDialog();
@@ -603,6 +713,8 @@
             $('#BotonSalir').on('click', function () {
                 self.close();
             });
+
+
         });
 
         function SoloLectura() {
@@ -647,10 +759,25 @@
 
 
         function buscam() {
-            if ($('#idalmacen').val() != '') {
-                //if ($('#txbusca3').val() != '') { si no hay criterio de busqueda que traiga los primeros 50 registros
+            var auxAlmacen = '';
+            if (!Autosuministrado) {//Suministrado por almacen
+                if ($('#idalmacen').val() == '') {
+                    alert('Debe elegir un almacen');
+                    return;
+                }
+                else {
+                    auxAlmacen = $('#idalmacen').val();
+                }
+
+            } else {
+                //alert('Productos de catalogo');//Suministrado por catalogo de productos
+                auxAlmacen = '-1';
+            }
+
+            
+
                     $('#tbbusca3 tbody tr').remove();
-                    PageMethods.material($('#txbusca3').val(), $('#idalmacen').val(), function (res) {
+            PageMethods.material($('#txbusca3').val(), auxAlmacen, function (res) {
                         var ren = $.parseHTML(res);
                         $('#tbbusca3').append(ren);
 
@@ -670,8 +797,7 @@
                         else alert('No se encontraron registros con ese criterio de busqueda.');
 
                     }, iferror);
-                //} else alert('Debes de colocar un criterio de busqueda.');
-            } else alert('Debes elegir un almacen');
+            
         }
 
         function btbusalm() {
@@ -1045,37 +1171,74 @@
                         var lista = '<tr>';
                         //alert(opcion);
                         for (var list = 0; list < opt.length; list++) {
-                            lista += '<tr><td colspan="2">' + opt[list].clave + '</td><td>' + opt[list].desc + '</td><td>' + opt[list].cant + '</td><td>';
-                            lista += opt[list].uni + '</td><td> ' + opt[list].costo + '</td><td>' + opt[list].cantcob + '</td><td>' + opt[list].precio + '</td>';
-                            lista += '<td>' + opt[list].total + '</td><td><input type="button" value="Quitar" class="btn btn-danger tbborrar"/></td></tr>';
+                            lista += '<tr><td colspan="2">' + opt[list].clave + '</td>';
+                            lista += '<td>' + opt[list].desc + '</td>';
+                            lista += '<td>' + opt[list].cant + '</td>';
+                            lista += '<td>' + opt[list].uni + '</td>';
+                            lista += '<td>' + opt[list].costo + '</td>';
+                            lista += '<td>' + opt[list].cantcob + '</td>';
+                            
+                            lista += '<td>' + opt[list].total + '</td>';
+                            lista += '<td>' + opt[list].cantidadUtilizada + '</td>';
+                            lista += '<td><input type="button" value="Quitar" class="btn btn-danger tbborrar" /></td></tr > ';
                         }
                         lista += '</tr>';
                         //alert(lista);
                         $('#tbmatutil tbody tr').remove();
                         $('#tbmatutil tbody').append(lista);
+
                         if ($('#idstatus').val() == 3 || $('#idstatus').val() == 4) $('.tbborrar').prop("disabled", true); //estatus cerrado o cancelado; evitar cambios en la OT
                         cambioalmacen();
-                        $('#tbmatutil').delegate("tr .tbborrar", "click", function () {
+
+
+                        $('.tbborrar').on( "click", function () {
+                        /*$('#tbmatutil').delegate("tr .tbborrar", "click", function () {*/
                             xmlgrabamat = '<ListaMaterial><material id="1" idorden="' + $('#idorden').val() + '" Clave="' + $(this).closest('tr').find('td').eq(0).text() + '" Descripcion="' + $(this).closest('tr').find('td').eq(1).text() + '"  /></ListaMaterial>';
-                            var xmlgraba = '<Movimiento> <salida documento="8" almacen1="0" factura= "0"';
-                            xmlgraba += ' cliente="' + $('#idcliente').val() + '" almacen="' + $('#idalmacen').val() + '"';
-                            xmlgraba += ' orden="' + $('#idorden').val() + '" usuario="' + $('#idusuario').val() + '"/>'
-                            xmlgraba += '<pieza clave="' + $(this).closest('tr').find('td').eq(0).text() + '" cantidad="' + parseFloat($(this).closest('tr').find('td').eq(2).text()) + '"';
-                            xmlgraba += ' precio="' + parseFloat($(this).closest('tr').find('td').eq(4).text()) + '"/>';
-                            //xmlgraba += ' reqlinea="' + $(this).closest('tr').find('td').eq(8).text() + '"/>'
+                            
+                            //'Por Almacen'
+                            if ($(this).closest('tr').find('td').eq(0).text() != "" && ($(this).closest('tr').find('td').eq(7).text() == "" || parseFloat($(this).closest('tr').find('td').eq(7).text()) === 0)) {
+                                var xmlgrabaentrada = '<Movimiento> <salida documento="5" almacen1="0" factura= "0"';
+                                xmlgrabaentrada += ' cliente="' + $('#idcliente').val() + '"';
+                                xmlgrabaentrada += ' almacen = "' + $('#idalmacen').val() + '"';
+                                xmlgrabaentrada += ' orden="' + $('#idorden').val() + '"';
+                                xmlgrabaentrada += ' usuario="' + $('#idusuario').val() + '"/>'
+                                xmlgrabaentrada += '<pieza clave="' + $(this).closest('tr').find('td').eq(0).text() + '"';
+                                xmlgrabaentrada += ' cantidad="' + parseFloat($(this).closest('tr').find('td').eq(2).text()) + '"';
+                                xmlgrabaentrada += ' precio="' + parseFloat($(this).closest('tr').find('td').eq(4).text()) + '"/>';
+                                xmlgrabaentrada += '</Movimiento>';
 
-                            xmlgraba += '</Movimiento>';
+                                PageMethods.guardaentrada(xmlgrabamat, xmlgrabaentrada, function (res) { closeWaitingDialog(); }, iferror);
+                            }//Auto suministrado
+                            else if ($(this).closest('tr').find('td').eq(0).text() != "" && parseFloat($(this).closest('tr').find('td').eq(7).text()) != "") {
 
-                            console.log(xmlgrabamat);
-                            console.log(xmlgraba);
+                                var xmlEntrada_Almacen = '<Movimiento> <salida documento="5" almacen1="0" factura= "0"';
+                                xmlEntrada_Almacen += ' cliente="' + $('#idcliente').val() + '"';
+                                xmlEntrada_Almacen += ' almacen = "' + $('#idalmacen').val() + '"';
+                                xmlEntrada_Almacen += ' orden="' + $('#idorden').val() + '"';
+                                xmlEntrada_Almacen += ' usuario="' + $('#idusuario').val() + '"/>'
+                                xmlEntrada_Almacen += '<pieza clave="' + $(this).closest('tr').find('td').eq(0).text() + '"';
+                                xmlEntrada_Almacen += ' cantidad="' + parseFloat($(this).closest('tr').find('td').eq(7).text()) + '"';
+                                xmlEntrada_Almacen += ' precio="' + parseFloat($(this).closest('tr').find('td').eq(4).text()) + '"/>';
+                                xmlEntrada_Almacen += '</Movimiento>';
 
-                            PageMethods.guardamat(xmlgrabamat, function (res) {
-                                //alert('elimina');
-                                PageMethods.guardaentrada(xmlgraba, function (res) {
-                                    closeWaitingDialog();
-                                    //alert('Registro completo');                                    
+                                var xmlSalida_Almacen = '<Movimiento> <salida documento="4" almacen1="0" factura= "0"';
+                                xmlSalida_Almacen += ' cliente="' + $('#idcliente').val() + '"';
+                                xmlSalida_Almacen += ' almacen = "' + $('#idalmacen').val() + '"';
+                                xmlSalida_Almacen += ' orden="' + $('#idorden').val() + '"';
+                                xmlSalida_Almacen += ' usuario="' + $('#idusuario').val() + '"/>'
+                                xmlSalida_Almacen += '<pieza clave="' + $(this).closest('tr').find('td').eq(0).text() + '"';
+                                xmlSalida_Almacen += ' cantidad="' + parseFloat($(this).closest('tr').find('td').eq(2).text()) + '"';
+                                xmlSalida_Almacen += ' precio="' + parseFloat($(this).closest('tr').find('td').eq(4).text()) + '"/>';
+                                xmlSalida_Almacen += '</Movimiento>';
+
+                                PageMethods.Elimina_EntradaSalida_Almacen(xmlgrabamat, xmlEntrada_Almacen, xmlSalida_Almacen, function (res) {
+                                    if (res != 'Ok') alert(res);
+                                    else closeWaitingDialog();
                                 }, iferror);
-                            }, iferror);
+
+                            }//Por Cliente
+                            else PageMethods.guardamat(xmlgrabamat, function (res) { }, iferror);
+                            
                             $(this).parent().eq(0).parent().eq(0).remove();
                         });
                       
@@ -1220,7 +1383,7 @@
         }
         function oculta() {
             $('#dvtrabajosejec').hide();
-            $('#dvmateriales').hide();
+            //$('#dvmateriales').hide();
             $('#dvpersonal').hide();
             $('#dvfotos').hide();
             $('#dvevidencia').hide();
@@ -1310,13 +1473,22 @@
                 return false;
             }
 
-            if (parseFloat($('#txcantdis').val(), 2) < parseFloat($('#txcantmat').val(), 2)) {
+            if (!Autosuministrado && parseFloat($('#txcantdis').val(), 2) < parseFloat($('#txcantmat').val(), 2)) {
                 alert('La Cantidad capturada supera el disponible de inventario, no puede continuar');
                 return false;
             }
+
+            if (Autosuministrado) {
+                if (parseFloat($('#txcantmatUso').val(), 2) === 0) {
+                    alert('La cantidad utilizada de material debe ser mayor a 0');
+                    $('#txcantmatUso').focus();
+                    return false;
+                }
+            }
+
             for (var x = 0; x < $('#tbmatutil tbody tr').length; x++) {
                 if ($('#tbmatutil tbody tr').eq(x).find('td').eq(0).text() == $('#txclavemat').val()) {
-                    alert('El Material que esta seleccionado ya esta registrado no puede duplicar');
+                    alert('El Material que esta seleccionado ya esta registrado, no puede duplicar');
                     return false;
                 }
             }
@@ -1325,12 +1497,23 @@
         function validamaterialcl() {
             if (isNaN($('#txcantidad').val()) == true || $('#txcantidad').val() == '') {
                 alert('Debe capturar la Cantidad del Material');
+                $('#txcantidad').focus();
                 return false;
             }
-            if ($('#txdescmaterial').val() == '') {
+            else if ($('#txdescmaterial').val() == '') {
                 alert('Debe capturar la Descripcion del Material');
+                $('#txdescmaterial').focus();
                 return false;
             }
+
+            else if ($('#dlunidad').val() == "0") {
+                alert('Debe Selecionar la unidad');
+                $('#dlunidad').focus();
+                return false;
+            }
+
+
+
             return true;
         }
         function validaempleado() {
@@ -1355,29 +1538,38 @@
                 
                 var fileup = $('#txfileload').get(0);
                 var files = fileup.files;
+                var misArchivos = [];
 
                 var ndt = new FormData();
                 for (var i = 0; i < files.length; i++) {
                     ndt.append(files[i].name, files[i]);
+                    misArchivos.push(files[i].name);
                 }
-                ndt.append('nmr', res);
-                $.ajax({
-                    url: '../GH_UpOT.ashx',
-                    type: 'POST',
-                    data: ndt,
-                    contentType: false,
-                    processData: false,
-                    success: function (res) {
-                        PageMethods.actualiza($('#txfolio').val(), res, function (res) {
-                            cargafotos($('#txfolio').val());
-                            closeWaitingDialog();
-                        }, iferror);
-                    },
-                    error: function (err) {
-                        alert(err.statusText);
+                ndt.append('ot', $('#txfolio').val());
+
+                PageMethods.validaFile(misArchivos, $('#txfolio').val(), function (res) {
+                    if (res != 'Ok') {
+                        alert(res);
+                        return;
                     }
-                });
-                
+                    else {
+                        $.ajax({
+                                url: '../GH_UpOT.ashx',
+                                type: 'POST',
+                                data: ndt,
+                                contentType: false,
+                                processData: false,
+                            success: function (res) {
+
+                                    PageMethods.actualiza($('#txfolio').val(), res, function (res) {
+                                        cargafotos($('#txfolio').val());
+                                        closeWaitingDialog();
+                                    }, iferror);
+                                },
+                                error: function (err) { alert(err.statusText); }
+                        });
+                    }
+                }, iferror);
             }
         }
         function cargafotos(orden) {
@@ -1394,6 +1586,8 @@
             $('#txclavemat').val('');
             $('#txdescmat').val('');
             $('#txcantmat').val('');
+            $('#txcantmatUso').val('');
+            
             $('#txctomat').val('');
             $('#txcancob').val('');
             $('#txcosto').val('');
@@ -1688,125 +1882,89 @@
                                     </div>
                                 </div>
                             </div>
-                            <div id="dvmaterialesbatia" class="tab-content col-md-10">                                
-                                <div class="row">
-                                    <div class="row">
-                                        <div class="col-md-1" style="text-align:right">
-                                            <label class="float-right" for="txalmacen">Almacén</label>
-                                        </div>
-                                        <div class="col-md-1">
-                                            <input type="text" id="txalmacen" class="form-control" />
-                                        </div>
-                                        <div class="col-md-1" style="text-align:center">
-                                            <input type="button" class="btn btn-primary" value="Buscar" id="btalmacen" />
-                                        </div>
-                                        <div class="col-md-2">
-                                            <input type="text" id="txalmnom" class="form-control" />
-                                        </div>
-                                        <div class="col-md-1" style="text-align:center"></div>
-                                       <%-- <div class="col-md">
-                                            <input type="button" class="btn puntero" value="ir a Orden Compra" id="btCrearOC" />
-                                        </div>--%>
-
-                                    </div>
-                                </div>
-                            </div>
+                           
                             <div id="dvmaterialesmenu" class="tab-content col-md-10">
                                 <div class="row">
-                                    <input type="button" class="btn btn-primary puntero" value="Suministrados por el Cliente" id="btsuministradocliente" />
-                                    <input type="button" class="btn btn-primary puntero" value="Suministrados por Almacen" id="btsuministradobatia" />
-                                    <%--<input type="button" class="btn btn-primary puntero" value="Suministrados por Compra directa" id="btAutosuministrado" />--%>
+                                    <div class="col-md-2"><input type="button" class="btn btn-primary puntero" value="Suministrados por el Cliente" id="btsuministradocliente" /></div>
+                                    <div class="col-md-2"><input type="button" class="btn btn-primary puntero" value="Suministrados por Almacen" id="btsuministradobatia" /></div>
+                                    <div class="col-md-2"><input type="button" class="btn btn-primary puntero" value="Suministrados por Compra directa" id="btAutosuministrado" /></div>
                                 </div>
 
-                            </div>
-
-                            <div id="dvmateriales" class="tab-content col-md-10">  
-                                <div class="row"></div>
-                                <div class="row">
-                                    
+                                <div id="dvmaterialesbatia" style="padding:10px" >
+                                    <div class="col-md-1" style="text-align:right">
+                                            <label class="float-right" for="txalmacen">Almacén:</label>
+                                        </div>
+                                        <div class="col-md-3" style="text-align:center">
+                                            <input type="text" id="txalmnom" class="form-control" style="width:100%"/>
+                                        </div>
+                                        <div class="col-md-1" >
+                                            <input type="button" class="btn btn-primary" value="Buscar" id="btalmacen" />
+                                        </div>
+                                        <div class="col-md-1">
+                                            <input type="text" id="txalmacen" class="form-control" style="display:none"/>
+                                        </div>
                                 </div>
-                                <%--<div id="tbmat" class="container">                            
-                                <div>                                
-                                    <div id="tbmatc" class="tbheader">
-                                        <table id="tbmatuti" class="table table-condensed" >
-                                            <thead>
-                                                <tr>
-                                                    <th class="bg-light-blue-gradient"><span>Cantidad</span></th>
-                                                    <th class="bg-light-blue-gradient"><span>Descripción</span></th>
-                                                    <th class="bg-light-blue-gradient"></th>
-                                                </tr>
-                                                <tr>                                                                                        
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
-                        </div>--%>
-                            </div>
 
-                            
+                                <div id="tbmateriales" >
+                                        <div id="tbmaterial" class="tbheader" style="width:100%">
+                                                <table id="tbmatutil" class="table table-condensed"  style="width:99%">
+                                                    <thead>
+                                                        <tr>
+                                                            <th class="bg-light-blue-gradient"><span>Clave</span></th>
+                                                            <td class="bg-light-blue-gradient"></td>
+                                                            <th class="bg-light-blue-gradient"><span>Descripción</span></th>
+                                                            
+                                                            
 
-                            <div id="tbmateriales" class="tab-content col-md-10">
-                                <br />
-                                <div>
-                                    <div id="tbmaterial" class="tbheader">
-                                        <table id="tbmatutil" class="table table-condensed">
-                                            <thead>
-                                                <tr>
-                                                    <th class="bg-light-blue-gradient"><span>Clave</span></th>
-                                                    <td class="bg-light-blue-gradient"></td>
-                                                    <th class="bg-light-blue-gradient"><span>Descripción</span></th>
-                                                    <th class="bg-light-blue-gradient"><span>Cantidad</span></th>
-                                                    <th class="bg-light-blue-gradient"><span>Unidad</span></th>
-                                                    <th class="bg-light-blue-gradient"><span>Costo Unitario</span></th>
-                                                    <th class="bg-light-blue-gradient"><span>Cant. a cobrar</span></th>
-                                                    <th class="bg-light-blue-gradient"><span>Costo</span></th>
-                                                    <th class="bg-light-blue-gradient"></th>
-                                                </tr>
-                                                <tr>
-                                                    <asp:HiddenField ID="txcantdis" runat="server" />
-                                                    <asp:HiddenField ID="id_Unidad" runat="server" />
-                                                    <td class="col-xs-1">
-                                                        <input type="text" id="txclavemat" class="form-control" /></td>
-                                                    <td class="col-xs-1">
-                                                        <input type="button" class="btn btn-primary" value="Buscar" id="btmaterial" /></td>
-                                                    <td class="col-xs-2">
-                                                        <input type="text" id="txdescmat" class="form-control" /></td>
-                                                    <td class="col-xs-1">
-                                                        <input type="text" id="txcantmat" class="form-control" /></td>
-                                                    <td class="col-xs-1"><input type="text" id="txunidad" class="form-control" /></td>
-                                                    <td class="col-xs-1">
-                                                        <input type="text" id="txctomat" class="form-control" /></td>
-                                                    <td class="col-xs-1">
-                                                        <input type="text" id="txcancob" class="form-control" /></td>
-                                                    <td class="col-xs-1">
-                                                        <input type="text" id="txcosto" class="form-control" /></td>
-                                                    <td class="col-xs-1">
-                                                        <input type="button" class="btn btn-success" value="Agregar" id="btagrega" /></td>
-                                                </tr>
-                                                <tr>
+                                                            <th class="bg-light-blue-gradient"><span>Cantidad</span></th>
+                                                            <th class="bg-light-blue-gradient"><span>Unidad</span></th>
+                                                            <th class="bg-light-blue-gradient"><span>Costo Unitario</span></th>
+                                                            <th class="bg-light-blue-gradient"><span>Cant. a cobrar</span></th>
+                                                            <th class="bg-light-blue-gradient"><span>Costo</span></th>
+                                                            <th class="bg-light-blue-gradient" ><span>Cant Utilizada</span></th>
+                                                            <th class="bg-light-blue-gradient"></th>
+                                                        </tr>
+                                                        <tr>
+                                                            <asp:HiddenField ID="txcantdis" runat="server" />
+                                                            <asp:HiddenField ID="id_Unidad" runat="server" />
+                                                            <td class="col-xs-1">
+                                                                <input type="text" id="txclavemat" class="form-control" /></td>
+                                                            <td class="col-xs-1">
+                                                                <input type="button" class="btn btn-primary" value="Buscar" id="btmaterial" /></td>
+                                                            <td class="col-xs-2">
+                                                                <input type="text" id="txdescmat" class="form-control" /></td>
+                                                            <td class="col-xs-1">
+                                                                <input type="text" id="txcantmat" class="form-control" /></td>
+                                                            
+                                                            <td class="col-xs-1"><input type="text" id="txunidad" class="form-control" /></td>
+                                                            <td class="col-xs-1"><input type="text" id="txctomat" class="form-control" /></td>
+                                                            <td class="col-xs-1"><input type="text" id="txcancob" class="form-control" /></td>
+                                                            <td class="col-xs-1"><input type="text" id="txcosto" class="form-control" /></td>
+                                                            <td class="col-xs-1 "><input type="text" id="txcantmatUso" class="form-control CanUso" /></td>
+                                                            <td class="col-xs-1"><input type="button" class="btn btn-success" value="Agregar" id="btagrega" /></td>
+                                                        </tr>
+                                                        <tr>
                                                     
-                                                    <td class="col-xs-1"></td>
-                                                    <td class="col-xs-1"></td>
-                                                    <td class="col-xs-2">
-                                                        <input type="text" id="txdescmaterial" class="form-control" /></td>
-                                                    <td class="col-xs-1">
-                                                        <input type="text" id="txcantidad" class="form-control" /></td>
-                                                    <td class="col-xs-1"><select name="unidad" id="dlunidad" class="form-control"></select></td>
-                                                    <td class="col-xs-1"></td>
-                                                    <td class="col-xs-1"></td>
-                                                    <td class="col-xs-1"></td>
-                                                    <td class="col-xs-1">
-                                                        <input type="button" class="btn btn-success" value="Agregar" id="btagregacliente" /></td>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                            </tbody>
-                                        </table>
-                                    </div>
+                                                            <td class="col-xs-1"></td><%--id="txclavemat"--%>
+                                                            <td class="col-xs-1"></td><%--id="btmaterial"--%>
+                                                            <td class="col-xs-2"><input type="text" id="txdescmaterial" class="form-control" /></td>
+                                                            <td class="col-xs-1"><input type="text" id="txcantidad" class="form-control" /></td>
+                                                            <td class="col-xs-1"><select name="unidad" id="dlunidad" class="form-control"></select></td>
+
+                                                            <td class="col-xs-1"></td><%--id="txctomat"--%>
+                                                            <td class="col-xs-1"></td><%--id="txcancob"--%>
+                                                            <td class="col-xs-1"></td><%--id="txcosto"--%>
+                                                            <td class="col-xs-1"></td><%--id="txcantmatUso"--%>
+                                                            <td class="col-xs-1"><input type="button" class="btn btn-success" value="Agregar" id="btagregacliente" /></td>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                    </tbody>
+                                                </table>
+                                            </div>
                                 </div>
+
+
                             </div>
 
                             <div id="dvpersonal" class="tab-content col-md-10">
