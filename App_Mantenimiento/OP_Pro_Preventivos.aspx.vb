@@ -166,7 +166,31 @@ Partial Class App_Mantenimiento_OP_Pro_Preventivos
         sql += "]"
         Return sql
     End Function
+    <Web.Services.WebMethod()>
+    Public Shared Function especialidades(ByVal id_programa As Int32, ByVal id_Tipo As Int32) As String
+        Dim myConnection As New SqlConnection((New Conexion).StrConexion)
+        Dim sqlbr As New StringBuilder
+        Dim sql As String = ""
 
+        'sqlbr.Append("Select a.id_especialidad, a.Descripcion, ISNULL(b.id_programa,0) AS id_programa From tb_tipomantenimientoe a left join tb_programaestructura_especialidad b on a.id_especialidad = b.id_especialidad and b.id_programa = " & id_programa & " where a.id_status = 1 and a.id_servicio = " & id_Tipo & "")
+        sqlbr.Append("Select id_especialidad, Descripcion, 0 AS id_programa From tb_tipomantenimientoe where id_status = 1 and id_servicio = " & id_Tipo & "")
+
+        Dim da As New SqlDataAdapter(sqlbr.ToString, myConnection)
+        Dim dt As New DataTable
+        da.Fill(dt)
+        sql = "["
+        If dt.Rows.Count > 0 Then
+            For x As Integer = 0 To dt.Rows.Count - 1
+                If x > 0 Then sql += ","
+                sql += "{id:'" & dt.Rows(x)("id_especialidad") & "'," & vbCrLf
+                sql += "desc:'" & dt.Rows(x)("descripcion") & "'," & vbCrLf
+                sql += "idProg:'" & dt.Rows(x)("id_programa") & "'}" & vbCrLf
+            Next
+        End If
+        sql += "]"
+        Return sql
+
+    End Function
 
     <Web.Services.WebMethod()>
     Public Shared Function gtTipo() As String
@@ -249,19 +273,44 @@ Partial Class App_Mantenimiento_OP_Pro_Preventivos
     End Function
 
     <Web.Services.WebMethod()>
-    Public Shared Function svPrograma(ByVal prm As String) As String
+    Public Shared Function svPrograma(ByVal prm As String, ByVal xmlgraba As String) As String
+
         Dim myConnection As New SqlConnection((New Conexion).StrConexion)
-        Dim cmd As New SqlCommand("sp_preventivo", myConnection)
-        cmd.CommandType = CommandType.StoredProcedure
-        cmd.Parameters.AddWithValue("@dta", prm)
-        Dim prmR As SqlParameter
-        prmR = New SqlParameter("@prg", 0)
-        prmR.Direction = ParameterDirection.Output
-        cmd.Parameters.Add(prmR)
         myConnection.Open()
-        cmd.ExecuteNonQuery()
+        Dim trans As SqlTransaction = myConnection.BeginTransaction
+        Dim folio As String
+
+        Try
+
+            Dim mycommand As New SqlCommand("sp_preventivo", myConnection, trans)
+            mycommand.CommandType = CommandType.StoredProcedure
+            mycommand.Parameters.AddWithValue("@dta", prm)
+
+            Dim prmR As New SqlParameter("@prg", "0")
+            prmR.Size = 10
+            prmR.Direction = ParameterDirection.Output
+            mycommand.Parameters.Add(prmR)
+            mycommand.ExecuteNonQuery()
+            folio = "1" & "|" & prmR.Value.ToString()
+
+            mycommand = New SqlCommand("sp_programaestructura_especialidad", myConnection, trans)
+            mycommand.CommandType = CommandType.StoredProcedure
+            mycommand.Parameters.AddWithValue("@xml_especialidad", xmlgraba)
+            mycommand.Parameters.AddWithValue("@id_programa", prmR.Value)
+            mycommand.ExecuteNonQuery()
+
+            trans.Commit()
+
+        Catch ex As Exception
+
+            trans.Rollback()
+            folio = "0" & "|" & ex.Message.ToString()
+
+        End Try
+
         myConnection.Close()
-        Return prmR.Value
+        Return folio
+
     End Function
 
     <Web.Services.WebMethod()>
@@ -635,7 +684,9 @@ Partial Class App_Mantenimiento_OP_Pro_Preventivos
         'Dim xdoc As New XmlDocument()
         'xdoc.LoadXml(prm)
 
+        Dim ds As DataSet
         Dim dt As DataTable
+
         Dim da As SqlDataAdapter
         Dim sql As String = ""
 
@@ -647,12 +698,26 @@ Partial Class App_Mantenimiento_OP_Pro_Preventivos
             sql += "inner join tb_tipomantenimiento b on a.id_servicio=b.id_servicio" & vbCrLf
             sql += "where a.id_programa = " & prm & " and a.id_status = 1;"
 
-            dt = New DataTable()
+            sql += "Select a.id_especialidad, a.Descripcion, ISNULL(b.id_programa,0) AS id_programa From tb_tipomantenimientoe a left join tb_programaestructura_especialidad b on a.id_especialidad = b.id_especialidad where a.id_status = 1 and b.id_programa = " & prm
+
+
+            ds = New DataSet()
             da = New SqlDataAdapter(sql, myConnection)
-            da.Fill(dt)
-            If dt.Rows.Count > 0 Then
-                sql = "{cmd: true, pro: " & dt.Rows(0)("id_cliente") & ", ser: " & dt.Rows(0)("id_servicio")
-                sql += ", per: " & dt.Rows(0)("id_programa") & ", sup: " & dt.Rows(0)("id_coordinador") & ", tipo: '" & dt.Rows(0)("descripcion") & "', estr: '" & dt.Rows(0)("estructura") & "'}"
+            da.Fill(ds)
+            If ds.Tables(0).Rows.Count > 0 Then
+                sql = "{cmd: true, pro: " & ds.Tables(0).Rows(0)("id_cliente") & ", ser: " & ds.Tables(0).Rows(0)("id_servicio")
+                sql += ", per: " & ds.Tables(0).Rows(0)("id_programa") & ", sup: " & ds.Tables(0).Rows(0)("id_coordinador") & ", tipo: '" & ds.Tables(0).Rows(0)("descripcion") & "', estr: '" & ds.Tables(0).Rows(0)("estructura") & "'"
+
+                sql += ", espe:"
+
+                If ds.Tables(1).Rows.Count > 0 Then
+                    sql += JsonConvert.SerializeObject(ds.Tables(1))
+                Else
+                    sql += "[]"
+                End If
+
+                sql += "}"
+
             Else
                 sql = "{cmd: false }"
             End If
@@ -674,6 +739,9 @@ Partial Class App_Mantenimiento_OP_Pro_Preventivos
             Else
                 sql = "{cmd: false}"
             End If
+
+
+
         End If
         Return sql
     End Function

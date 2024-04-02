@@ -53,6 +53,45 @@
         tr:nth-child(odd) {
           background-color: #ffffff;
         }
+
+            .dropdown {
+              position: relative;
+              display: inline-block;
+            }
+
+            .dropdown-toggleButton {
+              background-color:white;
+              border: 1px solid #ced4da;
+              padding: 8px 16px;
+              cursor: pointer;
+              height:33px;
+              width:197px;
+              text-align:left;
+            }
+
+            .dropdown-menu {
+              display: none;
+              position: absolute;
+              background-color: #fff;
+              min-width: 200px;
+              border: 1px solid #ced4da;
+              z-index: 1000;
+            }
+
+            .dropdown-menu.show {
+              display: block;
+              max-height:150px;
+              overflow-y:auto;
+            }
+
+            .checkboxes-container {
+              padding:5px;
+            }
+                        
+           /* button {
+              margin-top: 10px;
+            }*/
+
   </style>
 
     <script type="text/javascript">
@@ -63,6 +102,7 @@
         var idOt = 0; //variable que guarda el id de la OT, para las opciones del menu
 
         $(function () {
+           
             $('#hdpagpro').val(1);
             $('#dvgeneral').hide();
             $('#dvdetalle').hide();
@@ -111,8 +151,18 @@
             cuentapreventivos();
             cargatecnico();
             llenarSelect();
-                        
+
+            $('#dropdownMenuButton').on('click', function () {
+                if ($('#dltipo').val() != '0') $('.dropdown-menu').toggleClass('show');
+                else {
+                    alert('Antes debe seleccionar un tipo de orden');
+                    $('#dltipo').focus();
+                }
+
+            });
+
             $('#txbuscaTec').keypress(function (event) { if (event.which === 13) cargatecnicoDialog(); });
+
             $('#btbuscaTec').click(function () { cargatecnicoDialog(); });
 
 
@@ -225,6 +275,7 @@
                 cambio(1);
                 desbloquea();
                 $('#dvgeneral').show();
+                $('#select_especialidades').html('');
                 $('#dvconsulta').hide();
             });
             $('#btlista').click(function () {
@@ -245,6 +296,20 @@
                 var formula = '{tb_programaestructura.id_programa}  = ' + $('#hdprograma').val() + ' and {tb_ordentrabajo.id_status} in 1 to 3 and {tb_ordentrabajo.fregistro} in Date (' + ini + ') to Date (' + fin + ')  ';
                 window.open('../RptForAll.aspx?v_nomRpt=preventivos.rpt&v_formula=' + formula, '', 'width=850, height=600, left=80, top=120, resizable=no, scrollbars=no');
             });
+
+
+            $('#dltipo').on('change', function () {
+                carga_especialidades($('#dltipo').val());
+            });
+
+            
+            $('#ListaEspecialidades').mouseleave(function () {
+                setTimeout(function () {
+                    $('.dropdown-menu').removeClass('show');
+                }, 500);
+            });
+
+
         });
 
         function cargatecnicoDialog() {
@@ -289,8 +354,34 @@
                 if ($('#hdtipo').val() != 0) {
                     $('#dltipo').val($('#hdtipo').val());
                 }
+
+                //$('#dltipo').change(function () {
+                //    carga_especialidades($('#dltipo').val());
+                //});
+
             }, iferror);
+        }                    
+
+        function carga_especialidades(tipo) {
+            try {
+                if ($('#dltipo').val() != "0") {
+                    PageMethods.especialidades($('#hdprograma').val(), tipo, function (opcion) {
+
+                        var opt = eval('(' + opcion + ')');
+                        var lista = '';
+                        for (var list = 0; list < opt.length; list++) {
+                            lista += '<tr><td><input type="checkbox" ' + (opt[list].idProg != '0' ? ' checked="checked" ' : ' ') +'class="optEspecialidad" value="' + opt[list].id + '"/>&nbsp;</td>';
+                            lista += '<td>' + opt[list].desc + '</td></tr> ';
+                        }
+                        $('#select_especialidades').html(lista);
+                    }, iferror);
+                }
+            }
+            catch (error) {
+                alert('Se produjo un error:', error.message);
+            }
         }
+
         function cargatecnico() {
 
             try {
@@ -337,25 +428,35 @@
         }
         function svprograma() {
             if (valbusca()) {
-                var prm = `<Param cliente="${$('#dlcliente').val()}" ser="${$('#dltipo').val()}"`;
-                prm += ` id="${$('#hdprograma').val()}" user="${$('#idusuario').val()}"`;
-                prm += ` sup="${$('#dltecnico').val()}" estr="${$('#dlestructura').val()}" />`;
-                //alert(prm);
-                PageMethods.svPrograma(prm, function (res) {
-                    $('#txid').val(res)
-                    alert('Programa ' + res + ' generado.');
-                    $('#hdprograma').val(res)
-                    bloquea();
-                    muestra();
-                    //bots();
-                    /*alert(nw.prg);
-                    if (nw.prg == 0) {
-                        alert('El programa que deseas generar ya existe');
+                
+                var prm = '<Param cliente="' + $('#dlcliente').val() + '" ser="' + $('#dltipo').val() + '"';
+                prm += ' id="' + $('#hdprograma').val() + '" user="' + $('#idusuario').val() + '"';
+                prm += ' sup="' + $('#dltecnico').val() + '" estr="' + $('#dlestructura').val() + '" />';
+
+                var xmlgraba = '<Especialidades>';
+                xmlgraba += '<Param ser="' + $('#dltipo').val() + '" id="' + $('#hdprograma').val() + '" />';
+
+                $('.dropdown-menu input[type="checkbox"]').each(function () {
+                    if ($(this).prop('checked')) xmlgraba += '<Espe id_especialidad= "' + $(this).val() + '"/>';
+                });
+
+                xmlgraba += '</Especialidades>';
+
+                //alert(xmlgraba);
+
+                PageMethods.svPrograma(prm, xmlgraba, function (res) {
+
+                    if (res.split('|')[0] == '1') {
+                        $('#txid').val(res)
+                        alert('Programa ' + res.split('|')[1] + ' generado.');
+                        $('#hdprograma').val(res.split('|')[1]);
+                        bloquea();
+                        muestra();
                     }
                     else {
-                        $('#hdprograma').val(nw.prg);
-                        $('#lbfec').text($('#fecha').val());
-                    }*/
+                        alert(res.split('|')[1]);
+                    }
+                    
                 }, iferror);
             }
         }
@@ -391,6 +492,8 @@
             $('#dltecnico').prop("disabled", true);
             $('#btgenera').prop("disabled", true);
             $('#dlestructura').prop("disabled", true);
+            $('.optEspecialidad').prop("disabled", true);
+            
         }
         function desbloquea() {
             $('#dlcliente').prop("disabled", false);
@@ -804,6 +907,7 @@
             }, iferror);
         }
         function muestrapreventivos() {
+            try { 
             PageMethods.muestrapreventivos($('#hdpagpro').val(), $('#dlbusca').val(), $('#txbusca').val(), function (res) {
                 var ren = $.parseHTML(res);
                 $('#tblista tbody').remove();
@@ -825,15 +929,28 @@
                             $('#dltecnico').val(nw.sup);
                             //alert($("#fecha").val());  
                             $('#dlestructura').val(nw.estr);
+
+                            let lista='';
+                            for (var list = 0; list < nw.espe.length; list++) {
+                                lista += '<tr><td><input disabled="disabled" type="checkbox" ' + (nw.espe[list].id_programa != '0' ? ' checked="checked" ' : ' ') + 'class="optEspecialidad" value="' + nw.espe[list].id_especialidad + '"/>&nbsp;</td>';
+                                lista += '<td>' + nw.espe[list].Descripcion + '</td></tr> ';
+                            }
+                            $('#select_especialidades').html(lista);
+
                             muestra();
                             prgs();
                             bloquea();
-                        } else {
+                        }
+                        else {
                             alert("no paso");
                         }
                     }, iferror);
                 });
             }, iferror);
+            }
+             catch (error) {
+                alert('Se produjo un error:', error.message);
+            }
         }
         function asignapagina(np) {
             $('#paginacion li').removeClass("active");
@@ -956,7 +1073,7 @@
                                     <label for="txfuente">Buscar por:</label>
                                 </div>
                                 <div class="col-lg-2">
-                                    <select class="form-control" id="dlbusca">
+                                    <select class="form-control" id="dlbusca" >
                                         <option value="0">Seleccione...</option>
                                         <option value="b.nombre">Cliente</option>
                                         <option value="c.descripcion">Tipo de Orden</option>
@@ -1019,7 +1136,7 @@
                                 <div class="col-lg-2 text-right">
                                     <label for="dltipo">Tipo de Orden:</label>
                                 </div>
-                                <div class="col-lg-2">
+                                <div class="col-lg-3">
                                     <select id="dltipo" class="form-control"></select>
                                 </div>
                             </div>
@@ -1030,12 +1147,27 @@
                                 <div class="col-lg-2">
                                     <select id="dlcliente" class="form-control"></select>
                                 </div>
+
                                 <div class="col-lg-2 text-right">
-                                    <label for="dltecnico">Coordinador:</label>
+                                    <label for="dlregion">Especialidad(es)</label>
                                 </div>
-                                <div class="col-lg-2">
-                                    <select id="dltecnico" class="form-control"></select>
-                                </div>
+                                <div class="col-lg-3">
+
+                                    <div class="dropdown" style="width:100%">
+
+                                         <input type="button" class="dropdown-toggleButton" aria-haspopup="true" aria-expanded="false" value="Ver lista..." id="dropdownMenuButton" style="width:100%"/>
+                                          
+                                          <div class="dropdown-menu" aria-labelledby="dropdownMenuButton" id="ListaEspecialidades" style="width:100%">
+                                            <div class="checkboxes-container" style="width:100%">
+                                                <table id="select_especialidades" style="width:100%">
+                                                    <%--<tr><td><input type="checkbox" class="options" value="Option 1" checked="checked"/></td><td>Option 1</td></tr>--%>
+                                                </table>
+                                            </div>
+                                          </div>
+                                        </div>
+
+                                    </div>
+
                             </div>
                             <div class="row">
                                 <div class="col-lg-2 text-right">
@@ -1048,13 +1180,16 @@
                                         <option value="1">Semana</option>
                                     </select>
                                 </div>
-                                <%--<div class="col-lg-2 text-right">
-                                    <label for="dlregion">Región:</label>
-                                </div>
-                                <div class="col-lg-2">
-                                    <select id="dlregion" class="form-control"></select>
-                                </div>--%>
+
                                 <div class="col-lg-2 text-right">
+                                    <label for="dltecnico">Coordinador:</label>
+                                </div>
+                                <div class="col-lg-3">
+                                    <select id="dltecnico" class="form-control"></select>
+                                </div>
+
+
+                                <div class="col-lg-1 text-right">
                                     <label for="btgenera"></label>
                                 </div>
                                 <div class="col-lg-2">

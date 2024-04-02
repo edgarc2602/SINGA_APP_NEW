@@ -36,6 +36,41 @@
         /* Estilo para filas impares */
         tr:nth-child(odd) {background-color: #ffffff;}
 
+        
+            .dropdown {
+              position: relative;
+              display: inline-block;
+            }
+
+            .dropdown-toggleButton {
+              background-color:white;
+              border: 1px solid #ced4da;
+              padding: 8px 16px;
+              cursor: pointer;
+              height:33px;
+              width:197px;
+              text-align:left;
+            }
+
+            .dropdown-menu {
+              display: none;
+              position: absolute;
+              background-color: #fff;
+              min-width: 200px;
+              border: 1px solid #ced4da;
+              z-index: 1000;
+            }
+
+            .dropdown-menu.show {
+              display: block;
+              max-height:150px;
+              overflow-y:auto;
+            }
+
+            .checkboxes-container {
+              padding:5px;
+            }
+
     </style>
 
     <script type="text/javascript" src="//code.jquery.com/jquery-1.11.2.js"></script>
@@ -129,8 +164,23 @@
             $('#txcveemp').prop('disabled', true);
             $('#txnomemp').prop('disabled', true);
             $('#txctoemp').prop('disabled', true);
+                        
+            $('#ListaEspecialidades').mouseleave(function () {
+                setTimeout(function () {
+                    $('.dropdown-menu').removeClass('show');
+                }, 500);
+            });
 
             
+            $('#dropdownMenuButton').on('click', function () {
+                if ($('#dltipo').val() != '0') $('.dropdown-menu').toggleClass('show');
+                else {
+                    alert('Antes debe seleccionar un tipo de orden');
+                    $('#dltipo').focus();
+                }
+
+            });
+
             oculta();
             $('#bttrabajosejec').on('click', function () {
                 oculta();
@@ -261,7 +311,7 @@
             if ($('#idorden').val() == 0) {
                 cargacliente();
                 cargatecnico();
-                cargaestatus();
+                cargaestatus(); 
             }
             else cargaregistro();
 
@@ -665,7 +715,9 @@
                     xmlgraba += ' supervisor="' + $('#dltecnico').val() + ' " fecalta="' + falta + '" noreporte="' + $('#txrepcte').val() + '" ';
                     xmlgraba += ' trabajos="' + $('#txtrabajos').val() + '" usuario="' + $('#idusuario').val() + '"  status="' + $('#dlstatus').val() + '" ';
                     xmlgraba += ' edificio="' + $('#txedificio').val() + '" piso="' + $('#txpiso').val() + '" area="' + $('#txarea').val() + '" subarea="' + $('#txsubarea').val() + '" ';
-                    xmlgraba += ' tipo="' + $('#dlservicio').val() + '" especialidad="' + $('#dlespecialidad').val() + '"';
+                    xmlgraba += ' tipo="' + $('#dlservicio').val() + '"';
+                    /*xmlgraba += ' tipo="' + $('#dlservicio').val() + '" especialidad="' + $('#dlespecialidad').val() + '"';*/
+
                     if ($('#txfecejec').val() == "") {
                         //alert(isNaN($('#txfecejec').val()) == true);
                         xmlgraba += ' fejecucion="" trabejec="' + $('#txtrabejec').val() + '"';
@@ -678,6 +730,11 @@
                     $('#tblista tr input[type=checkbox]:checked').each(function () {
                         xmlgraba += ' <alcance idalc="' + $(this).closest('tr').find('td').eq(0).text() + '" />';
                     });
+
+                    $('.dropdown-menu input[type="checkbox"]').each(function () {
+                        if ($(this).prop('checked')) xmlgraba += '<Espe id_especialidad="' + $(this).val() + '"/>';
+                    });
+
                     xmlgraba += '</orden> ';
                     //alert(xmlgraba);
                     
@@ -724,12 +781,14 @@
             $('#txpiso').prop("disabled", true);
             $('#txarea').prop("disabled", true);
             $('#txsubarea').prop("disabled", true);
-            $('#dlespecialidad').prop("disabled", true);
+
+            /*$('#dlespecialidad').prop("disabled", true);*/
+
             $('#txtrabejec').prop("disabled", true);
             $('#txfecejec').prop("disabled", true);
             $('#btsuministradocliente').prop("disabled", true);
             $('#btsuministradobatia').prop("disabled", true);
-
+            
 
             $('#btAutosuministrado').prop("disabled", true);
 
@@ -975,8 +1034,8 @@
                 if ($('#hdtipo').val() != 0) {
                     $('#dltipo').val($('#hdtipo').val());
                 }
-                $('#dltipo').change( function () {
-                    cargaespecialidad($('#dltipo').val());
+                $('#dltipo').change(function () {
+                    carga_especialidadesALL($('#dltipo').val());
                 });
             }, iferror);
         }
@@ -1123,6 +1182,9 @@
                 PageMethods.ordendet($('#idorden').val(), function (opcion) {
                     var opt = eval('(' + opcion + ')');
 
+
+                    carga_especialidades(opt.id_orden);
+
                     $('#idstatus').val(opt.id_status);
                     cargaestatus();
 
@@ -1131,10 +1193,10 @@
                     $('#txrepcte').val(opt.id_repcliente);
 
                     $('#hdtipo').val(opt.id_servicio);
-                    $('#hdespecialidad').val(opt.especialidad);
+                  //  $('#hdespecialidad').val(opt.especialidad);
                     cargaserviciosmant();
 
-                    cargaespecialidad(opt.id_servicio);
+                    //cargaespecialidad(opt.id_servicio);
 
                     $('#dlstatus').val(opt.id_status);
                     $('#idcliente').val(opt.id_cliente);
@@ -1304,6 +1366,7 @@
             $('#txtrabajos').prop("disabled", false);
             $('#dltecnico').prop("disabled", false);
         }
+
         function cargapisos() {
             $('#dlpiso option').remove();
             if ($('#tipoinm').val() == 2) {
@@ -1356,24 +1419,63 @@
                 $('#txtotalemp').val('');
             }
         }
-        function cargaespecialidad(tipo) {
-            PageMethods.especialidad(tipo, function (opcion) {
-                var opt = eval('(' + opcion + ')');
-                var lista = '';
-                for (var list = 0; list < opt.length; list++) {
-                    lista += '<option value="' + opt[list].id + '">' + opt[list].desc + '</option>';
-                }
-                $('#dlespecialidad').empty();
-                $('#dlespecialidad').append(inicial);
-                $('#dlespecialidad').append(lista);
-                if ($('#hdespecialidad').val() != 0) {
-                    $('#dlespecialidad').val($('#hdespecialidad').val());
-                }
-                //$('#dlespecialidad').change(function () { //ya no hay alcance FMH
-                //    cargaalcance(0, $('#dlespecialidad').val());
-                //})
-            });
+
+        //function cargaespecialidad(tipo) {
+        //    PageMethods.especialidad(tipo, function (opcion) {
+        //        var opt = eval('(' + opcion + ')');
+        //        var lista = '';
+        //        for (var list = 0; list < opt.length; list++) {
+        //            lista += '<option value="' + opt[list].id + '">' + opt[list].desc + '</option>';
+        //        }
+        //        $('#dlespecialidad').empty();
+        //        $('#dlespecialidad').append(inicial);
+        //        $('#dlespecialidad').append(lista);
+        //        if ($('#hdespecialidad').val() != 0) {
+        //            $('#dlespecialidad').val($('#hdespecialidad').val());
+        //        }
+        //        //$('#dlespecialidad').change(function () { //ya no hay alcance FMH
+        //        //    cargaalcance(0, $('#dlespecialidad').val());
+        //        //})
+        //    });
+        //}
+
+        function carga_especialidadesALL(tipo) {
+            try {
+                PageMethods.especialidadesALL(tipo, function (opcion) {
+
+                    var opt = eval('(' + opcion + ')');
+                    var lista = '';
+                    for (var list = 0; list < opt.length; list++) {
+                        lista += '<tr><td><input type="checkbox" ' + (opt[list].idProg != '0' ? ' checked="checked" ' : ' ') + 'class="optEspecialidad" value="' + opt[list].id + '"/>&nbsp;</td>';
+                        lista += '<td>' + opt[list].desc + '</td></tr> ';
+                    }
+                    $('#select_especialidades').html(lista);
+                }, iferror);
+            }
+            catch (error) {
+                alert('Se produjo un error:', error.message);
+            }
         }
+
+        function carga_especialidades(id_orden) {
+            try {
+                PageMethods.especialidades(id_orden, function (opcion) {
+
+                        var opt = eval('(' + opcion + ')');
+                        var lista = '';
+                        for (var list = 0; list < opt.length; list++) {
+                            lista += '<tr><td><input disabled="disabled" type="checkbox" ' + (opt[list].idProg != '0' ? ' checked="checked" ' : ' ') + 'class="optEspecialidad" value="' + opt[list].id + '"/>&nbsp;</td>';
+                            lista += '<td>' + opt[list].desc + '</td></tr> ';
+                        }
+                        $('#select_especialidades').html(lista);
+                    }, iferror);
+            }
+            catch (error) {
+                alert('Se produjo un error:', error.message);
+            }
+        }
+
+
         function cargaalcance(ot, esp) {
             //PageMethods.alcance(ot, esp, function (res) {
             //    var ren = $.parseHTML(res);
@@ -1640,7 +1742,7 @@
         <asp:HiddenField ID="idequipo" runat="server" Value="0" />
         <asp:HiddenField ID="tipoinm" runat="server" Value="0" />
         <asp:HiddenField ID="hdtipo" runat="server" Value="0" />
-        <asp:HiddenField ID="hdespecialidad" runat="server" Value="0" />
+        <%--<asp:HiddenField ID="hdespecialidad" runat="server" Value="0" />--%>
         <asp:HiddenField ID="idstatus" runat="server" Value="0" />
         <asp:HiddenField ID="idcliente" runat="server" Value="0" />
         <asp:HiddenField ID="idtecnico" runat="server" Value="0" />
@@ -1788,10 +1890,24 @@
                                     <select id="dltipo" class="form-control"></select>
                                 </div>
                                 <div class="col-lg-1 text-right">
-                                    <label for="dlespecialidad">Especialidad</label>
+                                    <label for="dlespecialidad">Especialidad(es)</label>
                                 </div>
                                 <div class="col-lg-2">
-                                    <select id="dlespecialidad" class="form-control"></select>
+                                    <%--<select id="dlespecialidad" class="form-control"></select>--%>
+
+                                     <div class="dropdown" style="width:100%">
+
+                                         <input type="button" class="dropdown-toggleButton" aria-haspopup="true" aria-expanded="false" value="Ver lista..." id="dropdownMenuButton" style="width:100%"/>
+                                          
+                                          <div class="dropdown-menu" aria-labelledby="dropdownMenuButton" id="ListaEspecialidades" style="width:100%">
+                                            <div class="checkboxes-container" style="width:100%">
+                                                <table id="select_especialidades" style="width:100%">
+                                                    <%--<tr><td><input type="checkbox" class="options" value="Option 1" checked="checked"/></td><td>Option 1</td></tr>--%>
+                                                </table>
+                                            </div>
+                                          </div>
+                                        </div>
+
                                 </div>
 
                             </div>

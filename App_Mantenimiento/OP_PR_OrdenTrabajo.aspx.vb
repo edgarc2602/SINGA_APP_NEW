@@ -116,13 +116,36 @@ Partial Class OP_PR_OrdenTrabajo
         Return sql
     End Function
 
+    '<Web.Services.WebMethod()>
+    'Public Shared Function especialidad(ByVal tipo As Integer) As String
+    '    Dim myConnection As New SqlConnection((New Conexion).StrConexion)
+    '    Dim sqlbr As New StringBuilder
+    '    Dim sql As String = ""
+
+    '    sqlbr.Append("Select id_especialidad, Descripcion From tb_tipomantenimientoe where id_status = 1 and id_servicio = " & tipo & "")
+    '    Dim da As New SqlDataAdapter(sqlbr.ToString, myConnection)
+    '    Dim dt As New DataTable
+    '    da.Fill(dt)
+    '    sql = "["
+    '    If dt.Rows.Count > 0 Then
+    '        For x As Integer = 0 To dt.Rows.Count - 1
+    '            If x > 0 Then sql += ","
+    '            sql += "{id:'" & dt.Rows(x)("id_especialidad") & "'," & vbCrLf
+    '            sql += "desc:'" & dt.Rows(x)("descripcion") & "'}" & vbCrLf
+    '        Next
+    '    End If
+    '    sql += "]"
+    '    Return sql
+    'End Function
+
     <Web.Services.WebMethod()>
-    Public Shared Function especialidad(ByVal tipo As Integer) As String
+    Public Shared Function especialidades(ByVal id_orden As Int32) As String
         Dim myConnection As New SqlConnection((New Conexion).StrConexion)
         Dim sqlbr As New StringBuilder
         Dim sql As String = ""
 
-        sqlbr.Append("Select id_especialidad, Descripcion From tb_tipomantenimientoe where id_status = 1 and id_servicio = " & tipo & "")
+        sqlbr.Append("Select a.id_especialidad, a.Descripcion, b.id_programa From tb_tipomantenimientoe a inner join tb_programaestructura_especialidad b on a.id_especialidad = b.id_especialidad where a.id_status = 1 and b.id_programa = (SELECT id_programa FROM tb_ordentrabajo where id_orden=" & id_orden & ")")
+
         Dim da As New SqlDataAdapter(sqlbr.ToString, myConnection)
         Dim dt As New DataTable
         da.Fill(dt)
@@ -131,13 +154,38 @@ Partial Class OP_PR_OrdenTrabajo
             For x As Integer = 0 To dt.Rows.Count - 1
                 If x > 0 Then sql += ","
                 sql += "{id:'" & dt.Rows(x)("id_especialidad") & "'," & vbCrLf
-                sql += "desc:'" & dt.Rows(x)("descripcion") & "'}" & vbCrLf
+                sql += "desc:'" & dt.Rows(x)("descripcion") & "'," & vbCrLf
+                sql += "idProg:'" & dt.Rows(x)("id_programa") & "'}" & vbCrLf
             Next
         End If
         sql += "]"
         Return sql
-    End Function
 
+    End Function
+    <Web.Services.WebMethod()>
+    Public Shared Function especialidadesALL(ByVal id_Tipo As Int32) As String
+        Dim myConnection As New SqlConnection((New Conexion).StrConexion)
+        Dim sqlbr As New StringBuilder
+        Dim sql As String = ""
+
+        sqlbr.Append("Select id_especialidad, Descripcion, 0 AS id_programa From tb_tipomantenimientoe where id_status = 1 and id_servicio = " & id_Tipo & "")
+
+        Dim da As New SqlDataAdapter(sqlbr.ToString, myConnection)
+        Dim dt As New DataTable
+        da.Fill(dt)
+        sql = "["
+        If dt.Rows.Count > 0 Then
+            For x As Integer = 0 To dt.Rows.Count - 1
+                If x > 0 Then sql += ","
+                sql += "{id:'" & dt.Rows(x)("id_especialidad") & "'," & vbCrLf
+                sql += "desc:'" & dt.Rows(x)("descripcion") & "'," & vbCrLf
+                sql += "idProg:'" & dt.Rows(x)("id_programa") & "'}" & vbCrLf
+            Next
+        End If
+        sql += "]"
+        Return sql
+
+    End Function
     <Web.Services.WebMethod()>
     Public Shared Function cliente() As String
         Dim myConnection As New SqlConnection((New Conexion).StrConexion)
